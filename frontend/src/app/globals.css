@@ -15,13 +15,23 @@
     --background-end-rgb: 0, 0, 0;
   }
 }
-
-body {
-  color: rgb(var(--foreground-rgb));
+/* black bg */
+/* body {
+  background: rgb(var(--background-start-rgb));
   background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+    180deg,
+    rgba(var(--background-start-rgb), 1) 0%,
+    rgba(var(--background-end-rgb), 1) 100%
+  );
+  color: rgb(var(--foreground-rgb));
+} */
+
+
+.slick-slide > div {
+  margin: 0 10px;
 }
+
+.slick-slide img {
+  width: 100%;
+}
+
