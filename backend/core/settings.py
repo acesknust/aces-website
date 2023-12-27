@@ -40,6 +40,7 @@ INSTALLED_APPS = [
 
     # Local
     'users.apps.UsersConfig',
+    'scholarship.apps.ScholarshipConfig',
 
     # Third party
     'rest_framework',
