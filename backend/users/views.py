@@ -9,7 +9,7 @@ from .serializers import CustomUserSerializer
 
 class UserCreate(APIView):
     """
-    Creates the user.
+    Creates user.
     """
     permission_classes = [AllowAny]
     
@@ -23,4 +23,7 @@ class UserCreate(APIView):
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+ 
+
+
     
