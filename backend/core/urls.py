@@ -21,6 +21,7 @@ from rest_framework.schemas import get_schema_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/scholarship/', include('scholarship.urls', namespace='scholarship')),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('api/user/', include('users.urls', namespace='users')),
     path('docs/', include_docs_urls(title='ACES WEBSITE API')),
