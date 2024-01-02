@@ -12,7 +12,7 @@ class ScholarshipList(generics.ListAPIView):
 
 class CreateScholarship(generics.CreateAPIView):
     """Create a new scholarship only for admin users"""
-    permission_classes = [permissions.IsAdminUser]
+    # permission_classes = [permissions.IsAdminUser]
     queryset = Scholarship.objects.all()
     serializer_class = ScholarshipSerializer
 
