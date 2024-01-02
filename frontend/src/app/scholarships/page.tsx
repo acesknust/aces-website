@@ -1,8 +1,10 @@
 import { Metadata } from "next";
 import Footer from "../ui/footer";
 import Header from "../ui/header";
-import Card from "../ui/scholarship/card"
-
+import Card from "../ui/scholarship/card";
+import { getScholarships } from "../../../api/scholarship";
+import { CardSkeleton } from "../ui/skeletons";
+import { Suspense } from "react";
 
 
 export const metadata: Metadata = {
@@ -22,9 +24,11 @@ export default function Scholarship() {
       criteria before applying and provide the neccessary documents.
       </p>
     </div>
-      <Card />
+    {/* <Suspense fallback = {<CardSkeleton />}> */}
     <Card />
-    <Card />
+    {/* </Suspense> */}
+    {/* <Card />
+    <Card /> */}
     </div>
       <Footer />
     </div>

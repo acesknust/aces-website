@@ -14,9 +14,9 @@ export default function page() {
         <Hero />
         <About />
         <div className="flex flex-col items-center">
-          <h2 className="container text-3xl font-bold -mb-4 -mt-4 text-center">
-            Gear Up For <span className="text-blue-600">Exciting</span> ACES{" "}
-            <span className="text-blue-600">Events</span>🫵
+          <h2 className="text-3xl font-bold -mb-4 -mt-4 text-center">
+            Get Ready For  <span className="text-blue-600">Exciting</span> ACES
+            <span className="text-blue-600"> Events</span>⌛
           </h2>
           {/* carousel */}
           <div className="container p-12">
