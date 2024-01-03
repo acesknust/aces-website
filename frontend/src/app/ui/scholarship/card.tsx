@@ -22,10 +22,10 @@ export default function Card() {
   useEffect(() => {
     getScholarships().then((res) => {
       setScholarships(res?.data);
-      setTimeout(() => {
-        setLoading(false);
-      }, 1500);
-      // setLoading(false);
+      // setTimeout(() => {
+      //   setLoading(false);
+      // }, 100);
+      setLoading(false);
       // console.log(res?.data);
     });
   }, []);
