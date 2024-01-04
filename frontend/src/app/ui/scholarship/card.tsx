@@ -12,7 +12,7 @@ interface Scholarship {
   name: string;
   description: string;
   link: string;
-  image: File;  
+  image: string;
 }
 
 export default function Card() {
@@ -51,8 +51,8 @@ export default function Card() {
           {/* Image on the left (or above on mobile) */}
           <div className="md:w-1/3 mb-4 md:mb-0 md:mr-6 md:order-1">
           <Image
-          src="/images/mtn.jpg"
-          alt="Scholarship Image"
+          src={scholarship.image}
+          alt={scholarship.name + ' image'}
           width={400}
           height={300}
           />

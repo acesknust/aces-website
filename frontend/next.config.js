@@ -2,13 +2,13 @@
 const nextConfig = {
     reactStrictMode: true,
     images: {
-        domains: ['localhost'],
+        domains: ['csb10032001efbf644d.blob.core.windows.net'],
     },
     async rewrites() {
         return [
         {
             source: '/api/:path*',
-            destination: 'http://localhost:3000/api/:path*',
+            destination: 'https://csb10032001efbf644d.blob.core.windows.net/acesknust/images/scholarships/path*',        
         },
         ]
     },
