@@ -3,6 +3,7 @@ from rest_framework import generics, permissions
 from azure.storage.blob import BlobServiceClient
 from django.conf import settings
 from rest_framework.response import Response
+from uuid import uuid4
 
 from .models import Scholarship
 from .serializers import ScholarshipSerializer
@@ -25,6 +26,7 @@ class CreateScholarship(generics.CreateAPIView):
 
         # Get the uploaded image
         image = request.data['image']
+        image.name = f"{uuid4().hex}.{image.name.split('.')[-1]}"
 
         # Upload the image to Azure Storage
         upload_to_azure_storage(image.file, settings.AZURE_STORAGE_CONTAINER_NAME, f"images/scholarships/{image.name}")
