@@ -6,6 +6,7 @@ class ScholarshipSerializer(serializers.ModelSerializer):
     class Meta:
         model = Scholarship
         fields = ('id', 'name', 'description', 'link', 'image')
+    
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
