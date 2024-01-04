@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+from azure.storage.blob import BlobServiceClient
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -47,7 +48,7 @@ INSTALLED_APPS = [
     'coreapi',
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
-    'corsheaders'
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -145,6 +146,13 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ]
 }
+
+
+AZURE_STORAGE_CONNECTION_STRING = 'DefaultEndpointsProtocol=https;AccountName=csb10032001efbf644d;AccountKey=vUje0qhH9UhFhraOe2TJqFWbH4OoiZtvKEL4izz4bnhDRTh30pRIjalJiBBU1y5GiDwkIEb1OXgM+AStSarMDg==;EndpointSuffix=core.windows.net'
+blob_service_client = BlobServiceClient.from_connection_string(AZURE_STORAGE_CONNECTION_STRING)
+AZURE_STORAGE_NAME = 'csb10032001efbf644d'
+AZURE_STORAGE_CONTAINER_NAME = 'acesknust'
+AZURE_STORAGE_URL = f"https://{AZURE_STORAGE_NAME}.blob.core.windows.net/{AZURE_STORAGE_CONTAINER_NAME}/"
 
 
 CORS_ALLOWED_ORIGINS = [
