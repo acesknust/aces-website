@@ -8,7 +8,7 @@ const nextConfig = {
         return [
         {
             source: '/api/:path*',
-            destination: 'https://csb10032001efbf644d.blob.core.windows.net/acesknust/images/scholarships/path*',        
+            destination: 'https://csb10032001efbf644d.blob.core.windows.net/acesknust/images/path*',        
         },
         ]
     },

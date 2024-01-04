@@ -59,7 +59,7 @@ export default function Card() {
           </div>
           
           {/* Title, Details, and Apply Link on the right (or below on mobile) */}
-          <div className="md:w-2/3 md:order-2">
+          <div className="container md:w-2/3 md:order-2">
             <h2 className="text-2xl font-bold mb-4">{scholarship.name}</h2>
             <p className="text-gray-700 mb-4">{scholarship.description}</p>
             <Link
