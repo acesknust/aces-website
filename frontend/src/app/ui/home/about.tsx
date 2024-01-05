@@ -5,7 +5,7 @@ import { FaArrowRight } from "react-icons/fa"
 
 export default function About() {
   return (
-    <section className="py-12 p-3 flex flex-col items-center">
+    <section className="py-12 p-3 flex flex-col items-center -mb-4">
       <div className="containermx-auto flex flex-col lg:flex-row items-center p-3">
         {/* Text Content */}
         <div className="lg:w-1/2 lg:pr-10">

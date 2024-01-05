@@ -6,7 +6,7 @@ import Image from "next/image";
 import { FaRegArrowAltCircleLeft, FaRegArrowAltCircleRight } from "react-icons/fa";
 
 function EventCard() {
-const isCompleted = true;
+const isCompleted = false;
   return (
     <div className="bg-white p-4 mb-4 rounded-lg shadow-md">
       <div className="mb-4">
@@ -86,8 +86,8 @@ const MySlider = () => {
       ],
     };
   
-    return (
-      <Slider {...settings}>
+    return ( 
+      <Slider {...settings} className="m-3" >
         <EventCard />
         <EventCard />
         <EventCard />
