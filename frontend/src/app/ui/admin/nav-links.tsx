@@ -1,7 +1,8 @@
 'use client';
 
 import { IoHomeOutline } from "react-icons/io5";
-import { RiGraduationCapLine } from "react-icons/ri";
+import { RiArticleLine, RiGraduationCapLine } from "react-icons/ri";
+import { FaRegCalendarAlt } from "react-icons/fa";
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
@@ -10,6 +11,16 @@ import clsx from 'clsx';
 // Depending on the size of the application, this would be stored in a database.
 const links = [
   { name: 'Home', href: '/admin', icon: IoHomeOutline },
+  {
+    name: 'Blog',
+    href: '/admin/',
+    icon: RiArticleLine,
+  },
+  {
+    name: 'Events',
+    href: '/admin/',
+    icon: FaRegCalendarAlt,
+  },
   {
     name: 'Scholarships',
     href: '/admin/scholarships',
@@ -34,7 +45,7 @@ export default function NavLinks() {
               },
             )}
           >
-            <LinkIcon className="w-6" />
+            <LinkIcon size={24} className="w-6" />
             <p className="hidden md:block">{link.name}</p>
           </Link>
         );
