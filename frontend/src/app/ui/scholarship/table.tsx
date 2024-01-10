@@ -11,7 +11,7 @@ interface Scholarship {
   name: string;
 }
 
-export default function table() {
+export default function Table() {
   const [scholarships, setScholarships] = useState<Scholarship[]>([]);
   // const [isOpen, setIsOpen] = useState(false);
 
