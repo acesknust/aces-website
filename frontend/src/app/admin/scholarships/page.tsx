@@ -1,7 +1,15 @@
 import React from 'react'
+import { Metadata } from "next";
+import ScholarshipTable from '../../ui/scholarship/table';
+
+export const metadata: Metadata = {
+    title: 'Scholarships | Admin Dashboard',
+    };
 
 export default function page() {
   return (
-    <div>page</div>
+    <div>
+        <ScholarshipTable />
+    </div>
   )
 }
