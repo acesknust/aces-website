@@ -1,19 +1,19 @@
-
-import Image from 'next/image';
-import Link from 'next/link';
+import Image from "next/image";
+import Link from "next/link";
 
 const Gallery = () => {
   return (
     <div className="container mx-auto p-8">
-
-      <div className='text-center'>
-      <h1 className="lg:text-5xl text-3xl font-bold -mb-10 py-16">
-        ACES <span className="text-blue-600">Gallery</span>
-      </h1>
-      <p className='text-gray-600 mb-16'>Explore the rich tapestry of moments and achievements within our 
-      department through a curated collection of images. Our gallery captures the essence of academic excellence, 
-      student life, and memorable events that define the unique spirit of our department.
-      </p>
+      <div className="text-center">
+        <h1 className="lg:text-5xl text-3xl font-bold -mb-10 py-16">
+          ACES <span className="text-blue-600">Gallery</span>
+        </h1>
+        <p className="text-gray-600 mb-16">
+          Explore the rich tapestry of moments and achievements within our
+          department through a curated collection of images. Our gallery
+          captures the essence of academic excellence, student life, and
+          memorable events that define the unique spirit of our department.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -114,9 +114,7 @@ const Gallery = () => {
                   height={1200}
                   className="w-full shadow-1-strong rounded mb-4"
                 />
-                <p className="text-gray-600">
-                  REP YOUR TEAM
-                </p>
+                <p className="text-gray-600">REP YOUR TEAM</p>
               </div>
             </Link>
           </div>

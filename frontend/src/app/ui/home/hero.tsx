@@ -14,8 +14,10 @@ export default function Hero() {
           <br/>
            Explore, Learn, and Connect with Us</p>
            <Link href="https://t.me/+DLdm_86B3lc5YzFk">
-          <button className="bg-blue-600 text-white px-6 py-3 rounded-full font-bold hover:bg-white hover:text-indigo-600 transition duration-300">
-            <FaTelegram size={30} className="inline-block"/> Join Our<br/>Community
+          <button className="bg-blue-600 text-white px-6 py-3 rounded-full font-bold lg:w-max w-1/2 hover:bg-white hover:text-indigo-600 transition duration-300">
+            <FaTelegram size={30} className="inline-block"/>
+            <span> Join Our</span>
+            <span> Community</span>
           </button>
           </Link>
         </div>
