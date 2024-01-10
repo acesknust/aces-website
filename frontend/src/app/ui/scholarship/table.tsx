@@ -4,26 +4,37 @@ import { BsPencilSquare, BsTrash } from "react-icons/bs";
 import { getScholarships } from "../../../../api/scholarship";
 import { BiPlusCircle, BiSearch } from "react-icons/bi";
 import Link from "next/link";
+import { deleteScholarship } from "../../../../api/scholarship";
 
 interface Scholarship {
   id: number;
   name: string;
-  // description: string;
-  // link: string;
-  // image: string;
 }
 
 export default function table() {
   const [scholarships, setScholarships] = useState<Scholarship[]>([]);
-  // const [loading, setLoading] = useState(true);
+  // const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     getScholarships().then((res) => {
+      console.log(res?.data);
       setScholarships(res?.data);
-      // setLoading(false);
-      // console.log(res?.data);
     });
   }, []);
+
+  const handleDelete = async (scholarshipId: number) => {
+
+    try {
+      await deleteScholarship(scholarshipId);
+      const newScholarships = scholarships.filter(
+        (scholarship) => scholarship.id !== scholarshipId
+      );
+      setScholarships(newScholarships);
+    } catch (error) {
+      console.error('Error deleting scholarship:', error);
+    }
+  };
+
 
   return (
     <div className="overflow-x-auto">
@@ -70,9 +81,13 @@ export default function table() {
                   <button className="mr-2 text-blue-500">
                     <BsPencilSquare size={24} />
                   </button>
-                  <button className="text-red-500">
+                  <div>
+
+                  <button onClick={() => handleDelete(scholarship.id)}
+                  className="text-red-500">
                     <BsTrash size={24} />
                   </button>
+                </div>
                 </td>
               </tr>
             ))}

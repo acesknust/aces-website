@@ -1,9 +1,8 @@
 'use client'
 import { useState, ChangeEvent, FormEvent } from 'react';
-import axios from 'axios';
 import { createScholarship } from '../../../../api/scholarship';
 import Link from 'next/link';
-
+import { scholarshipNavigate } from '@/app/actions';
 interface FormData {
   name: string;
   description: string;
@@ -12,6 +11,7 @@ interface FormData {
 }
 
 const CreateScholarshipForm = () => {
+
   const [formData, setFormData] = useState<FormData>({
     name: '',
     description: '',
@@ -40,14 +40,9 @@ const CreateScholarshipForm = () => {
       data.append('image', formData.image);
     }
     
-    
-    try {
-        createScholarship(data).then((res) => {
-          console.log(res);
-        })
-    } catch (error) {
-      console.error('Error creating scholarship:', error);
-    }
+
+    createScholarship(data);
+    scholarshipNavigate();
   };
 
   return (
@@ -62,7 +57,7 @@ const CreateScholarshipForm = () => {
           name="name"
           value={formData.name}
           onChange={handleChange}
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded" 
         />
       </div>
 
@@ -105,11 +100,11 @@ const CreateScholarshipForm = () => {
           className="w-full p-2 border rounded"
         />
       </div>
-      <Link href="/admin/scholarships">
+      {/* <Link href="/admin/scholarships"> */}
       <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-full">
-        Create Scholarship
+        Create
       </button>
-      </Link>
+      {/* </Link> */}
     </form>
   );
 };
