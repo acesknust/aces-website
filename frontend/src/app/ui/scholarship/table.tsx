@@ -22,6 +22,10 @@ export default function Table() {
     });
   }, []);
 
+  // const handleUpdate = async (scholarshipId: number) => {
+  //   console.log(scholarshipId);
+  // };
+
   const handleDelete = async (scholarshipId: number) => {
 
     try {
@@ -78,9 +82,12 @@ export default function Table() {
               <tr key={scholarship.id}>
                 <td className="py-2 px-4 border-b">{scholarship.name}</td>
                 <td className="py-2 px-4 border-b flex gap-4">
-                  <button className="mr-2 text-blue-500">
+                  <Link href={`/admin/scholarships/edit/${scholarship.id}`}>
+                  <button
+                  className="mr-2 text-blue-500">
                     <BsPencilSquare size={24} />
                   </button>
+                  </Link>
                   <div>
 
                   <button onClick={() => handleDelete(scholarship.id)}
