@@ -44,12 +44,26 @@ def upload_to_azure_storage(file, container_name, blob_name):
 
 class EditScholarship(generics.RetrieveUpdateAPIView):
     """Edit a scholarship"""
-    permission_classes = [permissions.IsAdminUser]
+    # permission_classes = [permissions.IsAdminUser]
     queryset = Scholarship.objects.all()
     serializer_class = ScholarshipSerializer
 
+    def update(self, request, *args, **kwargs):
+
+        # Get the uploaded image
+        image = request.data['image']
+        image.name = f"{uuid4().hex}.{image.name.split('.')[-1]}"
+
+        # Upload the image to Azure Storage
+        upload_to_azure_storage(image.file, settings.AZURE_STORAGE_CONTAINER_NAME, f"images/scholarships/{image.name}")
+
+        return super().update(request, *args, **kwargs)
+
+
+
 class DeleteScholarship(generics.RetrieveDestroyAPIView):
     """Delete a scholarship"""
-    permission_classes = [permissions.IsAdminUser]
+    # permission_classes = [permissions.IsAdminUser]
     queryset = Scholarship.objects.all()
     serializer_class = ScholarshipSerializer
+
