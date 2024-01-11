@@ -1,5 +1,5 @@
-from .views import ScholarshipList, CreateScholarship, EditScholarship, DeleteScholarship, ScholarshipDetail
 from django.urls import path
+from .views import ScholarshipList, CreateScholarship, EditScholarship, DeleteScholarship, ScholarshipDetail
 
 app_name = 'scholarship'
 

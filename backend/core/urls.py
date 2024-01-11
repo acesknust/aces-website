@@ -29,6 +29,7 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('', TemplateView.as_view(template_name='home.html')),
     path('admin/', admin.site.urls),
+    path('api/events/', include('event.urls', namespace='event')),
     path('api/scholarships/', include('scholarship.urls', namespace='scholarship')),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('api/user/', include('users.urls', namespace='users')),
