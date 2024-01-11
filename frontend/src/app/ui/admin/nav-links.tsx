@@ -20,7 +20,7 @@ const links = [
   },
   {
     name: 'Events',
-    href: '/admin/',
+    href: '/admin/events',
     icon: FaRegCalendarAlt,
   },
   {
