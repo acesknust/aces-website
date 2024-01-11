@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     # Local
     'users.apps.UsersConfig',
     'scholarship.apps.ScholarshipConfig',
+    'event.apps.EventConfig',
 
     # Third party
     'coreapi',
