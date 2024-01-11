@@ -5,6 +5,7 @@ import { getScholarships } from "../../../../api/scholarship";
 import { BiPlusCircle, BiSearch } from "react-icons/bi";
 import Link from "next/link";
 import { deleteScholarship } from "../../../../api/scholarship";
+import { set } from "zod";
 
 interface Scholarship {
   id: number;
@@ -13,18 +14,17 @@ interface Scholarship {
 
 export default function Table() {
   const [scholarships, setScholarships] = useState<Scholarship[]>([]);
-  // const [isOpen, setIsOpen] = useState(false);
+
 
   useEffect(() => {
     getScholarships().then((res) => {
       console.log(res?.data);
       setScholarships(res?.data);
-    });
+    }
+    );
   }, []);
+  
 
-  // const handleUpdate = async (scholarshipId: number) => {
-  //   console.log(scholarshipId);
-  // };
 
   const handleDelete = async (scholarshipId: number) => {
 
