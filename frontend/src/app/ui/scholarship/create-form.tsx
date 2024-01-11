@@ -58,6 +58,7 @@ const CreateScholarshipForm = () => {
           value={formData.name}
           onChange={handleChange}
           className="w-full p-2 border rounded" 
+          required
         />
       </div>
 
@@ -71,6 +72,7 @@ const CreateScholarshipForm = () => {
           value={formData.description}
           onChange={handleChange}
           className="w-full p-2 border rounded"
+          required
         />
       </div>
 
@@ -85,6 +87,7 @@ const CreateScholarshipForm = () => {
           value={formData.link}
           onChange={handleChange}
           className="w-full p-2 border rounded"
+          required
         />
       </div>
 
@@ -98,13 +101,12 @@ const CreateScholarshipForm = () => {
           name="image"
           onChange={handleFileChange}
           className="w-full p-2 border rounded"
+          required
         />
       </div>
-      {/* <Link href="/admin/scholarships"> */}
       <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-full">
         Create
       </button>
-      {/* </Link> */}
     </form>
   );
 };

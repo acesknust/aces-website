@@ -89,6 +89,7 @@ export default function UpdateScholarshipForm({ params } : { params: any }) {
           value={formData.name}
           onChange={handleChange}
           className="w-full p-2 border rounded" 
+          required
         />
       </div>
 
@@ -102,6 +103,7 @@ export default function UpdateScholarshipForm({ params } : { params: any }) {
           value={formData.description}
           onChange={handleChange}
           className="w-full p-2 border rounded"
+          required
         />
       </div>
 
@@ -116,6 +118,7 @@ export default function UpdateScholarshipForm({ params } : { params: any }) {
           value={formData.link}
           onChange={handleChange}
           className="w-full p-2 border rounded"
+          required
         />
       </div>
 
@@ -129,13 +132,12 @@ export default function UpdateScholarshipForm({ params } : { params: any }) {
           name="image"
           onChange={handleFileChange}
           className="w-full p-2 border rounded"
+          required
         />
       </div>
-      {/* <Link href="/admin/scholarships"> */}
       <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-full">
         Update
       </button>
-      {/* </Link> */}
     </form>
   );
 

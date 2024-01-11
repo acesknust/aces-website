@@ -4,9 +4,21 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Image from "next/image";
 import { FaRegArrowAltCircleLeft, FaRegArrowAltCircleRight } from "react-icons/fa";
+import { useState } from "react";
+
+interface Event{
+  id: number;
+  name: string;
+  date: string;
+  time: string;
+  location: string;
+  image: string;
+}
 
 function EventCard() {
 const isCompleted = false;
+const [events, setEvents] = useState<Event[]>([]);
+
   return (
     <div className="bg-white p-4 mb-4 rounded-lg shadow-md">
       <div className="mb-4">
