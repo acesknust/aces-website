@@ -11,7 +11,7 @@ from .serializers import ScholarshipSerializer
 class ScholarshipList(generics.ListAPIView):
     """List all scholarships"""
     permission_classes = [permissions.AllowAny]
-    queryset = Scholarship.objects.all()
+    queryset = Scholarship.objects.order_by('-id')
     serializer_class = ScholarshipSerializer
 
 class ScholarshipDetail(generics.RetrieveAPIView):

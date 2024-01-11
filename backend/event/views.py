@@ -11,7 +11,7 @@ from .serializers import EventSerializer
 class EventList(generics.ListAPIView):
     """List all events"""
     permission_classes = [permissions.AllowAny]
-    queryset = Event.objects.all()
+    queryset = Event.objects.order_by('-id')
     serializer_class = EventSerializer
 
 class EventDetail(generics.RetrieveAPIView):
