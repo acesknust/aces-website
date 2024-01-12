@@ -1,29 +1,36 @@
-'use client'
-import { useState, ChangeEvent, FormEvent } from 'react';
-import Link from 'next/link';
-import { eventNavigate } from '@/app/actions';
-import { createEvent } from '../../../../api/event';
+"use client";
+import { useState, ChangeEvent, FormEvent } from "react";
+import { eventNavigate } from "@/app/actions";
+import { createEvent } from "../../../../api/event";
+
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { format } from "date-fns";
+import { BiCalendarAlt } from "react-icons/bi";
+import { FaCalendarAlt } from "react-icons/fa";
+
 interface FormData {
   name: string;
   date: string;
   time: string;
   location: string;
-  status: 'Upcoming' | 'Completed';
+  status: "Upcoming" | "Completed";
   image: File | null;
 }
 
 const CreateEventForm = () => {
-
   const [formData, setFormData] = useState<FormData>({
-    name: '',
-    date: '',
-    time: '',
-    location: '',
-    status: 'Upcoming',
+    name: "",
+    date: "",
+    time: "",
+    location: "",
+    status: "Upcoming",
     image: null,
   });
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
@@ -35,23 +42,21 @@ const CreateEventForm = () => {
 
   const handleStatusChange = (e: ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value as 'Upcoming' | 'Completed' });
+    setFormData({ ...formData, [name]: value as "Upcoming" | "Completed" });
   };
-  
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const data = new FormData();
-    data.append('name', formData.name);
-    data.append('date', formData.date);
-    data.append('time', formData.time);
-    data.append('location', formData.location);
-    data.append('status', formData.status);
+    data.append("name", formData.name);
+    data.append("date", formData.date);
+    data.append("time", formData.time);
+    data.append("location", formData.location);
+    data.append("status", formData.status);
     if (formData.image) {
-      data.append('image', formData.image);
+      data.append("image", formData.image);
     }
-    
 
     createEvent(data);
     eventNavigate();
@@ -69,7 +74,7 @@ const CreateEventForm = () => {
           name="name"
           value={formData.name}
           onChange={handleChange}
-          className="w-full p-2 border rounded" 
+          className="w-full p-2 border rounded"
           required
         />
       </div>
@@ -78,13 +83,13 @@ const CreateEventForm = () => {
         <label htmlFor="date" className="block text-gray-700 font-bold mb-2">
           Date
         </label>
-        <textarea
-          id="date"
-          name="date"
-          value={formData.date}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-          required
+        <DatePicker
+          selected={new Date()}
+          onChange={(date: Date) =>
+            setFormData({ ...formData, date: format(date, "EEEE, MMMM do yyyy") })
+          }
+          className="p-2 border rounded"
+
         />
       </div>
 
@@ -92,19 +97,25 @@ const CreateEventForm = () => {
         <label htmlFor="time" className="block text-gray-700 font-bold mb-2">
           Time
         </label>
-        <input
-          type="text"
-          id="time"
-          name="time"
-          value={formData.time}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-          required
+        <DatePicker
+          selected={new Date()}
+          onChange={(date: Date) =>
+            setFormData({ ...formData, time: format(date, "h:mm a") })
+          }
+          showTimeSelect
+          showTimeSelectOnly
+          timeIntervals={15}
+          timeCaption="Time"
+          dateFormat="h:mm aa"
+          className="p-2 border rounded"
         />
       </div>
 
       <div className="mb-4">
-        <label htmlFor="location" className="block text-gray-700 font-bold mb-2">
+        <label
+          htmlFor="location"
+          className="block text-gray-700 font-bold mb-2"
+        >
           Location
         </label>
         <input
@@ -118,21 +129,21 @@ const CreateEventForm = () => {
         />
       </div>
 
-        <div className="mb-4">
-            <label htmlFor="status" className="block text-gray-700 font-bold mb-2">
-            Status
-            </label>
-            <select
-            id="status"
-            name="status"
-            value={formData.status}
-            onChange={handleStatusChange}
-            className="w-full p-2 border rounded"
-            >
-                <option value="Upcoming">Upcoming</option>
-                <option value="Completed">Completed</option>
-            </select>
-        </div>
+      <div className="mb-4">
+        <label htmlFor="status" className="block text-gray-700 font-bold mb-2">
+          Status
+        </label>
+        <select
+          id="status"
+          name="status"
+          value={formData.status}
+          onChange={handleStatusChange}
+          className="w-full p-2 border rounded"
+        >
+          <option value="Upcoming">Upcoming</option>
+          <option value="Completed">Completed</option>
+        </select>
+      </div>
 
       <div className="mb-4">
         <label htmlFor="image" className="block text-gray-700 font-bold mb-2">
@@ -147,7 +158,10 @@ const CreateEventForm = () => {
           required
         />
       </div>
-      <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-full">
+      <button
+        type="submit"
+        className="bg-blue-600 text-white px-4 py-2 rounded-full"
+      >
         Create
       </button>
     </form>
