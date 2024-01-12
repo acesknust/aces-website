@@ -16,7 +16,7 @@ export default function page() {
         <About />
         <BotSection />
         <div className="flex flex-col items-center">
-          <h2 className="text-3xl font-bold -mb-4 -mt-4 text-center p-2">
+          <h2 className="text-3xl font-bold -mb-4 mt-4 text-center p-2">
             Get Ready For <span className="text-blue-600">Exciting</span> ACES
             <span className="text-blue-600"> Events</span>⌛
           </h2>
