@@ -5,7 +5,7 @@ import { createEvent } from "../../../../api/event";
 
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { format } from "date-fns";
+import { format, set } from "date-fns";
 import { BiCalendarAlt } from "react-icons/bi";
 import { FaCalendarAlt } from "react-icons/fa";
 
@@ -19,6 +19,8 @@ interface FormData {
 }
 
 const CreateEventForm = () => {
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedTime, setSelectedTime] = useState(new Date().getTime());
   const [formData, setFormData] = useState<FormData>({
     name: "",
     date: "",
@@ -84,10 +86,12 @@ const CreateEventForm = () => {
           Date
         </label>
         <DatePicker
-          selected={new Date()}
-          onChange={(date: Date) =>
-            setFormData({ ...formData, date: format(date, "EEEE, MMMM do yyyy") })
-          }
+          selected={selectedDate}
+          onChange={(date: Date) => {
+            setSelectedDate(date);
+            setFormData({ ...formData, date: format(date, "EEEE, MMMM do yyyy") });
+          }}
+
           className="p-2 border rounded"
 
         />
@@ -98,15 +102,16 @@ const CreateEventForm = () => {
           Time
         </label>
         <DatePicker
-          selected={new Date()}
-          onChange={(date: Date) =>
-            setFormData({ ...formData, time: format(date, "h:mm a") })
-          }
+          selected={new Date(selectedTime)}
           showTimeSelect
           showTimeSelectOnly
           timeIntervals={15}
           timeCaption="Time"
           dateFormat="h:mm aa"
+          onChange={(time: Date) => {
+            setSelectedTime(time.getTime());
+            setFormData({ ...formData, time: format(time, "h:mm aa") });
+          }}
           className="p-2 border rounded"
         />
       </div>
