@@ -29,7 +29,7 @@ export default function About() {
             <Image
               src="/images/trip.jpg" // trip image
               alt="Image 1"
-              width={400}
+              width={450}
               height={50}
               quality={100}
               className="rounded-lg group-hover:scale-[1.03] transition duration-300"
@@ -46,7 +46,7 @@ export default function About() {
             <Image
               src="/images/codefest.jpg" // coefest image
               alt="Image 1"
-                width={400}
+                width={450}
                 height={450}
                 quality={100}
               className="rounded-lg group-hover:scale-[1.03] transition duration-300"

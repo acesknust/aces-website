@@ -89,11 +89,12 @@ const CreateEventForm = () => {
           selected={selectedDate}
           onChange={(date: Date) => {
             setSelectedDate(date);
-            setFormData({ ...formData, date: format(date, "EEEE, MMMM do yyyy") });
+            setFormData({
+              ...formData,
+              date: format(date, "EEEE, MMMM do yyyy"),
+            });
           }}
-
           className="p-2 border rounded"
-
         />
       </div>
 
