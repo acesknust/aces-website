@@ -49,9 +49,9 @@ const Header = () => {
           <Link href="/gallery" className="hover:text-gray-300 hover:border-b-2 hover:border-white">
             Gallery
           </Link>
-          <Link href="/blog" className="hover:text-gray-300 hover:border-b-2 hover:border-white">
+          {/* <Link href="/blog" className="hover:text-gray-300 hover:border-b-2 hover:border-white">
             Blog
-          </Link>
+          </Link> */}
           <Link href="/scholarships" className="hover:text-gray-300 hover:border-b-2 hover:border-white">
             Scholarships
           </Link>
@@ -72,9 +72,9 @@ const Header = () => {
             <Link href="/gallery" className="hover:text-gray-300 p-2">
               Gallery
             </Link>
-            <Link href="/blog" className="hover:text-gray-300 p-2">
+            {/* <Link href="/blog" className="hover:text-gray-300 p-2">
               Blog
-            </Link>
+            </Link> */}
             <Link href="/scholarships" className="hover:text-gray-300 p-2">
               Scholarships
             </Link>

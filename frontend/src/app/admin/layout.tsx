@@ -3,8 +3,6 @@ import { useEffect, useState } from "react";
 import SideNav from "../ui/admin/sidenav"
 import { redirect } from "next/navigation";
 
-import React from 'react'
-
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false); 
