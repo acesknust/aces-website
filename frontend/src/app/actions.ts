@@ -9,3 +9,7 @@ export async function scholarshipNavigate() {
 export async function eventNavigate() {
   redirect('/admin/events')
 }
+
+export async function adminNavigate() {
+  redirect('/admin')
+}
