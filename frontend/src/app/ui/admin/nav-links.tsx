@@ -13,11 +13,11 @@ import { Metadata } from "next";
 // Depending on the size of the application, this would be stored in a database.
 const links = [
   { name: 'Home', href: '/admin', icon: IoHomeOutline },
-  {
-    name: 'Blogs',
-    href: '/admin/',
-    icon: RiArticleLine,
-  },
+  // {
+  //   name: 'Blogs',
+  //   href: '/admin/',
+  //   icon: RiArticleLine,
+  // },
   {
     name: 'Events',
     href: '/admin/events',
