@@ -20,7 +20,10 @@ export async function getScholarship(id: string) {
 
 export async function createScholarship(data: any) {
     try {
-        const response = await axiosInstance.post(`/scholarships/create/`, data);
+        const response = await axiosInstance.post(`/scholarships/create/`, data, {
+        
+        });
+        
         return response;
     } catch (error) {
         console.error('Error creating scholarship:', error);

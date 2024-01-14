@@ -1,24 +1,28 @@
 'use client'
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import SideNav from "../ui/admin/sidenav"
-import useAuth from "../useAuth"
 import { redirect } from "next/navigation";
 
 export default function layout({ children }: { children: React.ReactNode }) {
-  const isAuthenticated = useAuth();
-  console.log("isAuthenticated", isAuthenticated);
-  
-  
-  useEffect(() => {
-    if (!isAuthenticated) {
-      redirect("/login");
-    }
-    
-  }, [isAuthenticated]);
+  const [isAuthenticated, setIsAuthenticated] = useState(false); 
 
+  useEffect(() => {
+    const checkAuth = () => {
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        setIsAuthenticated(false);
+        redirect("/login");
+      } else {
+        setIsAuthenticated(true);
+      }
+    };
+    checkAuth();
+    
+  }, []);
+      
   if (!isAuthenticated) {
     return null;
-  }
+  } 
 
 
   return (

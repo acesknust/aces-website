@@ -24,8 +24,10 @@ const LoginPage: React.FC = () => {
       console.log(response.data);
       localStorage.setItem('access_token', response.data.access);
       localStorage.setItem('refresh_token', response.data.refresh);
+  
       axiosInstance.defaults.headers['Authorization'] =
-        'JWT ' + localStorage.getItem('access_token');
+        'Bearer ' + localStorage.getItem('access_token');
+        
       adminNavigate();
     } catch (error) {
       console.error('Login failed:', error);
