@@ -1,12 +1,8 @@
 'use client'
 import { useState } from 'react';
-import axios from 'axios';
 import axiosInstance from '../../../api/axios';
 import { Metadata } from 'next';
-import { error } from 'console';
-import { useFormState } from 'react-dom';
 import { BsExclamationCircle } from 'react-icons/bs';
-import { redirect } from 'next/navigation';
 import { adminNavigate } from '../actions';
 
 // export const metadata: Metadata = {

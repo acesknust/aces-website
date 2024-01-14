@@ -1,6 +1,26 @@
+'use client'
+import { useEffect } from "react";
 import SideNav from "../ui/admin/sidenav"
+import useAuth from "../useAuth"
+import { redirect } from "next/navigation";
 
 export default function layout({ children }: { children: React.ReactNode }) {
+  const isAuthenticated = useAuth();
+  console.log("isAuthenticated", isAuthenticated);
+  
+  
+  useEffect(() => {
+    if (!isAuthenticated) {
+      redirect("/login");
+    }
+    
+  }, [isAuthenticated]);
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
+
   return (
     <div className="flex h-screen flex-col md:flex-row md:overflow-hidden">
       <div className="w-full flex-none md:w-64">
