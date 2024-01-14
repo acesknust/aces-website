@@ -22,7 +22,7 @@ class ScholarshipDetail(generics.RetrieveAPIView):
 
 class CreateScholarship(generics.CreateAPIView):
     """Create a new scholarship only for admin users"""
-    # permission_classes = [permissions.IsAdminUser]
+    permission_classes = [permissions.IsAdminUser]
     queryset = Scholarship.objects.all()
     serializer_class = ScholarshipSerializer
 
@@ -50,7 +50,7 @@ def upload_to_azure_storage(file, container_name, blob_name):
 
 class EditScholarship(generics.RetrieveUpdateAPIView):
     """Edit a scholarship"""
-    # permission_classes = [permissions.IsAdminUser]
+    permission_classes = [permissions.IsAdminUser]
     queryset = Scholarship.objects.all()
     serializer_class = ScholarshipSerializer
 
@@ -69,7 +69,7 @@ class EditScholarship(generics.RetrieveUpdateAPIView):
 
 class DeleteScholarship(generics.RetrieveDestroyAPIView):
     """Delete a scholarship"""
-    # permission_classes = [permissions.IsAdminUser]
+    permission_classes = [permissions.IsAdminUser]
     queryset = Scholarship.objects.all()
     serializer_class = ScholarshipSerializer
 

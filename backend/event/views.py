@@ -22,7 +22,7 @@ class EventDetail(generics.RetrieveAPIView):
 
 class CreateEvent(generics.CreateAPIView):
     """Create a new event only for admin users"""
-    # permission_classes = [permissions.IsAdminUser]
+    permission_classes = [permissions.IsAdminUser]
     queryset = Event.objects.all()
     serializer_class = EventSerializer
 
@@ -50,7 +50,7 @@ def upload_to_azure_storage(file, container_name, blob_name):
 
 class EditEvent(generics.RetrieveUpdateAPIView):
     """Edit an event"""
-    # permission_classes = [permissions.IsAdminUser]
+    permission_classes = [permissions.IsAdminUser]
     queryset = Event.objects.all()
     serializer_class = EventSerializer
 
@@ -67,6 +67,6 @@ class EditEvent(generics.RetrieveUpdateAPIView):
     
 class DeleteEvent(generics.DestroyAPIView):
     """Delete an event"""
-    # permission_classes = [permissions.IsAdminUser]
+    permission_classes = [permissions.IsAdminUser]
     queryset = Event.objects.all()
     serializer_class = EventSerializer
