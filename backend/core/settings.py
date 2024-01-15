@@ -11,6 +11,11 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+import django_heroku
+import dj_database_url
+
+
 from datetime import timedelta
 from azure.storage.blob import BlobServiceClient
 
@@ -27,7 +32,7 @@ SECRET_KEY = 'django-insecure-3=n18lj@f2ae3sbuap&k=$1$)(mfu7o8#thg5)h^$v2!acwvqn
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -130,6 +135,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
+django_heroku.settings(locals())
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -156,11 +164,7 @@ AZURE_STORAGE_CONTAINER_NAME = 'acesknust'
 AZURE_STORAGE_URL = f"https://{AZURE_STORAGE_NAME}.blob.core.windows.net/{AZURE_STORAGE_CONTAINER_NAME}/"
 
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-
-]
+CORS_ALLOWED_ORIGINS = ['*']
 
 SIMPLE_JWT = {
      'ACCESS_TOKEN_LIFETIME': timedelta(minutes=10),
