@@ -4,7 +4,7 @@ const baseURL: string = 'https://acesknust-882260f24f07.herokuapp.com/api';
 
 const axiosInstance: AxiosInstance = axios.create({
     baseURL: baseURL,
-    timeout: 5000,
+    // timeout: 20000,
 });
 
 
