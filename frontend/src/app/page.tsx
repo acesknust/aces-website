@@ -35,12 +35,12 @@ export default function page() {
           <BlogCard />
           <BlogCard />
         </div> */}
-      <StudentTestimonial
+      {/* <StudentTestimonial
         text="I love computer engineering because it is a very practical course. It is a course that is very relevant in our world today. I love the fact that I can build things with my hands and also be able to code. I love the fact that I can build things with my hands and also be able to code. I love the fact that I can build things with my hands and also be able to code. I love the fact that I can build things with my hands and also be able to code. I love the fact that I can build things with my hands and also be able to code. I love the fact that I can build things with my hands and also be able to code. I love the fact that I can build things with my hands and also be able to code. I love the fact that I can build things with my hands and also be able to code."
         name="Kwame Adu"
         imageSrc="/executives/department/Hod.jpg"
         year="2023"
-        />
+        /> */}
       </div>
       <Footer />
     </main>
