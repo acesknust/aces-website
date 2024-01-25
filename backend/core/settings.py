@@ -32,7 +32,9 @@ SECRET_KEY = 'django-insecure-3=n18lj@f2ae3sbuap&k=$1$)(mfu7o8#thg5)h^$v2!acwvqn
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    'https://acesknust-882260f24f07.herokuapp.com',
+]
 
 
 # Application definition
@@ -164,7 +166,10 @@ AZURE_STORAGE_CONTAINER_NAME = 'acesknust'
 AZURE_STORAGE_URL = f"https://{AZURE_STORAGE_NAME}.blob.core.windows.net/{AZURE_STORAGE_CONTAINER_NAME}/"
 
 
-CORS_ALLOWED_ORIGINS = ['*']
+CORS_ALLOWED_ORIGINS = [
+    "https://acesknust.vercel.app",
+    "http://localhost:3000",
+]
 
 SIMPLE_JWT = {
      'ACCESS_TOKEN_LIFETIME': timedelta(minutes=10),
