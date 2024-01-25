@@ -30,6 +30,7 @@ export default function Hero() {
             quality={100}
             width={600}
             height={700}
+            layout="responsive"
           />
         </div>
       </div>

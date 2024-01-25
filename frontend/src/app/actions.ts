@@ -13,3 +13,7 @@ export async function eventNavigate() {
 export async function adminNavigate() {
   redirect('/admin')
 }
+
+export async function loginNavigate() {
+  redirect('/login')
+}

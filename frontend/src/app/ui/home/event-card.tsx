@@ -103,9 +103,9 @@ const MySlider = () => {
               <Image
                 src={event.image}
                 alt={event.name + " image"}
-                className="object-cover rounded-md"
+                className="object-cover rounded-md h-80"
                 width={450}
-                height={300}
+                height={350}
                 quality={100}
               />
             </div>

@@ -14,6 +14,7 @@ const executivesData = [
 const ExampleComponent = () => {
   return (
   <>
+  {/* <div className='flex justify-center'> */}
   <Breadcrumbs 
   breadcrumbs={[
     { label: '2022-2023', href: '' },
@@ -24,6 +25,7 @@ const ExampleComponent = () => {
     },
   ]}
   />
+  {/* </div> */}
   <ExecutivesList executives={executivesData} />
   </>
   );

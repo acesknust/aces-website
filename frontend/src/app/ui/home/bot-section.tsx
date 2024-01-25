@@ -5,7 +5,7 @@ import Link from "next/link";
 
 export default function BotSection() {
   return (
-    <section className="-mt-10 mb-10">
+    <section className="mb-10">
       <div className="container mx-auto text-center">
         <div className="flex flex-col-reverse lg:flex-row items-center mb-8">
           <Image
@@ -27,7 +27,7 @@ export default function BotSection() {
               for exclusive course materials, updates, and discussions.
             </p>
             <Link
-              href="https://t.me/YourTelegramBot"
+              href="https://t.me/TheACESBot"
               target="_blank"
               rel="noopener noreferrer"
               className=" bg-blue-600 text-white px-6 py-3 rounded-full font-bold hover:bg-white hover:text-indigo-600 transition duration-300 hidden lg:inline-block"
