@@ -71,7 +71,7 @@ const Gallery = () => {
 
           <div className="group">
             <Link href="">
-              <div className="border-2 border-gray-200 rounded-lg p-4 mb-4 group-hover:scale-[1.03] transition duration-300" target="_blank">
+              <div className="border-2 border-gray-200 rounded-lg p-4 mb-4 group-hover:scale-[1.03] transition duration-300">
                 <Image
                   src="/images/Gallery/official.jpg"
                   alt="Official Monday | ACES Week Celebration"
