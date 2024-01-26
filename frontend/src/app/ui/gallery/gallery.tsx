@@ -20,7 +20,7 @@ const Gallery = () => {
         {/* Column  1 */}
         <div className="col-lg-4 col-md-12 mb-4 mb-lg-0">
           <div className="group">
-            <Link href="https://t.me/+DLdm_86B3lc5YzFk">
+            <Link href="https://t.me/+DLdm_86B3lc5YzFk" target="_blank">
               <div className="border-2 border-gray-200 rounded-lg p-4 mb-4 group-hover:scale-[1.03] transition duration-300">
                 <Image
                   src="/images/Gallery/codefest.jpg"
@@ -35,7 +35,7 @@ const Gallery = () => {
           </div>
 
           <div className="group">
-            <Link href="https://drive.google.com/drive/folders/1-7r1f4S3YR8NjzcKWv3NZV5eSxIJcTtR">
+            <Link href="https://drive.google.com/drive/folders/1-7r1f4S3YR8NjzcKWv3NZV5eSxIJcTtR" target="_blank">
               <div className="border-2 border-gray-200 rounded-lg p-4 mb-4 group-hover:scale-[1.03] transition duration-300">
                 <Image
                   src="/images/Gallery/Nocte.jpg"
@@ -55,7 +55,7 @@ const Gallery = () => {
         {/* Column  2 */}
         <div className="col-lg-4 col-md-12 mb-4 mb-lg-0">
           <div className="group">
-            <Link href="">
+            <Link href="https://simondelali.pixieset.com/acesphotoshoot-1/" target="_blank">
               <div className="border-2 border-gray-200 rounded-lg p-4 mb-4 group-hover:scale-[1.03] transition duration-300">
                 <Image
                   src="/images/Gallery/Acesshirt.jpg"
@@ -71,7 +71,7 @@ const Gallery = () => {
 
           <div className="group">
             <Link href="">
-              <div className="border-2 border-gray-200 rounded-lg p-4 mb-4 group-hover:scale-[1.03] transition duration-300">
+              <div className="border-2 border-gray-200 rounded-lg p-4 mb-4 group-hover:scale-[1.03] transition duration-300" target="_blank">
                 <Image
                   src="/images/Gallery/official.jpg"
                   alt="Official Monday | ACES Week Celebration"
@@ -90,7 +90,7 @@ const Gallery = () => {
         {/* Column  3 */}
         <div className="col-lg-4 col-md-12 mb-4 mb-lg-0">
           <div className="group">
-            <Link href="https://t.me/+DLdm_86B3lc5YzFk">
+            <Link href="https://t.me/+DLdm_86B3lc5YzFk" target="_blank">
               <div className="border-2 border-gray-200 rounded-lg p-4 mb-4 group-hover:scale-[1.03] transition duration-300">
                 <Image
                   src="/images/Gallery/Trip.jpg"
@@ -105,7 +105,7 @@ const Gallery = () => {
           </div>
 
           <div className="group">
-            <Link href="https://drive.google.com/drive/folders/1-xzTD28JBEl3gIOwhZ1F0Ds0eE1Fy9_w?usp=sharing">
+            <Link href="https://drive.google.com/drive/folders/1-xzTD28JBEl3gIOwhZ1F0Ds0eE1Fy9_w?usp=sharing" target="_blank">
               <div className="border-2 border-gray-200 rounded-lg p-4 mb-4 group-hover:scale-[1.03] transition duration-300">
                 <Image
                   src="/images/Gallery/Jersey.jpg"
