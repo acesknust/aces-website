@@ -5,6 +5,10 @@ const baseURL: string = 'https://acesknustbackend.azurewebsites.net/api';
 const axiosInstance: AxiosInstance = axios.create({
     baseURL: baseURL,
     timeout: 5000,
+    headers: {
+		'Content-Type': 'multipart/form-data',
+		accept: 'multipart/form-data',
+	}, 
 });
 
 
