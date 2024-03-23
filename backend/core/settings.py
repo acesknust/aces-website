@@ -33,7 +33,7 @@ SECRET_KEY = 'django-insecure-3=n18lj@f2ae3sbuap&k=$1$)(mfu7o8#thg5)h^$v2!acwvqn
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'https://acesknust-882260f24f07.herokuapp.com',
+    # 'https://acesknust-882260f24f07.herokuapp.com',
 ]
 
 
