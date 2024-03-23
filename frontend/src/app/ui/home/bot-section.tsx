@@ -23,8 +23,7 @@ export default function BotSection() {
               Companion!
             </h2>
             <p className="text-lg mb-8 ml-4 mr-4">
-              Enhance your learning experience with CourseBot. Reach out to CourseBot
-              for exclusive course materials, updates, and discussions.
+              Enhance your learning experience with CourseBot. Gain access to exclusive course materials, updates, and discussions.
             </p>
             <Link
               href="#"
