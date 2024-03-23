@@ -18,16 +18,16 @@ const Footer = () => {
             <Link href="#" className="hover:text-gray-300">
               <FaFacebook size={24} />
             </Link>
-            <Link href="#" className="hover:text-gray-300">
+            <Link href="https://twitter.com/AcesKnust" className="hover:text-gray-300">
               <FaSquareXTwitter size={24} />
             </Link>
-            <Link href="#" className="hover:text-gray-300">
+            <Link href="https://www.instagram.com/acesknust_official/" className="hover:text-gray-300">
               <FaInstagram size={24} />
             </Link>
-            <Link href="#" className="hover:text-gray-300">
+            <Link href="https://www.linkedin.com/company/aces-knust/?viewAsMember=true" className="hover:text-gray-300">
               <FaLinkedin size={24} />
             </Link>
-            <Link href="#" className="hover:text-gray-300">
+            <Link href="https://www.youtube.com/@acesknust680" className="hover:text-gray-300">
               <FaYoutube size={24} />
             </Link>
           </div>

@@ -18,7 +18,7 @@ export default function BotSection() {
           />
           <div className="container mx-auto text-center">
             <h2 className="text-3xl font-bold mb-4">
-              Meet
+              {/* Meet */}
               <span className="text-blue-600"> CourseBot</span>: Your Resource
               Companion!
             </h2>
@@ -37,15 +37,15 @@ export default function BotSection() {
             </Link>
           </div>
           </div>
-          <Link
+          {/* <Link
               href="https://t.me/YourTelegramBot"
               target="_blank"
               rel="noopener noreferrer"
               className=" bg-blue-600 text-white px-6 py-3 rounded-full font-bold hover:bg-white hover:text-indigo-600 transition duration-300 inline-block lg:hidden"
-            >
-              Chat CourseBot{" "}
+            > */}
+              Coming Soon!{" "}
               <FaTelegram className="inline-block ml-2" size={24} />
-            </Link>
+            {/* </Link> */}
       </div>
     </section>
   );

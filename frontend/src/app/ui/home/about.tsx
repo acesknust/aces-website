@@ -31,7 +31,7 @@ export default function About() {
           <Link href="/gallery">
           <div className="group">
             <Image
-              src="/images/trip.jpg" // trip image
+              src="/images/trip1.jpg" // trip image
               alt="Image 1"
               width={450}
               height={50}
