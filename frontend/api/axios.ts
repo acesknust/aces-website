@@ -1,6 +1,6 @@
 import axios , { AxiosInstance } from 'axios';
 
-const baseURL: string = 'https://acesknust-882260f24f07.herokuapp.com/api';
+const baseURL: string = 'https://acesknustbackend.azurewebsites.net/api';
 
 const axiosInstance: AxiosInstance = axios.create({
     baseURL: baseURL,
