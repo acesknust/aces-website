@@ -27,25 +27,25 @@ export default function BotSection() {
               for exclusive course materials, updates, and discussions.
             </p>
             <Link
-              href="https://t.me/TheACESBot"
-              target="_blank"
+              href="#"
+              // target="_blank"
               rel="noopener noreferrer"
               className=" bg-blue-600 text-white px-6 py-3 rounded-full font-bold hover:bg-white hover:text-indigo-600 transition duration-300 hidden lg:inline-block"
             >
-              Chat CourseBot{" "}
+              Coming Soon!{" "}
               <FaTelegram className="inline-block ml-2" size={24} />
             </Link>
           </div>
           </div>
-          {/* <Link
-              href="https://t.me/YourTelegramBot"
-              target="_blank"
+          <Link
+              href="#"
+              // target="_blank"
               rel="noopener noreferrer"
               className=" bg-blue-600 text-white px-6 py-3 rounded-full font-bold hover:bg-white hover:text-indigo-600 transition duration-300 inline-block lg:hidden"
-            > */}
+            >
               Coming Soon!{" "}
               <FaTelegram className="inline-block ml-2" size={24} />
-            {/* </Link> */}
+            </Link>
       </div>
     </section>
   );
