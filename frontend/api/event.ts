@@ -20,7 +20,9 @@ export async function getEvent(id: string) {
 
 export async function createEvent(data: any) {
     try {
-        const response = await axiosInstance.post(`/events/create/`, data);
+        const response = await axiosInstance.post(`/events/create/`, data, {
+            
+        });
         return response;
     } catch (error) {
         console.error('Error creating event:', error);
