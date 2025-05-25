@@ -82,15 +82,15 @@ const MySlider = () => {
     ],
   };
 
-  if (loading === false && events.length === 0) {
-    return (
-      <div>
-        <p className="lg:text-5xl text-3xl text-gray-400 text-center h-screen">
-          No events data yet
-        </p>
-      </div>
-    );
-  }
+if (loading === false && (!events || events.length === 0)) {
+  return (
+    <div>
+      <p className="lg:text-5xl text-3xl text-gray-400 text-center h-screen">
+        No events data yet
+      </p>
+    </div>
+  );
+}
 
   return (
     <Slider {...settings} className="m-3">

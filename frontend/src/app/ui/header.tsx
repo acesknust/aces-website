@@ -13,7 +13,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-blue-950 text-white py-4 fixed top-0 left-0 w-full z-10">
+    <header className="bg-white text-blue-950  fixed top-0 left-0 w-full z-10 ">
       <div className="container mx-auto flex justify-between items-center">
         <div className="text-xl font-light p-2 ml-4">
           <Link href="/">
@@ -25,24 +25,26 @@ const Header = () => {
             height={30}
             className='mr-2 rounded-full'
             />
-            ACES-KNUST
+            <span className='text-white-950'>
+            Association of Computer <br/> Engineering Students
+            </span>
             </div>
             </Link>
         </div>
       
 
         {/* Mobile Menu Icon */}
-        <div className="lg:hidden p-2 mr-4">
+        <div className="lg:hidden p-2 mr-4 ">
           <button
             onClick={toggleMenu}
             className="text-white focus:outline-none focus:text-white"
           >
-            {isMenuOpen ? <BiX size={24} /> : <BiMenu size={24} />}
+            {isMenuOpen ? <BiX size={24} className='text-blue-950' /> : <BiMenu size={24} className='text-blue-950 ' />}
           </button>
         </div>
 
         {/* Desktop Navigation */}
-        <nav className="hidden lg:flex space-x-4">
+        <nav className="hidden lg:flex space-x-4 mr-10">
           <Link href="/" className="hover:text-gray-300 hover:border-b-2 hover:border-white">
             Home
           </Link>
@@ -65,7 +67,7 @@ const Header = () => {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="lg:hidden absolute top-16 left-0 right-0 bg-blue-950 p-4 flex flex-col items-left">
+          <div className="lg:hidden absolute top-16 left-0 right-0 bg-white p-4 flex flex-col items-left">
             <Link href="/" className="hover:text-gray-300 p-2">
               Home
             </Link>

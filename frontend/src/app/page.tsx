@@ -1,3 +1,4 @@
+
 import About from "./ui/home/about";
 import BlogCard from "./ui/blog/blog-card";
 import Footer from "./ui/footer";
@@ -6,6 +7,7 @@ import Hero from "./ui/home/hero";
 import CarouselCard from "./ui/home/event-card";
 import StudentTestimonial from "./ui/home/testimonial";
 import BotSection from "./ui/home/bot-section";
+import Gallery_home from "./ui/home/gallery_home";
 
 export default function page() {
   return (
@@ -13,7 +15,7 @@ export default function page() {
       <Header />
       <div className="py-16">
         <Hero />
-        <About />
+        <Gallery_home/>
         <BotSection />
         <div className="flex flex-col items-center">
           <h2 className="text-3xl font-bold -mb-4 mt-4 text-center p-2">
@@ -42,7 +44,7 @@ export default function page() {
         year="2023"
         /> */}
       </div>
-      <Footer />
+      
     </main>
   );
 }
