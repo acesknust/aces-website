@@ -7,10 +7,10 @@ import { motion } from 'framer-motion';
 
 export default function Gallery_home() {
   const galleryImages = [
-    { id: 1, src: '/images/Gallery/Trip.jpg' },
-    { id: 2, src: '/images/Gallery/Acesshirt.jpg' },
-    { id: 3, src: '/images/Gallery/codefest.jpg' },
-    { id: 4, src: '/images/Gallery/Jersey.jpg' },
+    { id: 1, src: '/images/Gallery/Trip.jpg', alt:"trip image" },
+    { id: 2, src: '/images/Gallery/Acesshirt.jpg',  alt:"aces shirt  image" },
+    { id: 3, src: '/images/Gallery/codefest.jpg', alt:"codefest  image" },
+    { id: 4, src: '/images/Gallery/Jersey.jpg',  alt:"Jersy  image" },
   ];
 
   const containerVariants = {
