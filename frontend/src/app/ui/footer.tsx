@@ -58,7 +58,7 @@ const Footer = () => {
               <Link href="#" className="hover:text-gray-300">staff</Link>
             </li>
             <li>
-              <Link href="#" className="hover:text-gray-300">Upcoming Events</Link>
+              <Link href="#" className="hover:text-gray-30">Upcoming Events</Link>
             </li>
           </ul>
         </div>
