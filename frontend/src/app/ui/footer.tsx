@@ -43,7 +43,7 @@ const Footer = () => {
               <Link href="#" className="hover:text-gray-300">About</Link>
             </li> */}
             <li>
-              <Link href="#" className="hover:text-gray-300">Blog</Link>
+              <Link href="#" className="hover:text-gray-300">About</Link>
             </li>
             <li>
               <Link href="#" className="hover:text-gray-300">Gallery</Link>
@@ -55,7 +55,7 @@ const Footer = () => {
               <Link href="#" className="hover:text-gray-300">Executives</Link>
             </li>
             <li>
-              <Link href="#" className="hover:text-gray-300">Department Officials</Link>
+              <Link href="#" className="hover:text-gray-300">staff</Link>
             </li>
             <li>
               <Link href="#" className="hover:text-gray-300">Upcoming Events</Link>

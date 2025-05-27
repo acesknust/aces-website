@@ -53,8 +53,6 @@ const Header = () => {
             About
           </Link>
 
-
-
           <Link href="/department" className="hover:text-gray-300 hover:border-b-2 hover:border-white">
             Staff
           </Link>
@@ -84,21 +82,36 @@ const Header = () => {
             <Link href="/" className="hover:text-gray-300 p-2">
               Home
             </Link>
-            <Link href="/gallery" className="hover:text-gray-300 p-2">
-              Gallery
+
+            <Link href="###" className="hover:text-gray-300 p-2">
+            About
+            </Link>
+
+            <Link href="/department" className="hover:text-gray-300 p-2">
+              Staff
+            </Link>
+
+            <Link href="###" className="hover:text-gray-300 p-2">
+              Intership
+            </Link>
+
+            <Link href="/scholarships" className="hover:text-gray-300 p-2">
+              Scholarships
+            </Link>
+
+            <Link href="/executives" className="hover:text-gray-300 p-2">
+              Executives
+            </Link>
+
+            <Link href="###" className="hover:text-gray-300 p-2">
+              Contact Us
             </Link>
             {/* <Link href="/blog" className="hover:text-gray-300 p-2">
               Blog
             </Link> */}
-            <Link href="/scholarships" className="hover:text-gray-300 p-2">
-              Scholarships
-            </Link>
-            <Link href="/executives" className="hover:text-gray-300 p-2">
-              Executives
-            </Link>
-            <Link href="/department" className="hover:text-gray-300 p-2">
-              Department Officials
-            </Link>
+
+
+
           </div>
         )}
       </div>
