@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { deleteEvent, getEvents } from "../../../../api/event";
+import { deleteEvent, getEvents } from "../../app/api/event";
 import { BiPlusCircle, BiSearch } from "react-icons/bi";
 import Link from "next/link";
 import { BsPencilSquare, BsTrash } from "react-icons/bs";
@@ -75,8 +75,8 @@ export default function Table() {
               <th className="py-2 px-4 border-b text-start">Event Name</th>
               <th className="py-2 px-4 border-b text-start">Date</th>
               <th className="py-2 px-4 border-b text-start">Time</th>
-            <th className="py-2 px-4 border-b text-start">Location</th>
-            <th className="py-2 px-4 border-b text-start">Status</th>
+              <th className="py-2 px-4 border-b text-start">Location</th>
+              <th className="py-2 px-4 border-b text-start">Status</th>
               <th className="py-2 px-4 border-b text-start">Actions</th>
             </tr>
           </thead>
@@ -90,18 +90,18 @@ export default function Table() {
                 <td className="py-2 px-4 border-b">{event.status}</td>
                 <td className="py-2 px-4 border-b flex gap-4">
                   <Link href={`/admin/events/edit/${event.id}`}>
-                  <button
-                  className="mr-2 text-blue-500">
-                    <BsPencilSquare size={24} />
-                  </button>
+                    <button
+                      className="mr-2 text-blue-500">
+                      <BsPencilSquare size={24} />
+                    </button>
                   </Link>
                   <div>
 
-                  <button onClick={() => handleDelete(event.id)}
-                  className="text-red-500">
-                    <BsTrash size={24} />
-                  </button>
-                </div>
+                    <button onClick={() => handleDelete(event.id)}
+                      className="text-red-500">
+                      <BsTrash size={24} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

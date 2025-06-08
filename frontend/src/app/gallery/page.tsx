@@ -1,7 +1,7 @@
 import { Metadata } from "next";
-import Footer from "../ui/footer";
-import Gallery from "../ui/gallery/gallery";
-import Header from "../ui/header";
+import Footer from "../../components/footer";
+import Gallery from "../../components/gallery/gallery";
+import Header from "../../components/header";
 
 export const metadata: Metadata = {
   title: 'Gallery',
@@ -10,9 +10,9 @@ export const metadata: Metadata = {
 export default function page() {
   return (
     <div>
-        <Header />
-        <Gallery />
-        <Footer />
+      <Header />
+      <Gallery />
+      <Footer />
     </div>
   )
 }
