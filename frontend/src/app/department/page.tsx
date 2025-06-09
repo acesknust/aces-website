@@ -1,7 +1,7 @@
 import { Metadata } from "next";
-import Header from "../ui/header";
-import ExecutivesList from "../ui/executives/card";
-import Footer from "../ui/footer";
+import Header from "@/components/header";
+import ExecutivesList from "@/components/executives/card";
+import Footer from "@/components/footer";
 
 export const metadata: Metadata = {
   title: "Department Offficials",
