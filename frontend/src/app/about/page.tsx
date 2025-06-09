@@ -71,10 +71,10 @@ const About = () => {
 
               <p className="text-base text-gray-700 mt-4">
                 At the heart of ACES is a passion for technology and a drive to
-                solve problems that impact our society. Whether it's through
-                projects, hackathons, or leadership opportunities, we provide
-                opportunities to think critically, work ethically, and lead
-                confidently in the tech space.
+                solve problems that impact our society. Whether it&apos;s
+                through projects, hackathons, or leadership opportunities, we
+                provide opportunities to think critically, work ethically, and
+                lead confidently in the tech space.
               </p>
 
               <p className="text-base text-gray-700 mt-4">
