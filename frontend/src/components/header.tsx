@@ -18,7 +18,7 @@ const Header = () => {
     },
     {
       label: 'About',
-      href: '###',
+      href: '/about',
       isActive: pathname === '/about'
     },
     {
@@ -70,7 +70,7 @@ const Header = () => {
                 height={30}
                 className='mr-2'
               />
-              <span className='text-blue-950 text-xs md:text-sm'>
+              <span className='text-blue-950 text-sm font-semibold leading-tight'>
                 Association of Computer <br /> Engineering Students
               </span>
             </div>

@@ -1,6 +1,6 @@
 
-import ExecutivesList from '../../ui/executives/card'
-import Breadcrumbs from '../../ui/executives/breadcrumbs'
+import ExecutivesList from '@/components/executives/card'
+import Breadcrumbs from '@/components/executives/breadcrumbs'
 
 const executivesData = [
   { name: 'Gyasi Gideon', position: 'President', imageUrl: '/2024/GIDEON.jpg' },
@@ -13,21 +13,21 @@ const executivesData = [
 ];
 
 const ExampleComponent = () => {
-  return(
+  return (
     <>
-    <Breadcrumbs 
-  breadcrumbs={[
-    { label: '2023-2024', href: '' },
-    {
-      label: 'Executive Council',
-      href: '',
-      active: true,
-    },
-  ]}
-  />
-     <ExecutivesList executives={executivesData} />
+      <Breadcrumbs
+        breadcrumbs={[
+          { label: '2023-2024', href: '' },
+          {
+            label: 'Executive Council',
+            href: '',
+            active: true,
+          },
+        ]}
+      />
+      <ExecutivesList executives={executivesData} />
     </>
-     );
+  );
 };
 
 export default ExampleComponent;
