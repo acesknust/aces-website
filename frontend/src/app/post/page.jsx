@@ -1,6 +1,6 @@
-import BlogDetail from "../ui/blog/blog-single";
-import Footer from "../ui/footer";
-import Header from "../ui/header";
+import BlogDetail from "@/components/blog/blog-single";
+import Footer from "@/components/footer";
+import Header from "@/components/header";
 
 export default function page() {
   return (

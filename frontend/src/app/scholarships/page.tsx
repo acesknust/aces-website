@@ -1,7 +1,7 @@
 import { Metadata } from "next";
-import Footer from "../../components/footer";
-import Header from "../../components/header";
-import Card from "../../components/scholarship/card";
+import Footer from "@/components/footer";
+import Header from "@/components/header";
+import Card from "@/components/scholarship/card";
 
 
 export const metadata: Metadata = {

@@ -1,5 +1,5 @@
-import ExecutivesList from '../../ui/executives/card'
-import Breadcrumbs from '../../ui/executives/breadcrumbs'
+import ExecutivesList from '@/components/executives/card'
+import Breadcrumbs from '@/components/executives/breadcrumbs'
 
 const executivesData = [
   { name: 'Baki Jessy Justice Julien', position: 'President', imageUrl: '/2023/Jessy.jpg' },
@@ -13,21 +13,21 @@ const executivesData = [
 
 const ExampleComponent = () => {
   return (
-  <>
-  {/* <div className='flex justify-center'> */}
-  <Breadcrumbs 
-  breadcrumbs={[
-    { label: '2022-2023', href: '' },
-    {
-      label: 'Executive Council',
-      href: '',
-      active: true,
-    },
-  ]}
-  />
-  {/* </div> */}
-  <ExecutivesList executives={executivesData} />
-  </>
+    <>
+      {/* <div className='flex justify-center'> */}
+      <Breadcrumbs
+        breadcrumbs={[
+          { label: '2022-2023', href: '' },
+          {
+            label: 'Executive Council',
+            href: '',
+            active: true,
+          },
+        ]}
+      />
+      {/* </div> */}
+      <ExecutivesList executives={executivesData} />
+    </>
   );
 };
 
