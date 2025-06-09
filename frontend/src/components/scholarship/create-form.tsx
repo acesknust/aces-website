@@ -1,6 +1,6 @@
 'use client'
 import { useState, ChangeEvent, FormEvent } from 'react';
-import { createScholarship } from '../../../../api/scholarship';
+import { createScholarship } from '../../app/api/scholarship';
 import Link from 'next/link';
 import { scholarshipNavigate } from '@/app/actions';
 interface FormData {
@@ -39,7 +39,7 @@ const CreateScholarshipForm = () => {
     if (formData.image) {
       data.append('image', formData.image);
     }
-    
+
 
     createScholarship(data);
     scholarshipNavigate();
@@ -57,7 +57,7 @@ const CreateScholarshipForm = () => {
           name="name"
           value={formData.name}
           onChange={handleChange}
-          className="w-full p-2 border rounded" 
+          className="w-full p-2 border rounded"
           required
         />
       </div>

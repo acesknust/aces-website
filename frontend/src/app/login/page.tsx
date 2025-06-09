@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react';
-import axiosInstance from '../../../api/axios';
+import axiosInstance from '../api/axios';
 import { Metadata } from 'next';
 import { BsExclamationCircle } from 'react-icons/bs';
 import { adminNavigate } from '../actions';
@@ -13,7 +13,7 @@ const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<null | string>(null);
-  
+
   const handleLogin = async () => {
     setError(null);
     try {
@@ -24,10 +24,10 @@ const LoginPage: React.FC = () => {
       console.log(response.data);
       localStorage.setItem('access_token', response.data.access);
       localStorage.setItem('refresh_token', response.data.refresh);
-  
+
       axiosInstance.defaults.headers['Authorization'] =
         'Bearer ' + localStorage.getItem('access_token');
-        
+
       adminNavigate();
     } catch (error) {
       console.error('Login failed:', error);

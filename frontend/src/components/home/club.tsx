@@ -3,18 +3,23 @@
 import React from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { FaArrowRight } from 'react-icons/fa';
+import Link from 'next/link';
 
 export default function Clubs() {
   const clubs = [
-    { id: 1, name: 'ACES Arduino Club', 
+    {
+      id: 1, name: 'ACES Arduino Club',
       image: '/images/club_images/Arduino_image.avif',
-      description: "A club for electronics and embedded systems lovers. Dive into real hardware projects with Arduino boards." 
+      description: "A club for electronics and embedded systems lovers. Dive into real hardware projects with Arduino boards."
     },
-    { id: 2, name: 'ACES Coding Club', 
+    {
+      id: 2, name: 'ACES Coding Club',
       image: '/images/club_images/coding.webp',
-      description: "Build beautiful websites and applications. This club focuses on HTML, CSS, JavaScript, and modern frameworks." 
+      description: "Build beautiful websites and applications. This club focuses on HTML, CSS, JavaScript, and modern frameworks."
     },
-    { id: 3, name: 'ACES Robotics Club',
+    {
+      id: 3, name: 'ACES Robotics Club',
       image: '/images/club_images/robotics_image.webp',
       description: "Design, build, and program intelligent robots. From autonomous vehicles to robotic arms, explore the future of automation through teamwork and innovation."
     },
@@ -39,29 +44,18 @@ export default function Clubs() {
 
   return (
     <section className="py-16 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="container mx-auto px-4 lg:px-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-10">
-          <motion.h2
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-3xl font-bold text-gray-800"
-          >
+          <h2 className="text-3xl font-bold text-gray-800">
             Our Clubs
-          </motion.h2>
+          </h2>
 
-          <motion.a
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            href="#"
-            className="text-blue-600 hover:underline font-medium"
-          >
-            See all
-          </motion.a>
+          <Link href="/gallery">
+            <span className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 transition-colors cursor-pointer">
+              See all <FaArrowRight />
+            </span>
+          </Link>
         </div>
 
         {/* Grid */}
@@ -79,7 +73,7 @@ export default function Clubs() {
               whileHover={{ y: -5 }}
               className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
             >
-              <div className="relative w-full h-60">
+              <div className="relative w-full h-48">
                 <Image
                   src={club.image}
                   alt={club.name}
@@ -88,7 +82,7 @@ export default function Clubs() {
                   className="rounded-t-xl"
                 />
               </div>
-              <div className="p-6">
+              <div className="p-4">
                 <h3 className="text-xl font-semibold text-gray-800 mb-2">
                   {club.name}
                 </h3>

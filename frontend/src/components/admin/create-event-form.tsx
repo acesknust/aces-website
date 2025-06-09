@@ -1,7 +1,7 @@
 "use client";
 import { useState, ChangeEvent, FormEvent } from "react";
 import { eventNavigate } from "@/app/actions";
-import { createEvent } from "../../../../api/event";
+import { createEvent } from "../../app/api/event";
 
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";

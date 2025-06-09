@@ -1,10 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
 import { BsPencilSquare, BsTrash } from "react-icons/bs";
-import { getScholarships } from "../../../../api/scholarship";
+import { getScholarships } from "../../app/api/scholarship";
 import { BiPlusCircle, BiSearch } from "react-icons/bi";
 import Link from "next/link";
-import { deleteScholarship } from "../../../../api/scholarship";
+import { deleteScholarship } from "../../app/api/scholarship";
 import { set } from "zod";
 
 interface Scholarship {
@@ -23,7 +23,7 @@ export default function Table() {
     }
     );
   }, []);
-  
+
 
 
   const handleDelete = async (scholarshipId: number) => {
@@ -83,18 +83,18 @@ export default function Table() {
                 <td className="py-2 px-4 border-b">{scholarship.name}</td>
                 <td className="py-2 px-4 border-b flex gap-4">
                   <Link href={`/admin/scholarships/edit/${scholarship.id}`}>
-                  <button
-                  className="mr-2 text-blue-500">
-                    <BsPencilSquare size={24} />
-                  </button>
+                    <button
+                      className="mr-2 text-blue-500">
+                      <BsPencilSquare size={24} />
+                    </button>
                   </Link>
                   <div>
 
-                  <button onClick={() => handleDelete(scholarship.id)}
-                  className="text-red-500">
-                    <BsTrash size={24} />
-                  </button>
-                </div>
+                    <button onClick={() => handleDelete(scholarship.id)}
+                      className="text-red-500">
+                      <BsTrash size={24} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
