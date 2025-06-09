@@ -102,55 +102,52 @@ const About = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Executive 1 */}
               <div className="flex flex-col items-center">
-                <div className="w-full aspect-w-1 aspect-h-1 overflow-hidden rounded-lg mb-2">
+                <div className="w-full h-[500px] overflow-hidden rounded-lg mb-2">
                   <img
-                    src="/images/executives/2023/Heads/Frimpong.jpg"
-                    alt="Prof. Head of Department"
-                    className="w-full h-full object-cover"
+                    src="/images/about/Hod.jpg"
+                    alt="Head of Department"
+                    className="w-full h-full object-contain"
                   />
                 </div>
                 <h3 className="text-lg font-medium text-gray-900">
-                  Prof. Head of Department
+                  Prof. Emmanuel K. Akowuah
                 </h3>
                 <p className="text-sm text-gray-600 text-center">
-                  Something brief about how this individual contributes to the
-                  department and its vision for the future
+                  Head of Department
                 </p>
               </div>
 
               {/* Executive 2 */}
               <div className="flex flex-col items-center">
-                <div className="w-full aspect-w-1 aspect-h-1 overflow-hidden rounded-lg mb-4">
+                <div className="w-full h-[500px] overflow-hidden rounded-lg mb-4">
                   <img
-                    src="/images/executives/2023/Heads/Michael.jpg"
-                    alt="ACES Patron"
-                    className="w-full h-full object-cover"
+                    src="/images/about/president.jpg"
+                    alt="ACES President"
+                    className="w-full h-full object-contain"
                   />
                 </div>
                 <h3 className="text-lg font-medium text-gray-900">
-                  ACES Patron
+                  Akatey Collins
                 </h3>
                 <p className="text-sm text-gray-600 text-center">
-                  Something brief about how this individual contributes to the
-                  association and its vision for the future
+                  ACES President
                 </p>
               </div>
 
               {/* Executive 3 */}
               <div className="flex flex-col items-center">
-                <div className="w-full aspect-w-1 aspect-h-1 overflow-hidden rounded-lg mb-4">
+                <div className="w-full h-[500px] overflow-hidden rounded-lg mb-4">
                   <img
-                    src="/images/executives/2023/Heads/Emmanuel.jpg"
-                    alt="ACES President"
-                    className="w-full h-full object-cover"
+                    src="/images/about/vp.jpg"
+                    alt="ACES Vice President"
+                    className="w-full h-full object-contain"
                   />
                 </div>
                 <h3 className="text-lg font-medium text-gray-900">
-                  ACES President
+                  Owusu Prince
                 </h3>
                 <p className="text-sm text-gray-600 text-center">
-                  Something brief about how this individual contributes to the
-                  association and its vision for the future
+                  ACES Vice President
                 </p>
               </div>
             </div>
@@ -323,10 +320,10 @@ const About = () => {
                   className="text-center py-10"
                 >
                   <Image
-                    src="/images/aceslogo.png"
+                    src="/images/about/logo.png"
                     alt="ACES KNUST Logo"
-                    width={200}
-                    height={200}
+                    width={400}
+                    height={400}
                     className="mx-auto"
                   />
                 </motion.div>
