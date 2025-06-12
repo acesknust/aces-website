@@ -92,9 +92,6 @@ export default function HomeEvents() {
                 </div>
                 <div className="flex items-center justify-between w-full">
                   <p className="text-sm font-medium text-blue-600">{event.time}</p>
-                  <div className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 transition-colors cursor-pointer">
-                    Read more <FaArrowRight />
-                  </div>
                 </div>
               </div>
             </motion.div>

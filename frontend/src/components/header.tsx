@@ -36,11 +36,7 @@ const Header = () => {
       href: '/department',
       isActive: pathname === '/department'
     },
-    {
-      label: 'Internships',
-      href: '###',
-      isActive: pathname === '/internships'
-    },
+
     {
       label: 'Gallery',
       href: '/gallery',

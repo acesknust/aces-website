@@ -20,10 +20,10 @@ const Gallery = () => {
         {/* Column  1 */}
         <div className="col-lg-4 col-md-12 mb-4 mb-lg-0">
           <div className="group">
-            <Link href="https://t.me/+DLdm_86B3lc5YzFk" target="_blank">
+            <Link href="https://Acesworks.pixieset.com/codefest/" target="_blank">
               <div className="border-2 border-gray-200 rounded-lg p-4 mb-4 group-hover:scale-[1.03] transition duration-300">
                 <Image
-                  src="/images/Gallery/codefest.jpg"
+                  src="/images/Aces_Images/Aces Images/Codefest/45.jpg"
                   alt="Codefest"
                   width={800}
                   height={533}
@@ -70,17 +70,17 @@ const Gallery = () => {
           </div>
 
           <div className="group">
-            <Link href="">
+            <Link href="https://Acesworks.pixieset.com/acesweek/" target="blank">
               <div className="border-2 border-gray-200 rounded-lg p-4 mb-4 group-hover:scale-[1.03] transition duration-300">
                 <Image
-                  src="/images/Gallery/official.jpg"
+                  src="/images/Aces_Images/Aces Images/Aces week/165.jpg"
                   alt="Official Monday | ACES Week Celebration"
                   width={800}
                   height={1200}
                   className="w-full shadow-1-strong rounded mb-4"
                 />
                 <p className="text-gray-600">
-                  African Wear Day | ACES Week Celebration
+                  ACES Week 
                 </p>
               </div>
             </Link>
@@ -90,10 +90,10 @@ const Gallery = () => {
         {/* Column  3 */}
         <div className="col-lg-4 col-md-12 mb-4 mb-lg-0">
           <div className="group">
-            <Link href="https://t.me/+DLdm_86B3lc5YzFk" target="_blank">
+            <Link href="https://Acesworks.pixieset.com/fieldtrip/" target="_blank">
               <div className="border-2 border-gray-200 rounded-lg p-4 mb-4 group-hover:scale-[1.03] transition duration-300">
                 <Image
-                  src="/images/Gallery/Trip.jpg"
+                  src="/images/Aces_Images/Aces Images/Field Trip/7.jpg"
                   alt="FIELD TRIP"
                   width={800}
                   height={533}
@@ -105,16 +105,46 @@ const Gallery = () => {
           </div>
 
           <div className="group">
-            <Link href="https://drive.google.com/drive/folders/1-xzTD28JBEl3gIOwhZ1F0Ds0eE1Fy9_w?usp=sharing" target="_blank">
+            <Link href="https://Acesworks.pixieset.com/orientation/" target="_blank">
               <div className="border-2 border-gray-200 rounded-lg p-4 mb-4 group-hover:scale-[1.03] transition duration-300">
                 <Image
-                  src="/images/Gallery/Jersey.jpg"
+                  src="/images/Aces_Images/Aces Images/orientation/16.jpg"
                   alt="Rep your team"
                   width={800}
                   height={1200}
                   className="w-full shadow-1-strong rounded mb-4"
                 />
-                <p className="text-gray-600">REP YOUR TEAM</p>
+                <p className="text-gray-600">Orientation</p>
+              </div>
+            </Link>
+          </div>
+
+          <div className="group">
+            <Link href="https://Acesworks.pixieset.com/medtechrave/" target="_blank">
+              <div className="border-2 border-gray-200 rounded-lg p-4 mb-4 group-hover:scale-[1.03] transition duration-300">
+                <Image
+                  src="/images/Aces_Images/Aces Images/MedTech Rave/16.jpg"
+                  alt="Rep your team"
+                  width={800}
+                  height={1200}
+                  className="w-full shadow-1-strong rounded mb-4"
+                />
+                <p className="text-gray-600">MedTech Rave</p>
+              </div>
+            </Link>
+          </div>
+
+          <div className="group">
+            <Link href="https://Acesworks.pixieset.com/ladiesmeetup/" target="_blank">
+              <div className="border-2 border-gray-200 rounded-lg p-4 mb-4 group-hover:scale-[1.03] transition duration-300">
+                <Image
+                  src="/images/Aces_Images/Aces Images/Ladies general meeting/26.jpg"
+                  alt="Rep your team"
+                  width={800}
+                  height={1200}
+                  className="w-full shadow-1-strong rounded mb-4"
+                />
+                <p className="text-gray-600">Ladies Meetup</p>
               </div>
             </Link>
           </div>

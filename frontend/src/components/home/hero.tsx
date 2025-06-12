@@ -13,7 +13,7 @@ export default function Hero() {
             Welcome To The <br /> Land of ACES
           </h1>
 
-          <Link href="https://t.me/+DLdm_86B3lc5YzFk">
+          <Link href="/about">
             <button className="bg-blue-600 text-white px-6 py-3 rounded-full font-bold hover:bg-blue-600/80 transition duration-300">
               Explore
             </button>
@@ -23,3 +23,4 @@ export default function Hero() {
     </section>
   )
 }
+ 

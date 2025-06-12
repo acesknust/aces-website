@@ -50,12 +50,6 @@ export default function Clubs() {
           <h2 className="text-3xl font-bold text-gray-800">
             Our Clubs
           </h2>
-
-          <Link href="/gallery">
-            <span className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 transition-colors cursor-pointer">
-              See all <FaArrowRight />
-            </span>
-          </Link>
         </div>
 
         {/* Grid */}
@@ -89,9 +83,6 @@ export default function Clubs() {
                 <p className="text-gray-600 mb-4">
                   {club.description}
                 </p>
-                <a href="#" className="text-blue-600 hover:underline font-medium">
-                  Read More...
-                </a>
               </div>
             </motion.div>
           ))}
