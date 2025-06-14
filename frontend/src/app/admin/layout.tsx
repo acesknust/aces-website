@@ -1,11 +1,11 @@
 'use client'
 import { useEffect, useState } from "react";
-import SideNav from "../ui/admin/sidenav"
+import SideNav from "../../components/admin/sidenav"
 import { redirect } from "next/navigation";
 
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false); 
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     const checkAuth = () => {
@@ -18,12 +18,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       }
     };
     checkAuth();
-    
+
   }, []);
-      
+
   if (!isAuthenticated) {
     return null;
-  } 
+  }
 
 
   return (

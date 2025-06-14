@@ -1,5 +1,5 @@
-import ExecutivesList from '../../../ui/executives/card'
-import Breadcrumbs from '../../../ui/executives/breadcrumbs'
+import ExecutivesList from '@/components/executives/card'
+import Breadcrumbs from '@/components/executives/breadcrumbs'
 
 const executivesData = [
   { name: 'Bless Elikem', position: 'Academic Board Chairman', imageUrl: '/2023/Heads/Bless.jpg' },

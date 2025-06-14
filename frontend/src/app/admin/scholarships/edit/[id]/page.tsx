@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import { usePathname } from 'next/navigation';
-import { getScholarship, updateScholarship } from '../../../../../../api/scholarship';
+import { getScholarship, updateScholarship } from '../../../../api/scholarship';
 import { scholarshipNavigate } from '@/app/actions';
 import { notFound } from 'next/navigation';
 
@@ -12,7 +12,7 @@ interface FormData {
   image: File | null;
 }
 
-export default function UpdateScholarshipForm({ params } : { params: any }) {
+export default function UpdateScholarshipForm({ params }: { params: any }) {
   const [formData, setFormData] = useState<FormData>({
     name: '',
     description: '',
@@ -24,7 +24,7 @@ export default function UpdateScholarshipForm({ params } : { params: any }) {
   const pathname = usePathname();
   const parts = pathname.split('/');
   const id = parts[parts.length - 1];
-  
+
 
 
   useEffect(() => {
@@ -47,7 +47,7 @@ export default function UpdateScholarshipForm({ params } : { params: any }) {
       }
     });
   }
-  , [id]);
+    , [id]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -72,8 +72,8 @@ export default function UpdateScholarshipForm({ params } : { params: any }) {
 
     updateScholarship(id as string, data);
     scholarshipNavigate();
-    }
-  
+  }
+
 
 
   return (
@@ -88,7 +88,7 @@ export default function UpdateScholarshipForm({ params } : { params: any }) {
           name="name"
           value={formData.name}
           onChange={handleChange}
-          className="w-full p-2 border rounded" 
+          className="w-full p-2 border rounded"
           required
         />
       </div>
