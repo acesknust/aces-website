@@ -150,7 +150,14 @@ const Gallery = () => {
           </div>
         </div>
       </div>
+        <span className="bg-blue-600 text-white cursor-pointer border border-blue-600 hover:border-blue-700 rounded-[5px] px-4 py-2">
+          <a href="https://t.me/+Is6U_pngOmYyMjM0" target="_blank">
+            Telegram Gallery
+          </a>
+        </span>
+       
     </div>
+
   );
 };
 

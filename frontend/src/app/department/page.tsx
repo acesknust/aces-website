@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import Header from "@/components/header";
-import ExecutivesList from "@/components/executives/card";
+
 import Footer from "@/components/footer";
 
 export const metadata: Metadata = {
@@ -31,7 +31,7 @@ export default function page() {
       <h1 className="lg:text-5xl text-3xl font-bold -mb-20 py-16 text-center mt-8">
         Department <span className="text-blue-600">Officials</span>
       </h1>
-      <ExecutivesList executives={executivesData} />
+     
       <Footer />
     </div>
   );
