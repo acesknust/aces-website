@@ -5,12 +5,75 @@ import Header from "@/components/header";
 import Footer from "@/components/footer";
 import Image from "next/image";
 
+// Loading placeholder component with shining effect
+const LoadingPlaceholder = () => (
+  <div className="w-full h-[500px] bg-gray-200 rounded-lg relative overflow-hidden">
+    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent animate-shine"></div>
+  </div>
+);
+
+// Executive data
+const executives = [
+  {
+    id: 1,
+    name: "Akatey Collins",
+    position: "ACES President",
+    imageUrl: "https://res.cloudinary.com/dsgq2ukjs/image/upload/v1753835720/president_tjtpey.jpg"
+  },
+  {
+    id: 2,
+    name: "Owusu Prince",
+    position: "ACES Vice President",
+    imageUrl: "https://res.cloudinary.com/dsgq2ukjs/image/upload/v1753835711/vp_iihfwb.jpg"
+  },
+  {
+    id: 3,
+    name: "Jesse Yaw Owusu",
+    position: "Public Relations Officer",
+    imageUrl: "https://res.cloudinary.com/dsgq2ukjs/image/upload/v1753835711/PRO_ucq0ms.jpg"
+  },
+  {
+    id: 4,
+    name: "Nana Akosua Addipa",
+    position: "Women's Commissioner",
+    imageUrl: "https://res.cloudinary.com/dsgq2ukjs/image/upload/v1753835710/Women_comm_z4jxkd.jpg"
+  },
+  {
+    id: 5,
+    name: "Rahinatu Adam",
+    position: "Financial Secretary",
+    imageUrl: "https://res.cloudinary.com/dsgq2ukjs/image/upload/v1753835710/Fin_Sec_lgvdt7.jpg"
+  },
+  {
+    id: 6,
+    name: "Aba Famous Mawulenu Kwaku",
+    position: "Organizing Secretary",
+    imageUrl: "https://res.cloudinary.com/dsgq2ukjs/image/upload/v1753835710/organizing_sec_n6hdmu.jpg"
+  }
+];
+
 const About = () => {
   const [activeSection, setActiveSection] = useState("Vision"); // Default to Vision
+  const [currentExecutiveIndex, setCurrentExecutiveIndex] = useState(0);
+  const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set());
 
   const handleSectionChange = (section: string) => {
     setActiveSection(section);
   };
+
+  const handleImageLoad = (executiveId: number) => {
+    setLoadedImages(prev => new Set(prev).add(executiveId));
+  };
+
+  const nextExecutive = () => {
+    setCurrentExecutiveIndex((prev) => (prev + 1) % executives.length);
+  };
+
+  const prevExecutive = () => {
+    setCurrentExecutiveIndex((prev) => (prev - 1 + executives.length) % executives.length);
+  };
+
+  const currentExecutive = executives[currentExecutiveIndex];
 
   return (
     <>
@@ -95,60 +158,82 @@ const About = () => {
           className="py-4 px-4 sm:px-6 lg:px-8 bg-gray-50"
         >
           <div className="max-w-7xl mx-auto">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">
               Department Executives
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Executive 1 */}
-              <div className="flex flex-col items-center">
-                <div className="w-full h-[500px] overflow-hidden rounded-lg mb-2">
-                  <img
-                    src="/images/about/Hod.jpg"
-                    alt="Head of Department"
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-                <h3 className="text-lg font-medium text-gray-900">
-                  Prof. Emmanuel K. Akowuah
-                </h3>
-                <p className="text-sm text-gray-600 text-center">
-                  Head of Department
-                </p>
-              </div>
+            {/* Carousel Container */}
+            <div className="relative max-w-2xl mx-auto">
+              {/* Navigation Buttons */}
+              <button
+                onClick={prevExecutive}
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg transition-all duration-200 hover:scale-110"
+                aria-label="Previous executive"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
 
-              {/* Executive 2 */}
-              <div className="flex flex-col items-center">
-                <div className="w-full h-[500px] overflow-hidden rounded-lg mb-4">
-                  <img
-                    src="/images/about/president.jpg"
-                    alt="ACES President"
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-                <h3 className="text-lg font-medium text-gray-900">
-                  Akatey Collins
-                </h3>
-                <p className="text-sm text-gray-600 text-center">
-                  ACES President
-                </p>
-              </div>
+              <button
+                onClick={nextExecutive}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg transition-all duration-200 hover:scale-110"
+                aria-label="Next executive"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
 
-              {/* Executive 3 */}
-              <div className="flex flex-col items-center">
-                <div className="w-full h-[500px] overflow-hidden rounded-lg mb-4">
-                  <img
-                    src="/images/about/vp.jpg"
-                    alt="ACES Vice President"
-                    className="w-full h-full object-contain"
+              {/* Executive Card */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentExecutiveIndex}
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ duration: 0.3 }}
+                  className="flex flex-col items-center"
+                >
+                  {/* Image Container */}
+                  <div className="w-full h-[500px] overflow-hidden rounded-lg mb-4 relative">
+                    {!loadedImages.has(currentExecutive.id) && <LoadingPlaceholder />}
+                    <img
+                      src={currentExecutive.imageUrl}
+                      alt={currentExecutive.name}
+                      className={`w-full h-full object-contain transition-opacity duration-300 ${
+                        loadedImages.has(currentExecutive.id) ? 'opacity-100' : 'opacity-0'
+                      }`}
+                      onLoad={() => handleImageLoad(currentExecutive.id)}
+                    />
+                  </div>
+
+                  {/* Executive Info */}
+                  <div className="text-center">
+                    <h3 className="text-xl font-semibold text-gray-900 mb-1">
+                      {currentExecutive.name}
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      {currentExecutive.position}
+                    </p>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Dots Indicator */}
+              <div className="flex justify-center mt-6 space-x-2">
+                {executives.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentExecutiveIndex(index)}
+                    className={`w-3 h-3 rounded-full transition-all duration-200 ${
+                      index === currentExecutiveIndex
+                        ? 'bg-blue-600 scale-125'
+                        : 'bg-gray-300 hover:bg-gray-400'
+                    }`}
+                    aria-label={`Go to executive ${index + 1}`}
                   />
-                </div>
-                <h3 className="text-lg font-medium text-gray-900">
-                  Owusu Prince
-                </h3>
-                <p className="text-sm text-gray-600 text-center">
-                  ACES Vice President
-                </p>
+                ))}
               </div>
             </div>
           </div>
