@@ -26,11 +26,7 @@ const Header = () => {
       href: '/executives',
       isActive: pathname === '/executives'
     },
-    {
-      label: 'Courses',
-      href: '/courses',
-      isActive: pathname === '/courses'
-    },
+ 
     {
       label: 'Staff',
       href: '/department',
