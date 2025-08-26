@@ -140,7 +140,7 @@ export default function ScholarshipDetails() {
             {error || 'Scholarship Not Found'}
           </h1>
           <p className="text-gray-600 mb-8">
-            The scholarship you're looking for doesn't exist or has been removed.
+            The scholarship you&apos;re looking for doesn&apos;t exist or has been removed.
           </p>
           <Link
             href="/scholarships"
