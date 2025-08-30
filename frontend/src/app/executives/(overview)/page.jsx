@@ -10,137 +10,138 @@ const ExecutivePage = () => {
         id: 1,
         name: 'Collins Akatey',
         position: 'President',
-        image: '/images/executives/2025/Collins.jpg'
+        image: 'https://res.cloudinary.com/dmgk37i6y/image/upload/v1756508773/Collins_ys1vlg.jpg'
       },
       {
         id: 2,
         name: 'Prince Owusu',
         position: 'Vice President',
-        image: '/images/executives/2025/kekeli.jpg'
+        image: 'https://res.cloudinary.com/dmgk37i6y/image/upload/v1756508748/kekeli_xchuze.jpg'
       },
       {
         id: 3,
         name: 'Afua Twumasi Britwum',
         position: 'General Secretary',
-        image: '/images/executives/2025/afua.jpg'
+        image: 'https://res.cloudinary.com/dmgk37i6y/image/upload/v1756508739/afua_szlxot.jpg'
       },
       {
         id: 4,
         name: 'Famous Mawulenu Kwaku Aba',
         position: 'Organizing Secretary',
-        image: '/images/executives/2025/Famous.jpg'
+        image: 'https://res.cloudinary.com/dmgk37i6y/image/upload/v1756508785/Famous_jxvwys.jpg'
       },
       {
         id: 5,
         name: 'Rahinatu Adam',
         position: 'Financial Secretary',
-        image: '/images/executives/2025/hajia.jpg'
+        image: 'https://res.cloudinary.com/dmgk37i6y/image/upload/v1756508745/hajia_fjzvv7.jpg'
       },
       {
         id: 6,
         name: 'Jesse Yaw Owusu',
         position: 'Public Relations Officer',
-        image: '/images/executives/2025/Jesse.jpg'
+        image: 'https://res.cloudinary.com/dmgk37i6y/image/upload/v1756508788/Jesse_nycrl3.jpg'
       },
 
       {
         id: 7,
         name: 'Nana Akosua Addipa',
         position: "Women's Commissioner",
-        image: '/images/executives/2025/addipa.jpg'
+        image: 'https://res.cloudinary.com/dmgk37i6y/image/upload/v1756508738/addipa_mq4pv3.jpg'
       }
-    ],
-    '2022-2023': [
-      {
-        id: 8,
-        name: 'Baki Jessy Justice Julien',
-        position: 'President',
-        image: '/images/executives/2023/Jessy.jpg'
-      },
-      {
-        id: 9,
-        name: 'Simon Delali Atiegar',
-        position: 'Vice President',
-        image: '/images/executives/2023/Simon.jpg'
-      },
-      {
-        id: 10,
-        name: 'Baffoah Takyi Lordia',
-        position: 'General Secretary',
-        image: '/images/executives/2023/Lordia.jpg'
-      },
-      {
-        id: 12,
-        name: 'Agyarko Samuel',
-        position: 'Financial Secretary',
-        image: '/images/executives/2023/Sammy.jpg'
-      },
-      {
-        id: 13,
-        name: 'Akofi-Holison Kwabena',
-        position: 'Public Relation Officer',
-        image: '/images/executives/2023/Holison.jpg'
-      },
-
-      {
-        id: 14,
-        name: 'Peter Derry Arkadius',
-        position: 'Organizing Secretary',
-        image: '/images/executives/2023/Peter.jpg'
-      },      
-
-      {
-        id: 15,
-        name: 'Josephine N.A Asmah',
-        position: 'Women’s Commissioner',
-        image: '/images/executives/2023/Josephine.jpg'
-      },
     ],
     '2023-2024': [
       {
-        id: 16,
+        id: 8,
         name: 'Gyasi Gideon',
         position: 'President',
-        image: '/images/executives/2024/GIDEON.jpg'
+        image: 'https://res.cloudinary.com/dmgk37i6y/image/upload/v1756508726/GIDEON_hcpjnz.jpg'
       },
       {
-        id: 14,
+        id: 9,
         name: 'Owusu Bismark Owiredu',
         position: 'Vice President',
-        image: '/images/executives/2024/BISMARK.jpg'
+        image: 'https://res.cloudinary.com/dmgk37i6y/image/upload/v1756508734/BISMARK_p11fre.jpg'
       },
       {
-        id: 15,
+        id: 10,
         name: 'Gyening Kwadjo Augustine',
         position: 'General Secretary',
-        image: '/images/executives/2024/AUGUSTINE.jpg'
+        image: 'https://res.cloudinary.com/dmgk37i6y/image/upload/v1756508721/AUGUSTINE_rjsajx.jpg'
+      },
+      {
+        id: 11,
+        name: 'Baffuoh Asare-Bediako',
+        position: 'Financial Secretary',
+        image: 'https://res.cloudinary.com/dmgk37i6y/image/upload/v1756508739/BAFFOUH_oracit.jpg'
+      },
+      {
+        id: 12,
+        name: 'Tenkorang Terrance',
+        position: 'Organizing Secretary',
+        image: 'https://res.cloudinary.com/dmgk37i6y/image/upload/v1756508744/TERRANCE_kws4qo.jpg'
+      },
+      {
+        id: 13,
+        name: 'Ankrah Vince Churchill',
+        position: 'Public Relation Officer',
+        image: 'https://res.cloudinary.com/dmgk37i6y/image/upload/v1756508734/VINCE_whiwr9.jpg'
+      },
+
+      {
+        id: 14,
+        name: 'Yawlui Enam Sharon',
+        position: "Women's Commissioner",
+        image: 'https://res.cloudinary.com/dmgk37i6y/image/upload/v1756508729/SHARON_le9xr3.jpg'
+      },
+    ],
+    '2022-2023': [
+      {
+        id: 15,
+        name: 'Baki Jessy Justice Julien',
+        position: 'President',
+        image: 'https://res.cloudinary.com/dmgk37i6y/image/upload/v1756508748/Jessy_ldszim.jpg'
       },
       {
         id: 16,
-        name: 'Baffuoh Asare-Bediako',
-        position: 'Financial Secretary',
-        image: '/images/executives/2024/BAFFOUH.jpg'
+        name: 'Simon Delali Atiegar',
+        position: 'Vice President',
+        image: 'https://res.cloudinary.com/dmgk37i6y/image/upload/v1756508762/Simon_kuebix.jpg'
       },
       {
         id: 17,
-        name: 'Tenkorang Terrance',
-        position: 'Organizing Secretary',
-        image: '/images/executives/2024/TERRANCE.jpg'
+        name: 'Baffoah Takyi Lordia',
+        position: 'General Secretary',
+        image: 'https://res.cloudinary.com/dmgk37i6y/image/upload/v1756508705/Lordia_emicsh.jpg'
       },
       {
         id: 18,
-        name: 'Ankrah Vince Churchill',
+        name: 'Agyarko Samuel',
+        position: 'Financial Secretary',
+        image: 'https://res.cloudinary.com/dmgk37i6y/image/upload/v1756508723/Sammy_ml5egg.jpg'
+      },
+      {
+        id: 19,
+        name: 'Akofi-Holison Kwabena',
         position: 'Public Relation Officer',
-        image: '/images/executives/2024/VINCE.jpg'
+        image: 'https://res.cloudinary.com/dmgk37i6y/image/upload/v1756508695/Holison_ajxnym.jpg'
       },
 
       {
         id: 20,
-        name: 'Yawlui Enam Sharon',
-        position: "Women's Commissioner",
-        image: '/images/executives/2024/SHARON.jpg'
+        name: 'Peter Derry Arkadius',
+        position: 'Organizing Secretary',
+        image: 'https://res.cloudinary.com/dmgk37i6y/image/upload/v1756508708/Peter_myx1ct.jpg'
+      },      
+
+      {
+        id: 21,
+        name: 'Josephine N.A Asmah',
+        position: 'Women’s Commissioner',
+        image: 'https://res.cloudinary.com/dmgk37i6y/image/upload/v1756508698/Josephine_iwlojs.jpg'
       },
-    ]
+    ],
+    
   };
 
   const [selectedYear, setSelectedYear] = useState('2024-2025');
@@ -159,7 +160,12 @@ const ExecutivePage = () => {
       {/* Hero Section */}
       <div className="relative bg-cover bg-center h-96 md:h-[500px]" 
            style={{
-             backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1521737604893-d14cc237f11d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2084&q=80')`
+             backgroundImage: `url('https://res.cloudinary.com/dmgk37i6y/image/upload/v1756565095/executives_ahwozc.jpg')`,
+             backgroundSize: "cover",   // 👈 makes image cover the whole div
+             backgroundPosition: "center", // 👈 keeps it centered
+             backgroundRepeat: "no-repeat", // 👈 prevents tiling
+             height: "800px",           // 👈 set height, otherwise div might collapse
+             width: "100%",  
            }}>
         <div className="absolute inset-0 flex items-center justify-center">
           <h1 className="text-4xl md:text-6xl font-bold text-white text-center">
@@ -228,7 +234,7 @@ const ExecutivePage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {currentExecutives.map((executive) => (
             <div 
-              key={executive.id} 
+               key={`${selectedYear}-${executive.id}`} 
               className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
             >
               <div className="aspect-square bg-gray-200">
