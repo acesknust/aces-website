@@ -3,7 +3,7 @@ import Link from "next/link"
 export default function Hero() {
   return (
     <section className="relative w-full h-screen bg-cover bg-center bg-no-repeat text-white"
-      style={{ backgroundImage: "url('/images/Gallery/homeImage.png')" }}
+      style={{ backgroundImage: "url('https://res.cloudinary.com/dmgk37i6y/image/upload/v1756389771/homeImage_nbql6b.png')" }}
     >
       <div className="absolute inset-0 bg-black bg-opacity-50 z-0"></div>
 

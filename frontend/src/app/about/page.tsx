@@ -84,7 +84,7 @@ const About = () => {
           {/* Group photo */}
           <div className="w-full overflow-hidden">
             <img
-              src="/images/about/aces-group-photo.png"
+              src="https://res.cloudinary.com/dmgk37i6y/image/upload/v1756508620/aces-group-photo_zoxsvy.png"
               alt="ACES KNUST Group Photo"
               className="w-full h-auto object-cover"
             />
