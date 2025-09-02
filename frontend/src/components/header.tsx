@@ -46,6 +46,11 @@ const Header = () => {
       label: 'Scholarships',
       href: '/scholarships',
       isActive: pathname === '/scholarships'
+    },
+    {
+      label: 'Courses',
+      href: '/courses',
+      isActive: pathname === '/courses'
     }
   ]
 
