@@ -49,7 +49,14 @@ const executives = [
     name: "Aba Famous Mawulenu Kwaku",
     position: "Organizing Secretary",
     imageUrl: "https://res.cloudinary.com/dsgq2ukjs/image/upload/v1753835710/organizing_sec_n6hdmu.jpg"
-  }
+  },
+  {
+    id:7,
+    name: "Afua Twumasi Britwum",
+    position: "General Secretary",
+    imageUrl: "https://res.cloudinary.com/dmgk37i6y/image/upload/v1756508739/afua_szlxot.jpg",
+
+  },
 ];
 
 const About = () => {
