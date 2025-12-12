@@ -13,10 +13,7 @@ class ProductDetailView(generics.RetrieveAPIView):
     serializer_class = ProductSerializer
     lookup_field = 'slug'
 
-try:
-    import requests
-except ImportError:
-    requests = None
+import requests
 import uuid
 from django.conf import settings
 from rest_framework import generics, status
@@ -109,9 +106,6 @@ class CreateOrderView(APIView):
             }
         }
 
-        if requests is None:
-             return Response({"error": "Requests library not installed"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
         try:
             response = requests.post(paystack_url, json=payload, headers=headers)
             res_data = response.json()
@@ -146,9 +140,6 @@ class VerifyPaymentView(APIView):
         headers = {
             "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}",
         }
-        
-        if requests is None:
-             return Response({"error": "Requests library not installed"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         try:
             response = requests.get(paystack_url, headers=headers)

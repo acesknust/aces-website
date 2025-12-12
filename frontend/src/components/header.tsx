@@ -1,14 +1,17 @@
 'use client'
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { BiMenu, BiX } from 'react-icons/bi';
+import { BiMenu, BiX, BiShoppingBag } from 'react-icons/bi';
 import Image from 'next/image';
 import { usePathname } from "next/navigation"
 import { motion } from 'framer-motion';
+import { useCart } from '@/context/CartContext';
 
 const Header = () => {
   const [isMenuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
+  const { items } = useCart();
+  const cartCount = items.reduce((acc, item) => acc + item.quantity, 0);
 
   const menu = [
     {
@@ -26,7 +29,7 @@ const Header = () => {
       href: '/executives',
       isActive: pathname === '/executives'
     },
- 
+
     {
       label: 'Staff',
       href: '/department',
@@ -104,6 +107,14 @@ const Header = () => {
               )}
             </Link>
           ))}
+          <Link href="/shop/cart" className="relative hover:text-blue-950 transition duration-300">
+            <BiShoppingBag size={24} />
+            {cartCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                {cartCount}
+              </span>
+            )}
+          </Link>
         </nav>
 
         {/* Mobile Menu */}
@@ -114,6 +125,9 @@ const Header = () => {
                 {item.label}
               </Link>
             ))}
+            <Link href="/shop/cart" className="relative text-blue-600 py-2 transition duration-300 flex items-center">
+              Cart {cartCount > 0 && <span className="ml-2 bg-red-600 text-white text-xs font-bold rounded-full px-2 py-0.5">{cartCount}</span>}
+            </Link>
           </div>
         )}
       </div>

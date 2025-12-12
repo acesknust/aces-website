@@ -23,7 +23,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <Link href={`/shop/${product.slug}`} className="group block overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition hover:shadow-lg">
             <div className="relative h-64 w-full overflow-hidden bg-gray-100">
                 <Image
-                    src={product.image || '/images/placeholder.png'}
+                    src={product.image || 'https://via.placeholder.com/400x400?text=No+Image'}
                     alt={product.name}
                     fill
                     className="object-cover transition duration-500 group-hover:scale-105"

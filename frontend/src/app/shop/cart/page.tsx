@@ -94,7 +94,7 @@ export default function CartPage() {
                                     <div className="flex-shrink-0">
                                         <div className="relative h-24 w-24 rounded-md border-gray-200 bg-gray-100 overflow-hidden">
                                             <Image
-                                                src={item.image || '/images/placeholder.png'}
+                                                src={item.image || 'https://via.placeholder.com/400x400?text=No+Image'}
                                                 alt={item.name}
                                                 fill
                                                 className="object-cover object-center"

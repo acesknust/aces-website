@@ -26,7 +26,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
                     {/* Image gallery */}
                     <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-gray-100 sm:aspect-[2/3]">
                         <Image
-                            src={product.image || '/images/placeholder.png'}
+                            src={product.image || 'https://via.placeholder.com/600x600?text=No+Image'}
                             alt={product.name}
                             fill
                             className="object-cover object-center"
@@ -52,4 +52,22 @@ export default async function ProductPage({ params }: { params: { slug: string }
                             <div className="flex items-center">
                                 <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${product.is_active ? 'bg-green-50 text-green-700 ring-green-600/20' : 'bg-red-50 text-red-700 ring-red-600/20'}`}>
                                     {product.is_active ? 'In Stock' : 'Out of Stock'}
+                                </span>
+                                <span className="ml-2 text-sm text-gray-500">Category: {product.category?.name}</span>
+                            </div>
+                        </div>
+
+                        <div className="mt-10 flex">
+                            <AddToCartButton product={{
+                                id: product.id,
+                                name: product.name,
+                                price: product.price,
+                                image: product.image
+                            }} />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
 }

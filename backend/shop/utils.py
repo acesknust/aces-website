@@ -1,7 +1,4 @@
-try:
-    import qrcode
-except ImportError:
-    qrcode = None
+import qrcode
 from io import BytesIO
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
@@ -12,9 +9,6 @@ def generate_qr_code(data):
     """
     Generates a QR code for the given data and returns it as a base64 encoded string.
     """
-    if qrcode is None:
-        return "data:image/png;base64,mocked_qr_code"
-
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_L,

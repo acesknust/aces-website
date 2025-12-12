@@ -4,6 +4,7 @@ Django settings for core project.
 
 from pathlib import Path
 import os
+from azure.storage.blob import BlobServiceClient
 from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
