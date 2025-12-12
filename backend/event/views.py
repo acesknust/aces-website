@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework import generics, permissions
-from azure.storage.blob import BlobServiceClient
+# from azure.storage.blob import BlobServiceClient
 from django.conf import settings
 from rest_framework.response import Response
 from uuid import uuid4
@@ -19,6 +19,13 @@ class EventDetail(generics.RetrieveAPIView):
     permission_classes = [permissions.AllowAny]
     queryset = Event.objects.all()
     serializer_class = EventSerializer
+
+def upload_to_azure_storage(file, container_name, blob_name):
+    pass
+    # blob_service_client = BlobServiceClient.from_connection_string(settings.AZURE_STORAGE_CONNECTION_STRING)
+    # container_client = blob_service_client.get_container_client(container_name)
+    # blob_client = container_client.get_blob_client(blob_name)
+    # blob_client.upload_blob(file)
 
 class CreateEvent(generics.CreateAPIView):
     """Create a new event only for admin users"""
@@ -40,13 +47,6 @@ class CreateEvent(generics.CreateAPIView):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=201, headers=headers)
-
-def upload_to_azure_storage(file, container_name, blob_name):
-    blob_service_client = BlobServiceClient.from_connection_string(settings.AZURE_STORAGE_CONNECTION_STRING)
-    container_client = blob_service_client.get_container_client(container_name)
-    blob_client = container_client.get_blob_client(blob_name)
-
-    blob_client.upload_blob(file)
 
 class EditEvent(generics.RetrieveUpdateAPIView):
     """Edit an event"""

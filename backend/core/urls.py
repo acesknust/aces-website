@@ -17,8 +17,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic.base import TemplateView
-from rest_framework.documentation import include_docs_urls
-from rest_framework.schemas import get_schema_view
+# from rest_framework.documentation import include_docs_urls
+# from rest_framework.schemas import get_schema_view
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -33,10 +33,11 @@ urlpatterns = [
     path('api/scholarships/', include('scholarship.urls', namespace='scholarship')),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('api/user/', include('users.urls', namespace='users')),
-    path('docs/', include_docs_urls(title='ACES WEBSITE API')),
-    path('schema/', get_schema_view(
-        title="ACES WEBSITE API",
-        description="API for all things ...",
-        version="1.0.0"
-    ), name='openapi-schema'),
+    path('api/shop/', include('shop.urls')),
+    # path('docs/', include_docs_urls(title='ACES WEBSITE API')),
+    # path('schema/', get_schema_view(
+    #     title="ACES WEBSITE API",
+    #     description="API for all things ...",
+    #     version="1.0.0"
+    # ), name='openapi-schema'),
 ]
