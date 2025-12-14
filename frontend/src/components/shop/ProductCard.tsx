@@ -20,28 +20,32 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     return (
-        <Link href={`/shop/${product.slug}`} className="group block overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition hover:shadow-lg">
-            <div className="relative h-64 w-full overflow-hidden bg-gray-100">
+        <Link href={`/shop/${product.slug}`} className="group block overflow-hidden rounded-2xl bg-white shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ring-1 ring-gray-100">
+            <div className="relative h-72 w-full overflow-hidden bg-gray-50">
                 <Image
                     src={product.image || 'https://via.placeholder.com/400x400?text=No+Image'}
                     alt={product.name}
                     fill
-                    className="object-cover transition duration-500 group-hover:scale-105"
+                    className="object-contain transition duration-500 group-hover:scale-110 p-4"
                 />
+                {/* Optional: Add 'New' or 'Sale' badge here if data available */}
             </div>
 
-            <div className="p-4">
-                <p className="text-xs text-gray-500">{product.category?.name}</p>
-                <h3 className="mt-1 text-lg font-medium text-gray-900 group-hover:text-blue-600">
+            <div className="p-5">
+                <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">{product.category?.name}</p>
+                <h3 className="mt-2 text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
                     {product.name}
                 </h3>
-                <p className="mt-1 text-sm font-semibold text-gray-900">
+                <p className="mt-2 text-lg font-bold text-blue-600">
                     GHS {product.price}
                 </p>
 
-                <button className="mt-4 w-full rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700">
+                <div className="mt-4 flex items-center text-sm font-medium text-blue-600 group-hover:underline">
                     View Details
-                </button>
+                    <svg className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                </div>
             </div>
         </Link>
     );

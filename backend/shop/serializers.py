@@ -1,24 +1,30 @@
 from rest_framework import serializers
-from .models import Category, Product, Order, OrderItem
+from .models import Category, Product, Order, OrderItem, ProductImage
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ['id', 'name', 'slug']
 
+class ProductImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductImage
+        fields = ['id', 'image', 'color']
+
 class ProductSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
+    images = ProductImageSerializer(many=True, read_only=True)
     
     class Meta:
         model = Product
-        fields = ['id', 'name', 'slug', 'description', 'price', 'image', 'stock', 'category']
+        fields = ['id', 'name', 'slug', 'description', 'price', 'image', 'stock', 'is_active', 'category', 'images']
 
 class OrderItemSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source='product.name', read_only=True)
     
     class Meta:
         model = OrderItem
-        fields = ['product_name', 'price', 'quantity']
+        fields = ['product_name', 'price', 'quantity', 'selected_color']
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)

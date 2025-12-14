@@ -83,13 +83,24 @@ const Header = () => {
         </div>
 
 
-        {/* Mobile Menu Icon */}
-        <div className="md:hidden p-2 mr-4 ">
+        {/* Mobile Navigation Controls */}
+        <div className="flex items-center lg:hidden">
+          {/* Mobile Cart Icon - Always Visible */}
+          <Link href="/shop/cart" className="relative p-2 mr-2 text-blue-950 hover:text-blue-700 transition-colors">
+            <BiShoppingBag size={24} />
+            {cartCount > 0 && (
+              <span className="absolute top-0 right-0 bg-red-600 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center shadow-sm">
+                {cartCount}
+              </span>
+            )}
+          </Link>
+
+          {/* Mobile Menu Toggle */}
           <button
             onClick={toggleMenu}
-            className="text-white focus:outline-none focus:text-white"
+            className="p-2 text-blue-950 focus:outline-none"
           >
-            {isMenuOpen ? <BiX size={24} className='text-blue-950' /> : <BiMenu size={24} className='text-blue-950 ' />}
+            {isMenuOpen ? <BiX size={28} /> : <BiMenu size={28} />}
           </button>
         </div>
 
@@ -125,9 +136,7 @@ const Header = () => {
                 {item.label}
               </Link>
             ))}
-            <Link href="/shop/cart" className="relative text-blue-600 py-2 transition duration-300 flex items-center">
-              Cart {cartCount > 0 && <span className="ml-2 bg-red-600 text-white text-xs font-bold rounded-full px-2 py-0.5">{cartCount}</span>}
-            </Link>
+
           </div>
         )}
       </div>

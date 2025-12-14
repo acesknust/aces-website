@@ -25,8 +25,11 @@ export default async function ShopPage() {
     return (
         <div className="bg-white min-h-screen pt-20"> {/* Added pt-20 for header spacing */}
             <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 sm:py-12 lg:max-w-7xl lg:px-8">
-                <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-bold tracking-tight text-gray-900">ACES Merchandise</h2>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 sm:mb-12">
+                    <div className="mb-4 sm:mb-0">
+                        <h2 className="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">ACES Merchandise</h2>
+                        <p className="mt-2 text-base text-gray-500">Rep your department with verified merch.</p>
+                    </div>
                     {/* Filter/Sort could go here */}
                 </div>
 
