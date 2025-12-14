@@ -32,7 +32,7 @@ export default function CartPage() {
                 items: items.map(item => ({ id: item.id, quantity: item.quantity })),
             };
 
-            const response = await fetch('http://127.0.0.1:8000/api/shop/orders/', {
+            const response = await fetch('http://127.0.0.1:8000/api/shop/orders/create/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -41,7 +41,8 @@ export default function CartPage() {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to create order');
+                const errData = await response.json().catch(() => ({}));
+                throw new Error(errData.error || errData.detail || `Failed to create order: ${response.statusText}`);
             }
 
             const data = await response.json();
@@ -57,7 +58,12 @@ export default function CartPage() {
 
         } catch (error) {
             console.error('Checkout error:', error);
-            alert('Something went wrong. Please try again.');
+
+            let errorMessage = 'Something went wrong. Please try again.';
+            if (error instanceof Error) {
+                errorMessage = error.message;
+            }
+            alert(`Checkout Error: ${errorMessage}`);
         } finally {
             setLoading(false);
         }
@@ -191,7 +197,7 @@ export default function CartPage() {
                                     <input type="tel" name="phone" id="phone" required value={formData.phone} onChange={handleInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border" />
                                 </div>
                                 <div>
-                                    <label htmlFor="address" className="block text-sm font-medium text-gray-700">Address / Delivery Location</label>
+                                    <label htmlFor="address" className="block text-sm font-medium text-gray-700">Address / Delivery Location (Hostel and Room Number)</label>
                                     <textarea name="address" id="address" required value={formData.address} onChange={handleInputChange} rows={3} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border" />
                                 </div>
 

@@ -5,11 +5,16 @@ import { notFound } from 'next/navigation';
 import AddToCartButton from '@/components/shop/AddToCartButton';
 
 async function getProduct(slug: string) {
-    const res = await fetch(`http://127.0.0.1:8000/api/shop/products/${slug}/`, { cache: 'no-store' });
-    if (!res.ok) {
-        return null;
+    try {
+        const res = await fetch(`http://127.0.0.1:8000/api/shop/products/${slug}/`, { cache: 'no-store' });
+        if (!res.ok) {
+            return null;
+        }
+        return res.json();
+    } catch (error) {
+        console.error("Failed to fetch product:", error);
+        return null; // Return null to trigger 404/Not Found instead of crashing
     }
-    return res.json();
 }
 
 export default async function ProductPage({ params }: { params: { slug: string } }) {

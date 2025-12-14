@@ -41,18 +41,26 @@ export default function SuccessPage() {
         const verifyPayment = async () => {
             try {
                 const res = await fetch(`http://127.0.0.1:8000/api/shop/verify-payment/?reference=${reference}`);
-                const data = await res.json();
+
+                let data;
+                try {
+                    data = await res.json();
+                } catch (jsonError) {
+                    // If JSON parsing fails, try to read text to show as error
+                    const text = await res.text().catch(() => 'No body');
+                    throw new Error(`Invalid JSON response (${res.status}): ${text.substring(0, 200)}`);
+                }
 
                 if (res.ok) {
                     setOrder(data.order);
                     setQrCode(data.qr_code);
-                    clearCart(); // Clear cart on success
+                    clearCart();
                 } else {
-                    setError(data.error || 'Payment verification failed.');
+                    setError(data.error || `Verification failed: ${res.statusText}`);
                 }
-            } catch (err) {
+            } catch (err: any) {
                 console.error('Verification error:', err);
-                setError('An error occurred while verifying payment.');
+                setError(err.message || 'An error occurred while verifying payment.');
             } finally {
                 setLoading(false);
             }
