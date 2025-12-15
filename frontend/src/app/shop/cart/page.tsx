@@ -31,7 +31,7 @@ export default function CartPage() {
         try {
             const orderData = {
                 ...formData,
-                items: items.map(item => ({ id: item.id, quantity: item.quantity })),
+                items: items.map(item => ({ id: item.id, quantity: item.quantity, color: item.color, size: item.size })),
             };
 
             const response = await fetch(`${API_BASE_URL}/api/shop/orders/create/`, {
@@ -134,6 +134,11 @@ export default function CartPage() {
                                                             </span>
                                                         ) : 'Standard'}
                                                     </p>
+                                                    {item.size && (
+                                                        <p className="text-gray-500 pl-2">
+                                                            Size: <span className="font-semibold text-gray-900">{item.size}</span>
+                                                        </p>
+                                                    )}
                                                 </div>
                                                 <p className="mt-2 text-lg font-bold text-blue-600">GHS {item.price}</p>
                                             </div>
@@ -143,10 +148,10 @@ export default function CartPage() {
                                                     Quantity, {item.name}
                                                 </label>
                                                 <select
-                                                    id={`quantity-${item.id}-${item.color || 'def'}`}
+                                                    id={`quantity-${item.id}-${item.color || 'def'}-${item.size || 'def'}`}
                                                     name={`quantity-${item.id}`}
                                                     value={item.quantity}
-                                                    onChange={(e) => updateQuantity(item.id, parseInt(e.target.value), item.color)}
+                                                    onChange={(e) => updateQuantity(item.id, parseInt(e.target.value), item.color, item.size)}
                                                     className="max-w-full rounded-md border border-gray-200 py-1.5 text-left text-base font-medium leading-5 text-gray-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
                                                 >
                                                     {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
@@ -157,7 +162,7 @@ export default function CartPage() {
                                                 <div className="absolute right-0 top-0">
                                                     <button
                                                         type="button"
-                                                        onClick={() => removeItem(item.id, item.color)}
+                                                        onClick={() => removeItem(item.id, item.color, item.size)}
                                                         className="-m-2 inline-flex p-2 text-gray-400 hover:text-red-500 transition-colors"
                                                     >
                                                         <span className="sr-only">Remove</span>

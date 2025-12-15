@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
+// ... (imports)
 export interface CartItem {
     id: number;
     name: string;
@@ -9,17 +10,17 @@ export interface CartItem {
     image: string;
     quantity: number;
     color?: string; // Optional color
+    size?: string;  // Optional size
 }
 
 interface CartContextType {
     items: CartItem[];
     addItem: (item: CartItem) => void;
-    removeItem: (id: number, color?: string) => void;
-    updateQuantity: (id: number, quantity: number, color?: string) => void;
+    removeItem: (id: number, color?: string, size?: string) => void;
+    updateQuantity: (id: number, quantity: number, color?: string, size?: string) => void;
     clearCart: () => void;
     total: number;
 }
-
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -44,9 +45,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const addItem = (newItem: CartItem) => {
         setItems((prevItems) => {
-            // Find item with same ID AND same color (if applicable)
+            // Find item with same ID AND same color AND same size
             const existingItemIndex = prevItems.findIndex((item) =>
-                item.id === newItem.id && item.color === newItem.color
+                item.id === newItem.id && item.color === newItem.color && item.size === newItem.size
             );
 
             if (existingItemIndex > -1) {
@@ -61,15 +62,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
     };
 
-    const removeItem = (id: number, color?: string) => {
-        setItems((prevItems) => prevItems.filter((item) => !(item.id === id && item.color === color)));
+    const removeItem = (id: number, color?: string, size?: string) => {
+        setItems((prevItems) => prevItems.filter((item) => !(item.id === id && item.color === color && item.size === size)));
     };
 
-    const updateQuantity = (id: number, quantity: number, color?: string) => {
+    const updateQuantity = (id: number, quantity: number, color?: string, size?: string) => {
         if (quantity < 1) return;
         setItems((prevItems) =>
             prevItems.map((item) =>
-                (item.id === id && item.color === color) ? { ...item, quantity } : item
+                (item.id === id && item.color === color && item.size === size) ? { ...item, quantity } : item
             )
         );
     };

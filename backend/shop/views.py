@@ -16,13 +16,14 @@ class ProductDetailView(generics.RetrieveAPIView):
 import requests
 import uuid
 from django.conf import settings
+from django.db import transaction
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from .models import Product, Category, Order, OrderItem
 from .serializers import ProductSerializer, CategorySerializer, OrderSerializer
-from .utils import generate_qr_code, send_order_email
+from .utils import send_order_email
 
 class ProductListView(generics.ListAPIView):
     queryset = Product.objects.filter(is_active=True)
@@ -51,16 +52,18 @@ class CreateOrderView(APIView):
             for item in cart_items:
                 product_id = item.get('id')
                 quantity = item.get('quantity', 1)
+                color = item.get('color')
+                size = item.get('size')
                 
                 try:
                     product = Product.objects.get(id=product_id, is_active=True)
                     price = product.price
                     total_amount += price * quantity
-                    order_items_data.append((product, quantity, price))
+                    order_items_data.append((product, quantity, price, color, size))
                 except Product.DoesNotExist:
                     return Response({"error": f"Product with ID {product_id} not found"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # 2. Create Order (Pending)
+             # 2. Create Order (Pending)
             order = Order.objects.create(
                 user=request.user if request.user.is_authenticated else None,
                 full_name=user_details.get('full_name'),
@@ -71,12 +74,14 @@ class CreateOrderView(APIView):
                 status='PENDING'
             )
 
-            for product, quantity, price in order_items_data:
+            for product, quantity, price, color, size in order_items_data:
                 OrderItem.objects.create(
                     order=order,
                     product=product,
                     quantity=quantity,
-                    price=price
+                    price=price,
+                    selected_color=color,
+                    selected_size=size
                 )
 
             # 3. Initialize Paystack Transaction
@@ -187,31 +192,41 @@ class VerifyPaymentView(APIView):
         
         # Helper to finish verification
         def complete_verification(order_obj):
-             if order_obj.status != 'PAID':
-                order_obj.status = 'PAID'
-                order_obj.verification_code = str(uuid.uuid4())
-                order_obj.save()
-                
-                qr_code = generate_qr_code(order_obj.verification_code)
-                try:
-                    send_order_email(order_obj, qr_code)
-                except:
-                    pass # Email might fail in local env without creds
-                
-                serializer = OrderSerializer(order_obj)
-                return Response({
-                    "message": "Payment verified successfully",
-                    "order": serializer.data,
-                    "qr_code": qr_code
-                }, status=status.HTTP_200_OK)
-             else:
-                qr_code = generate_qr_code(order_obj.verification_code)
-                serializer = OrderSerializer(order_obj)
-                return Response({
-                    "message": "Order already paid",
-                    "order": serializer.data,
-                    "qr_code": qr_code
-                }, status=status.HTTP_200_OK)
+             try:
+                 with transaction.atomic():
+                    # Refresh to ensure latest status and lock
+                    current_order = Order.objects.select_for_update().get(id=order_obj.id)
+                    
+                    if current_order.status == 'PAID':
+                        serializer = OrderSerializer(current_order)
+                        return Response({
+                            "message": "Order already paid",
+                            "order": serializer.data
+                        }, status=status.HTTP_200_OK)
+
+                    # Decrement Stock
+                    for item in current_order.items.all():
+                        # Lock Product row to prevent race conditions on stock
+                        product = Product.objects.select_for_update().get(id=item.product.id)
+                        product.stock -= item.quantity
+                        product.save()
+
+                    current_order.status = 'PAID'
+                    current_order.verification_code = str(uuid.uuid4())
+                    current_order.save()
+                    
+                    try:
+                        send_order_email(current_order)
+                    except:
+                        pass # Email might fail in local env without creds
+                    
+                    serializer = OrderSerializer(current_order)
+                    return Response({
+                        "message": "Payment verified successfully",
+                        "order": serializer.data
+                    }, status=status.HTTP_200_OK)
+             except Exception as e:
+                 return Response({"error": f"Verification failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         # MOCK VERIFICATION
         if reference.startswith('mock-'):

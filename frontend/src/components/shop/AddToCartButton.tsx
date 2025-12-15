@@ -11,10 +11,11 @@ interface AddToCartButtonProps {
         image: string;
     };
     selectedColor?: string;
+    selectedSize?: string;
     disabled?: boolean;
 }
 
-const AddToCartButton: React.FC<AddToCartButtonProps> = ({ product, selectedColor, disabled }) => {
+const AddToCartButton: React.FC<AddToCartButtonProps> = ({ product, selectedColor, selectedSize, disabled }) => {
     const { addItem } = useCart();
     const [isAdded, setIsAdded] = useState(false);
 
@@ -28,6 +29,7 @@ const AddToCartButton: React.FC<AddToCartButtonProps> = ({ product, selectedColo
             image: product.image,
             quantity: 1,
             color: selectedColor,
+            size: selectedSize,
         };
         addItem(item);
         setIsAdded(true);

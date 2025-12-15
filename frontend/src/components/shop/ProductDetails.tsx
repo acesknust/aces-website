@@ -28,6 +28,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
     // Determine initial image (main image)
     const [selectedImage, setSelectedImage] = useState(product.image);
     const [selectedColor, setSelectedColor] = useState<string | undefined>(undefined);
+    const [selectedSize, setSelectedSize] = useState<string | undefined>(undefined);
 
     // Collect all available images including main
     const allImages = [
@@ -113,7 +114,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
                 {/* Variants / Color Selection */}
                 {hasVariants && (
                     <div className="mt-8">
-                        <h3 className="text-sm font-medium text-gray-900 mb-4">Select Option</h3>
+                        <h3 className="text-sm font-medium text-gray-900 mb-4">Select Styles</h3>
                         <div className="flex flex-wrap gap-3">
                             {product.images?.filter(img => img.color).map((variant) => (
                                 <button
@@ -128,37 +129,55 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
                                 </button>
                             ))}
                         </div>
-                        {!selectedColor && (
-                            <p className="mt-3 text-sm text-amber-600 flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                Please select an option above
-                            </p>
-                        )}
                     </div>
                 )}
+
+                {/* Size Selection */}
+                <div className="mt-8">
+                    <h3 className="text-sm font-medium text-gray-900 mb-4">Select Size</h3>
+                    <div className="flex flex-wrap gap-3">
+                        {['S', 'M', 'L', 'XL', 'XXL'].map((size) => (
+                            <button
+                                key={size}
+                                onClick={() => setSelectedSize(size)}
+                                className={`h-12 w-12 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-200 border ${selectedSize === size
+                                    ? 'bg-black text-white border-black ring-2 ring-gray-200'
+                                    : 'bg-white text-gray-900 border-gray-200 hover:border-gray-900'
+                                    }`}
+                            >
+                                {size}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {(!selectedColor && hasVariants) || !selectedSize ? (
+                    <p className="mt-6 text-sm text-amber-600 flex items-center bg-amber-50 p-2 rounded-lg w-fit">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Please select {hasVariants && !selectedColor ? 'a style' : ''} {hasVariants && !selectedColor && !selectedSize ? 'and' : ''} {!selectedSize ? 'a size' : ''}
+                    </p>
+                ) : null}
 
                 <div className="mt-8">
                     <h3 className="sr-only">Description</h3>
                     <div className="prose prose-sm text-gray-600 leading-relaxed" dangerouslySetInnerHTML={{ __html: product.description }} />
                 </div>
 
-                {/* Add to Cart Section - Sticky styling could be added if requested, keeping it standard for now */}
+                {/* Add to Cart Section */}
                 <div className="mt-10 pt-6 border-t border-gray-100 flex flex-col gap-4">
                     <AddToCartButton
                         product={{
                             id: product.id,
                             name: product.name,
                             price: product.price,
-                            image: selectedImage // Add variant image to cart instead of main image if selected
+                            image: selectedImage
                         }}
                         selectedColor={selectedColor}
-                        disabled={hasVariants && !selectedColor}
+                        selectedSize={selectedSize}
+                        disabled={(hasVariants && !selectedColor) || !selectedSize}
                     />
-                    {hasVariants && !selectedColor && (
-                        <p className="text-center text-xs text-gray-400">Select an option to enable checkout</p>
-                    )}
                 </div>
             </div>
         </div>

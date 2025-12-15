@@ -25,7 +25,6 @@ export default function SuccessPage() {
     const reference = searchParams.get('reference');
     const [loading, setLoading] = useState(true);
     const [order, setOrder] = useState<Order | null>(null);
-    const [qrCode, setQrCode] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const { clearCart } = useCart();
     const router = useRouter();
@@ -53,7 +52,6 @@ export default function SuccessPage() {
 
                 if (res.ok) {
                     setOrder(data.order);
-                    setQrCode(data.qr_code);
                     clearCart();
                 } else {
                     setError(data.error || `Verification failed: ${res.statusText}`);
@@ -147,12 +145,12 @@ export default function SuccessPage() {
                                     <p className="text-sm text-gray-600">{order?.email}</p>
                                 </div>
                                 <div className="mt-6 md:mt-0 text-center">
-                                    {qrCode && (
-                                        <div className="inline-block p-2 bg-white border border-gray-200 rounded-lg">
-                                            <img src={qrCode} alt="Verification QR Code" width={150} height={150} />
-                                        </div>
-                                    )}
-                                    <p className="text-xs text-gray-500 mt-2">Scan to Verify</p>
+                                    <div className="inline-block p-4 bg-green-50 rounded-full border border-green-100">
+                                        <svg className="h-12 w-12 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </div>
+                                    <p className="text-xs text-green-600 mt-2 font-medium">Verified Paid</p>
                                 </div>
                             </div>
 

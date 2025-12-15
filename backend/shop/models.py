@@ -76,7 +76,9 @@ class OrderItem(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2) # Snapshot of price at purchase
     quantity = models.PositiveIntegerField(default=1)
     selected_color = models.CharField(max_length=50, blank=True, null=True)
+    selected_size = models.CharField(max_length=20, blank=True, null=True)
 
     def __str__(self):
         color_info = f" ({self.selected_color})" if self.selected_color else ""
-        return f"{self.quantity} x {self.product.name}{color_info}"
+        size_info = f" [{self.selected_size}]" if self.selected_size else ""
+        return f"{self.quantity} x {self.product.name}{color_info}{size_info}"
