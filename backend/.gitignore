@@ -6,6 +6,8 @@ db.sqlite3
 venv/
 env/
 
+
 # Media
 media/
 staticfiles/
+products/

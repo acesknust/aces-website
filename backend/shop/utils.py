@@ -83,4 +83,4 @@ def send_order_email(order):
         bcc=['semanusebuava@gmail.com'] # Admin verification copy
     )
     email.content_subtype = "html"
-    email.send(fail_silently=True)
+    email.send(fail_silently=False)

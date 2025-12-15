@@ -193,6 +193,7 @@ class VerifyPaymentView(APIView):
         # Helper to finish verification
         def complete_verification(order_obj):
              try:
+                 # 1. ATOMIC DB UPDATES
                  with transaction.atomic():
                     # Refresh to ensure latest status and lock
                     current_order = Order.objects.select_for_update().get(id=order_obj.id)
@@ -214,19 +215,23 @@ class VerifyPaymentView(APIView):
                     current_order.status = 'PAID'
                     current_order.verification_code = str(uuid.uuid4())
                     current_order.save()
-                    
-                    try:
-                        send_order_email(current_order)
-                    except:
-                        pass # Email might fail in local env without creds
-                    
-                    serializer = OrderSerializer(current_order)
-                    return Response({
-                        "message": "Payment verified successfully",
-                        "order": serializer.data
-                    }, status=status.HTTP_200_OK)
              except Exception as e:
                  return Response({"error": f"Verification failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+             # 2. SEND EMAIL (Outside Transaction)
+             try:
+                # Re-fetch order to be safe (though current_order variable persists in Python scope)
+                # Just using current_order is fine here as it's local variable.
+                send_order_email(current_order)
+             except Exception as e:
+                print(f"EMAIL ERROR: {e}") # Debug print
+
+             # 3. RETURN RESPONSE
+             serializer = OrderSerializer(current_order)
+             return Response({
+                "message": "Payment verified successfully",
+                "order": serializer.data
+             }, status=status.HTTP_200_OK)
 
         # MOCK VERIFICATION
         if reference.startswith('mock-'):
