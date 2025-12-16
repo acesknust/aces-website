@@ -40,6 +40,12 @@ const nextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "*.digitaloceanspaces.com",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
   async rewrites() {
