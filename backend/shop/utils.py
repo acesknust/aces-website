@@ -143,10 +143,15 @@ def send_admin_email(order, admin_email='semanusebuava@gmail.com'):
     Sends an "Ultimate Premium" notification to the Admin.
     """
     subject = f"✨ New Order #{order.id} - GHS {order.total_amount}"
-    # TODO: Change this to the real production URL or use settings.SITE_URL
-    # We point to the list view, filtering for the specific order ID using the query parameter ?q={order.id}
-    # This allows viewing the order row in the table, without immediately opening the change form (though the change form is now read-only anyway).
-    admin_url = f"http://127.0.0.1:8000/admin/shop/order/?q={order.id}"
+    # Determine the Admin URL dynamically
+    try:
+        # Use the DigitalOcean App URL if available in CSRF_TRUSTED_ORIGINS, or fallback to CORS allowed
+        # First check if we have the specific backend URL known
+        base_url = "https://aces-shop-backend-w8ro7.ondigitalocean.app"
+    except:
+        base_url = "http://127.0.0.1:8000"
+        
+    admin_url = f"{base_url}/admin/shop/order/?q={order.id}"
     
     # Generate Items Rows with better styling
     items_rows = ""
