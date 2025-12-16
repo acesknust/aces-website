@@ -2,8 +2,8 @@ import React from 'react';
 import ProductGrid from '@/components/shop/ProductGrid';
 
 async function getProducts() {
-    // Production-ready: Use environment variable, fallback to localhost for dev, enable ISR caching
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+    // Production-ready: Use environment variable, fallback to production backend
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://aces-shop-backend-w8ro7.ondigitalocean.app';
     const res = await fetch(`${apiUrl}/api/shop/products/`, {
         cache: 'no-store' // Disable caching entirely - always fetch fresh data
     });

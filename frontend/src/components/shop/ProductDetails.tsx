@@ -60,7 +60,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
     const getImageUrl = (img?: string) => {
         if (!img) return 'https://via.placeholder.com/600x600?text=No+Image';
         if (img.startsWith('http')) return img;
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://aces-shop-backend-w8ro7.ondigitalocean.app';
         return `${baseUrl}${img}`;
     };
 
