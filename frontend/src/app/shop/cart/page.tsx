@@ -91,7 +91,7 @@ export default function CartPage() {
                         </svg>
                     </div>
                     <h2 className="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl font-display">Your Cart is Empty</h2>
-                    <p className="mt-4 text-lg text-gray-500 max-w-sm mx-auto">Looks like you haven't discovered our awesome merch yet.</p>
+                    <p className="mt-4 text-lg text-gray-500 max-w-sm mx-auto">Looks like you haven&apos;t discovered our awesome merch yet.</p>
                     <div className="mt-10">
                         <Link href="/shop" className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-bold rounded-full text-white bg-blue-600 hover:bg-blue-700 md:text-lg shadow-lg hover:shadow-blue-500/30 hover:-translate-y-1 transition-all duration-200">
                             Start Shopping &rarr;

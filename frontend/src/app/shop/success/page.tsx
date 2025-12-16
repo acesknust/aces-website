@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -25,7 +25,8 @@ interface Order {
     }[];
 }
 
-export default function SuccessPage() {
+
+function SuccessContent() {
     const searchParams = useSearchParams();
     const reference = searchParams.get('reference');
     const [loading, setLoading] = useState(true);
@@ -271,5 +272,20 @@ export default function SuccessPage() {
                 </div>
             </motion.div>
         </div>
+    );
+}
+
+export default function SuccessPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex min-h-screen items-center justify-center bg-gray-50">
+                <div className="text-center">
+                    <div className="h-16 w-16 animate-spin rounded-full border-4 border-blue-600 border-t-transparent mx-auto"></div>
+                    <p className="mt-4 text-lg font-medium text-gray-900 animate-pulse">Loading...</p>
+                </div>
+            </div>
+        }>
+            <SuccessContent />
+        </Suspense>
     );
 }
