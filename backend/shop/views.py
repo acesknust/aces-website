@@ -104,8 +104,14 @@ class CreateOrderView(APIView):
             # Amount in kobo (GHS * 100)
             amount_kobo = int(total_amount * 100)
             
-            # Use localhost:3000 for local dev (index 1 in settings), or fallback to first one
-            base_url = "http://localhost:3000" 
+            # Use the first Allowed Origin as the Base URL (Production or Dev)
+            # Typically this will be the Vercel frontend URL in production
+            try:
+                # CORS_ALLOWED_ORIGINS is a list, we take the first one which should be the main frontend
+                base_url = settings.CORS_ALLOWED_ORIGINS[0] 
+            except (IndexError, AttributeError):
+                base_url = "http://localhost:3000"
+
             callback_url = f"{base_url}/shop/success" # Redirect to frontend success page
             
             payload = {
