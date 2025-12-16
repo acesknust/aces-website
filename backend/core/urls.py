@@ -15,7 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.views.generic.base import TemplateView
 # from rest_framework.documentation import include_docs_urls
 # from rest_framework.schemas import get_schema_view
@@ -23,6 +23,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+from django.views.static import serve
 
 from django.conf import settings
 from django.conf.urls.static import static
@@ -43,6 +44,7 @@ urlpatterns = [
     #     description="API for all things ...",
     #     version="1.0.0"
     # ), name='openapi-schema'),
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
 ]
 
 if settings.DEBUG:
