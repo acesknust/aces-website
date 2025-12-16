@@ -134,8 +134,30 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# DigitalOcean Spaces Configuration (S3-compatible) for Media Files
+USE_SPACES = os.environ.get('USE_SPACES', 'False') == 'True'
+
+if USE_SPACES:
+    # Production: Use DigitalOcean Spaces for persistent media storage
+    AWS_ACCESS_KEY_ID = os.environ.get('SPACES_ACCESS_KEY')
+    AWS_SECRET_ACCESS_KEY = os.environ.get('SPACES_SECRET_KEY')
+    AWS_STORAGE_BUCKET_NAME = os.environ.get('SPACES_BUCKET_NAME', 'aces-shop-media')
+    AWS_S3_REGION_NAME = os.environ.get('SPACES_REGION', 'nyc3')
+    AWS_S3_ENDPOINT_URL = f"https://{AWS_S3_REGION_NAME}.digitaloceanspaces.com"
+    AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
+    AWS_DEFAULT_ACL = 'public-read'
+    AWS_S3_FILE_OVERWRITE = False
+    AWS_QUERYSTRING_AUTH = False
+    
+    # Use Spaces for media files
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    MEDIA_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.{AWS_S3_REGION_NAME}.digitaloceanspaces.com/"
+    print(f"MEDIA STORAGE: DigitalOcean Spaces ({AWS_STORAGE_BUCKET_NAME})")
+else:
+    # Local development: use filesystem
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    print("MEDIA STORAGE: Local Filesystem")
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.CustomUser'

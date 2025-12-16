@@ -34,6 +34,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                     src={getImageUrl(product.image)}
                     alt={product.name}
                     fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    priority={false}
+                    loading="eager"
                     className="object-contain transition duration-500 group-hover:scale-110 p-6 mix-blend-multiply"
                 />
                 <div className="absolute top-4 left-4">
