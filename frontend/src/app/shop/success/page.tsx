@@ -45,7 +45,7 @@ function SuccessContent() {
 
         const verifyPayment = async () => {
             try {
-                const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://aces-shop-backend-w8ro7.ondigitalocean.app';
                 const res = await fetch(`${apiUrl}/api/shop/verify-payment/?reference=${reference}`);
 
                 let data;
