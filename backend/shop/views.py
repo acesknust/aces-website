@@ -288,3 +288,40 @@ class VerifyPaymentView(APIView):
                 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class HealthCheckView(APIView):
+    """
+    Health check endpoint to diagnose database connectivity.
+    Returns the database engine being used and product count.
+    """
+    def get(self, request):
+        from django.db import connection
+        
+        try:
+            # Get database engine info
+            db_engine = settings.DATABASES['default']['ENGINE']
+            db_name = settings.DATABASES['default'].get('NAME', 'Unknown')
+            
+            # Test database connectivity by counting products
+            product_count = Product.objects.count()
+            order_count = Order.objects.count()
+            
+            # Determine if this is a production database
+            is_production = 'postgresql' in db_engine.lower() or 'postgres' in db_engine.lower()
+            
+            return Response({
+                "status": "healthy",
+                "database_engine": db_engine,
+                "database_name": str(db_name)[:50],  # Truncate for security
+                "is_production_db": is_production,
+                "product_count": product_count,
+                "order_count": order_count,
+                "warning": None if is_production else "DANGER: Using SQLite! Data will be lost on restart."
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response({
+                "status": "unhealthy",
+                "error": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
