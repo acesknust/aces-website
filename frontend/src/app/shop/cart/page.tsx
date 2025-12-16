@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 
 const steps = [
     { id: '01', name: 'Shopping Cart', href: '#', status: 'current' },
@@ -143,7 +143,7 @@ export default function CartPage() {
                                     <div className="flex-shrink-0">
                                         <div className="relative h-28 w-28 rounded-lg border border-gray-100 bg-gray-50 overflow-hidden shrink-0">
                                             <Image
-                                                src={item.image || 'https://via.placeholder.com/400x400?text=No+Image'}
+                                                src={item.image?.startsWith('http') ? item.image : `${API_BASE_URL}${item.image}` || 'https://via.placeholder.com/400x400?text=No+Image'}
                                                 alt={item.name}
                                                 fill
                                                 className="object-contain object-center p-2"
