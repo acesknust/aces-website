@@ -34,16 +34,16 @@ const nextConfig = {
         port: "8000",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "aces-shop-backend-w8ro7.ondigitalocean.app",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
   async rewrites() {
-    return [
-      {
-        source: "/api/:path*",
-        destination:
-          "https://csb10032001efbf644d.blob.core.windows.net/acesknust/images/:path*",
-      },
-    ];
+    return [];
   },
 };
 
