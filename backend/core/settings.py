@@ -67,16 +67,35 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 import dj_database_url
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Database Configuration
+# In Production (DEBUG=False), we REQUIRE a real database.
+# Falling back to SQLite in production is DANGEROUS on ephemeral filesystems.
+if DEBUG:
+    # Development: Use SQLite for convenience
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
-
-# Production Database (PostgreSQL)
-db_from_env = dj_database_url.config(conn_max_age=600)
-DATABASES['default'].update(db_from_env)
+    print("DATABASE MODE: Development (SQLite)")
+else:
+    # Production: REQUIRE DATABASE_URL. Fail loudly if missing.
+    database_url = os.environ.get('DATABASE_URL')
+    if not database_url:
+        raise Exception(
+            "FATAL: DATABASE_URL environment variable is not set. "
+            "Production deployments require a PostgreSQL database. "
+            "Please configure DATABASE_URL in your environment."
+        )
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=database_url,
+            conn_max_age=600,
+            ssl_require=True
+        )
+    }
+    print(f"DATABASE MODE: Production (PostgreSQL)")
 
 AUTH_PASSWORD_VALIDATORS = [
     { 'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator', },
