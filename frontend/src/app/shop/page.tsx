@@ -5,7 +5,7 @@ async function getProducts() {
     // Production-ready: Use environment variable, fallback to localhost for dev, enable ISR caching
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
     const res = await fetch(`${apiUrl}/api/shop/products/`, {
-        next: { revalidate: 3600 } // Cache for 1 hour (ISR)
+        next: { revalidate: 60 } // Cache for 1 minute (prevents stale empty responses)
     });
 
     if (!res.ok) {
