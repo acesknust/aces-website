@@ -25,8 +25,9 @@ class Product(models.Model):
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     image = models.ImageField(upload_to='products/', blank=True, null=True)
+    image_color = models.CharField(max_length=50, blank=True, null=True, help_text="Color of the main image (e.g. Black)")
     stock = models.PositiveIntegerField(default=0)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -43,6 +44,7 @@ class Order(models.Model):
         ('PENDING', 'Pending'),
         ('PAID', 'Paid'),
         ('FAILED', 'Failed'),
+        ('FULFILLED', 'Fulfilled'),
     )
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
@@ -52,12 +54,14 @@ class Order(models.Model):
     address = models.TextField()
     
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING', db_index=True)
     
     paystack_reference = models.CharField(max_length=100, unique=True, blank=True, null=True)
     verification_code = models.CharField(max_length=100, unique=True, blank=True, null=True) # For QR Code
     
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    completed_at = models.DateTimeField(null=True, blank=True, help_text="Timestamp when order was prepared/completed")
+    delivered_at = models.DateTimeField(null=True, blank=True, help_text="Timestamp when order was delivered")
 
     def __str__(self):
         return f"Order {self.id} - {self.full_name} ({self.status})"

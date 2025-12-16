@@ -12,6 +12,9 @@ export const metadata: Metadata = {
     default: 'ACES-KNUST',
   },
   description: 'The Official Website For The Association Of Computer Engineering Students, Kwame Nkrumah University of Science and Technology.',
+  icons: {
+    icon: '/images/aceslogo.png',
+  },
 };
 
 

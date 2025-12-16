@@ -5,8 +5,15 @@ import { useCart } from '@/context/CartContext';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
 
 const API_BASE_URL = 'http://localhost:8000';
+
+const steps = [
+    { id: '01', name: 'Shopping Cart', href: '#', status: 'current' },
+    { id: '02', name: 'Shipping Details', href: '#', status: 'upcoming' },
+    { id: '03', name: 'Payment', href: '#', status: 'upcoming' },
+];
 
 export default function CartPage() {
     const { items, removeItem, updateQuantity, total, clearCart } = useCart();
@@ -24,7 +31,11 @@ export default function CartPage() {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    // Update steps based on state
+    const currentStep = isCheckingOut ? 1 : 0; // 0 = Cart, 1 = Details
+
     const handleCheckout = async (e: React.FormEvent) => {
+        // ... (existing checkout logic)
         e.preventDefault();
         setLoading(true);
 
@@ -44,15 +55,13 @@ export default function CartPage() {
 
             if (!response.ok) {
                 const errData = await response.json().catch(() => ({}));
-                throw new Error(errData.error || errData.detail || `Failed to create order: ${response.statusText}`);
+                // Show detailed message if available (e.g. from Paystack response)
+                throw new Error(errData.details || errData.error || `Failed to create order: ${response.statusText}`);
             }
 
             const data = await response.json();
 
-            // Redirect to Paystack
             if (data.authorization_url) {
-                // Clear cart before redirecting? Maybe better to clear on success.
-                // For now, let's keep it until success.
                 window.location.href = data.authorization_url;
             } else {
                 alert('Payment initialization failed');
@@ -60,11 +69,8 @@ export default function CartPage() {
 
         } catch (error) {
             console.error('Checkout error:', error);
-
             let errorMessage = 'Something went wrong. Please try again.';
-            if (error instanceof Error) {
-                errorMessage = error.message;
-            }
+            if (error instanceof Error) errorMessage = error.message;
             alert(`Checkout Error: ${errorMessage}`);
         } finally {
             setLoading(false);
@@ -73,29 +79,59 @@ export default function CartPage() {
 
     if (items.length === 0) {
         return (
-            <div className="bg-white min-h-screen pt-24 pb-16 px-4 sm:px-6 lg:px-8">
-                <div className="max-w-2xl mx-auto text-center flex flex-col items-center justify-center min-h-[50vh]">
-                    <div className="relative h-40 w-40 mb-6 bg-blue-50 rounded-full flex items-center justify-center">
-                        <svg className="h-20 w-20 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            <div className="min-h-screen bg-gradient-to-b from-blue-50/50 to-white pt-24 pb-16 px-4 sm:px-6 lg:px-8">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="max-w-2xl mx-auto text-center flex flex-col items-center justify-center min-h-[50vh]"
+                >
+                    <div className="relative h-48 w-48 mb-6 rounded-full bg-blue-50 flex items-center justify-center animate-pulse-slow">
+                        <svg className="h-24 w-24 text-blue-500/80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                         </svg>
                     </div>
-                    <h2 className="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">Your Cart is Empty</h2>
+                    <h2 className="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl font-display">Your Cart is Empty</h2>
                     <p className="mt-4 text-lg text-gray-500 max-w-sm mx-auto">Looks like you haven't discovered our awesome merch yet.</p>
                     <div className="mt-10">
-                        <Link href="/shop" className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-bold rounded-full text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10 shadow-lg hover:shadow-xl transition-all duration-200">
+                        <Link href="/shop" className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-bold rounded-full text-white bg-blue-600 hover:bg-blue-700 md:text-lg shadow-lg hover:shadow-blue-500/30 hover:-translate-y-1 transition-all duration-200">
                             Start Shopping &rarr;
                         </Link>
                     </div>
-                </div>
+                </motion.div>
             </div>
         );
     }
 
     return (
-        <div className="bg-white min-h-screen pt-24 pb-16">
+        <div className="min-h-screen bg-gradient-to-b from-blue-50/50 to-white pt-24 pb-16">
             <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
-                <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Shopping Cart</h1>
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-12">
+                    <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">Your Bag <span className="text-gray-400 font-normal text-2xl">({items.reduce((acc, item) => acc + item.quantity, 0)} items)</span></h1>
+
+                    {/* Progress Steps */}
+                    <nav aria-label="Progress" className="hidden md:flex mt-4 md:mt-0">
+                        <ol role="list" className="flex items-center space-x-5">
+                            {steps.map((step, stepIdx) => (
+                                <li key={step.name}>
+                                    <div className={`flex items-center ${stepIdx < currentStep || (stepIdx === currentStep && isCheckingOut) ? 'text-blue-600' : 'text-gray-400'}`}>
+                                        <span className={`flex h-8 w-8 items-center justify-center rounded-full border-2 text-xs font-bold ${stepIdx <= currentStep
+                                            ? 'border-blue-600 bg-blue-600 text-white'
+                                            : 'border-gray-300'
+                                            }`}>
+                                            {stepIdx < currentStep ? '✓' : step.id}
+                                        </span>
+                                        <span className={`ml-3 text-sm font-medium ${stepIdx <= currentStep ? 'text-blue-600' : 'text-gray-500'}`}>{step.name}</span>
+                                        {stepIdx !== steps.length - 1 && (
+                                            <svg className="ml-4 h-5 w-5 text-gray-300" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                                            </svg>
+                                        )}
+                                    </div>
+                                </li>
+                            ))}
+                        </ol>
+                    </nav>
+                </div>
 
                 <div className="mt-12 lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-12 xl:gap-x-16">
                     <section aria-labelledby="cart-heading" className="lg:col-span-7 rounded-2xl bg-white px-4 py-6 sm:p-6 lg:p-8 shadow-xl border border-gray-100">

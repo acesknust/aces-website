@@ -17,14 +17,14 @@ class ProductSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Product
-        fields = ['id', 'name', 'slug', 'description', 'price', 'image', 'stock', 'is_active', 'category', 'images']
+        fields = ['id', 'name', 'slug', 'description', 'price', 'image', 'image_color', 'stock', 'is_active', 'category', 'images']
 
 class OrderItemSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source='product.name', read_only=True)
     
     class Meta:
         model = OrderItem
-        fields = ['product_name', 'price', 'quantity', 'selected_color']
+        fields = ['product_name', 'price', 'quantity', 'selected_color', 'selected_size']
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)

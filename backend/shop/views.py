@@ -23,7 +23,7 @@ from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from .models import Product, Category, Order, OrderItem
 from .serializers import ProductSerializer, CategorySerializer, OrderSerializer
-from .utils import send_order_email
+from .utils import send_customer_email, send_admin_email
 
 class ProductListView(generics.ListAPIView):
     queryset = Product.objects.filter(is_active=True)
@@ -45,23 +45,33 @@ class CreateOrderView(APIView):
             if not cart_items:
                 return Response({"error": "Cart is empty"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # 1. Calculate Total Price on Backend
+            # 1. Calculate Total Price on Backend (Optimized Batch Fetch)
             total_amount = 0
-            order_items_data = [] # Store (product, quantity, price) tuples
+            order_items_data = [] # Store (product, quantity, price, color, size) tuples
+            
+            # Extract IDs and create a map to avoid N+1 queries
+            item_map = {item.get('id'): item for item in cart_items}
+            product_ids = list(item_map.keys())
+            
+            # Fetch all products in ONE query
+            products = Product.objects.filter(id__in=product_ids, is_active=True)
+            
+            if len(products) != len(product_ids):
+                # Find which ID is missing for error message
+                found_ids = set(p.id for p in products)
+                missing_ids = set(product_ids) - found_ids
+                return Response({"error": f"Products with IDs {missing_ids} not found or inactive"}, status=status.HTTP_400_BAD_REQUEST)
 
-            for item in cart_items:
-                product_id = item.get('id')
-                quantity = item.get('quantity', 1)
-                color = item.get('color')
-                size = item.get('size')
+            for product in products:
+                # Get quantity from the original cart item map
+                cart_item = item_map[product.id]
+                quantity = cart_item.get('quantity', 1)
+                color = cart_item.get('color')
+                size = cart_item.get('size')
                 
-                try:
-                    product = Product.objects.get(id=product_id, is_active=True)
-                    price = product.price
-                    total_amount += price * quantity
-                    order_items_data.append((product, quantity, price, color, size))
-                except Product.DoesNotExist:
-                    return Response({"error": f"Product with ID {product_id} not found"}, status=status.HTTP_400_BAD_REQUEST)
+                price = product.price
+                total_amount += price * quantity
+                order_items_data.append((product, quantity, price, color, size))
 
              # 2. Create Order (Pending)
             order = Order.objects.create(
@@ -156,6 +166,7 @@ class CreateOrderView(APIView):
                         "order_id": order.id
                     }, status=status.HTTP_200_OK)
                 else:
+                    print(f"PAYSTACK INIT ERROR: {res_data}")
                     return Response({"error": "Paystack initialization failed", "details": res_data['message']}, status=status.HTTP_400_BAD_REQUEST)
             
             except (requests.exceptions.RequestException, Exception) as e:
@@ -206,7 +217,10 @@ class VerifyPaymentView(APIView):
                         }, status=status.HTTP_200_OK)
 
                     # Decrement Stock
-                    for item in current_order.items.all():
+                    # Use select_related to fetch associated products efficiently
+                    order_items = current_order.items.select_related('product').all()
+                    
+                    for item in order_items:
                         # Lock Product row to prevent race conditions on stock
                         product = Product.objects.select_for_update().get(id=item.product.id)
                         product.stock -= item.quantity
@@ -218,13 +232,24 @@ class VerifyPaymentView(APIView):
              except Exception as e:
                  return Response({"error": f"Verification failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-             # 2. SEND EMAIL (Outside Transaction)
-             try:
-                # Re-fetch order to be safe (though current_order variable persists in Python scope)
-                # Just using current_order is fine here as it's local variable.
-                send_order_email(current_order)
-             except Exception as e:
-                print(f"EMAIL ERROR: {e}") # Debug print
+             # 2. SEND EMAILS (Async / Non-blocking & Parallel)
+             # We use separate threads for Customer and Admin to ensure one doesn't block the other (e.g. slow SMTP)
+             import threading
+
+             def run_safe_email(func, order):
+                 try:
+                    func(order)
+                 except Exception as e:
+                     print(f"EMAIL THREAD ERROR ({func.__name__}): {e}")
+
+             t_customer = threading.Thread(target=run_safe_email, args=(send_customer_email, current_order))
+             t_admin = threading.Thread(target=run_safe_email, args=(send_admin_email, current_order))
+             
+             t_customer.daemon = True # Daemonize to ensure it doesn't block server shutdown
+             t_admin.daemon = True
+             
+             t_customer.start()
+             t_admin.start()
 
              # 3. RETURN RESPONSE
              serializer = OrderSerializer(current_order)
