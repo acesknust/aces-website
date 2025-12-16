@@ -76,11 +76,6 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
                         className="object-contain object-center transition-all duration-300 p-8 mix-blend-multiply hover:scale-105"
                         priority
                     />
-                    {/* DEBUG OVERLAY - TEMPORARY */}
-                    <div className="absolute top-0 left-0 bg-black/80 text-white text-[10px] p-2 max-w-full break-all z-50">
-                        SRC: {getImageUrl(selectedImage)} <br />
-                        ENV: {process.env.NEXT_PUBLIC_API_URL || 'Not Set'}
-                    </div>
                     {product.stock === 0 && (
                         <div className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-sm z-10">
                             <span className="bg-gray-900 text-white px-6 py-2 rounded-full text-lg font-bold tracking-widest uppercase">Sold Out</span>
