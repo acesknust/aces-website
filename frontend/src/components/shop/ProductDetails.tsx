@@ -56,20 +56,31 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
         setSelectedImage(img);
     };
 
+    // Helper to resolve image URL
+    const getImageUrl = (img?: string) => {
+        if (!img) return 'https://via.placeholder.com/600x600?text=No+Image';
+        if (img.startsWith('http')) return img;
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+        return `${baseUrl}${img}`;
+    };
+
     return (
         <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-12">
             {/* Image Gallery */}
             <div className="flex flex-col gap-6">
                 <div className="relative aspect-square w-full overflow-hidden rounded-3xl bg-gray-100/50 border border-gray-100 shadow-sm sm:aspect-[4/5]">
                     <Image
-                        src={selectedImage?.startsWith('http')
-                            ? selectedImage
-                            : `${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}${selectedImage}` || 'https://via.placeholder.com/600x600?text=No+Image'}
+                        src={getImageUrl(selectedImage)}
                         alt={product.name}
                         fill
                         className="object-contain object-center transition-all duration-300 p-8 mix-blend-multiply hover:scale-105"
                         priority
                     />
+                    {/* DEBUG OVERLAY - TEMPORARY */}
+                    <div className="absolute top-0 left-0 bg-black/80 text-white text-[10px] p-2 max-w-full break-all z-50">
+                        SRC: {getImageUrl(selectedImage)} <br />
+                        ENV: {process.env.NEXT_PUBLIC_API_URL || 'Not Set'}
+                    </div>
                     {product.stock === 0 && (
                         <div className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-sm z-10">
                             <span className="bg-gray-900 text-white px-6 py-2 rounded-full text-lg font-bold tracking-widest uppercase">Sold Out</span>
@@ -91,7 +102,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
                             >
                                 <div className="absolute inset-0 bg-gray-100 mix-blend-multiply">
                                     <Image
-                                        src={img.image.startsWith('http') ? img.image : `${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}${img.image}`}
+                                        src={getImageUrl(img.image)}
                                         alt={img.color || 'Product Image'}
                                         fill
                                         className="object-contain p-2 mix-blend-multiply"
