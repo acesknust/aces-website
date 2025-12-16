@@ -4,7 +4,8 @@ import ProductDetails from '@/components/shop/ProductDetails';
 
 async function getProduct(slug: string) {
     try {
-        const res = await fetch(`http://127.0.0.1:8000/api/shop/products/${slug}/`, { cache: 'no-store' });
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+        const res = await fetch(`${apiUrl}/api/shop/products/${slug}/`, { cache: 'no-store' });
         if (!res.ok) {
             return null;
         }

@@ -23,7 +23,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <Link href={`/shop/${product.slug}`} className="group block overflow-hidden rounded-2xl bg-white shadow-md transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 ring-1 ring-gray-100 hover:ring-gray-200">
             <div className="relative h-80 w-full overflow-hidden bg-gray-100/50">
                 <Image
-                    src={product.image || 'https://via.placeholder.com/400x400?text=No+Image'}
+                    src={product.image?.startsWith('http') ? product.image : `${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}${product.image}` || 'https://via.placeholder.com/400x400?text=No+Image'}
+
                     alt={product.name}
                     fill
                     className="object-contain transition duration-500 group-hover:scale-110 p-6 mix-blend-multiply"
