@@ -66,10 +66,16 @@ TEMPLATES = [
 WSGI_APPLICATION = 'core.wsgi.application'
 
 import dj_database_url
+import sys
 
 # Database Configuration
 # In Production (DEBUG=False), we REQUIRE a real database.
 # Falling back to SQLite in production is DANGEROUS on ephemeral filesystems.
+
+# Check if we're in a build phase (collectstatic, migrate, etc.)
+# During build, DATABASE_URL may not be available yet
+IS_BUILD_PHASE = 'collectstatic' in sys.argv or 'migrate' in sys.argv
+
 if DEBUG:
     # Development: Use SQLite for convenience
     DATABASES = {
@@ -80,22 +86,36 @@ if DEBUG:
     }
     print("DATABASE MODE: Development (SQLite)")
 else:
-    # Production: REQUIRE DATABASE_URL. Fail loudly if missing.
+    # Production: REQUIRE DATABASE_URL for runtime, but allow build phase to proceed
     database_url = os.environ.get('DATABASE_URL')
-    if not database_url:
+    
+    if database_url:
+        # DATABASE_URL is set, use PostgreSQL
+        DATABASES = {
+            'default': dj_database_url.config(
+                default=database_url,
+                conn_max_age=600,
+                ssl_require=True
+            )
+        }
+        print("DATABASE MODE: Production (PostgreSQL)")
+    elif IS_BUILD_PHASE:
+        # During build phase, use SQLite temporarily for collectstatic
+        # This is safe because collectstatic doesn't need actual data
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
+        }
+        print("DATABASE MODE: Build Phase (Temporary SQLite - OK)")
+    else:
+        # Runtime without DATABASE_URL - this is a fatal error
         raise Exception(
             "FATAL: DATABASE_URL environment variable is not set. "
             "Production deployments require a PostgreSQL database. "
             "Please configure DATABASE_URL in your environment."
         )
-    DATABASES = {
-        'default': dj_database_url.config(
-            default=database_url,
-            conn_max_age=600,
-            ssl_require=True
-        )
-    }
-    print(f"DATABASE MODE: Production (PostgreSQL)")
 
 AUTH_PASSWORD_VALIDATORS = [
     { 'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator', },
