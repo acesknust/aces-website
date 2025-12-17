@@ -199,7 +199,7 @@ class OrderAdmin(admin.ModelAdmin):
         return True # Changed to True so we can save "completed_at" status via actions, but fields are readonly
 
     def has_delete_permission(self, request, obj=None):
-        return False 
+        return True  # Enabled for cleaning up test orders
 
     def get_readonly_fields(self, request, obj=None):
         # Everything is readonly EXCEPT completed_at (maybe? No, let's keep it readonly and use action)
