@@ -13,11 +13,12 @@ from email.mime.image import MIMEImage
 def get_brand_logo(filename='aceslogo.png'):
     """Reads an ACES logo file to attach as CID."""
     try:
-        # Try frontend public path relative to backend basedir
-        logo_path = os.path.join(settings.BASE_DIR, '..', 'frontend', 'public', 'images', filename)
+        # Look in backend's static/images directory
+        logo_path = os.path.join(settings.BASE_DIR, 'static', 'images', filename)
         with open(logo_path, 'rb') as f:
             return f.read()
     except FileNotFoundError:
+        print(f"Logo not found at: {logo_path}")
         return None
 
 def _generate_items_html(order, is_admin=False):
