@@ -21,7 +21,7 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
-from .models import Product, Category, Order, OrderItem
+from .models import Product, Category, Order, OrderItem, Coupon
 from .serializers import ProductSerializer, CategorySerializer, OrderSerializer
 from .utils import send_customer_email, send_admin_email
 
@@ -73,7 +73,30 @@ class CreateOrderView(APIView):
                 total_amount += price * quantity
                 order_items_data.append((product, quantity, price, color, size))
 
-             # 2. Create Order (Pending)
+            # 2. Handle Coupon Code (if provided)
+            coupon = None
+            discount_amount = 0
+            coupon_code = data.get('coupon_code', '').strip().upper()
+            
+            if coupon_code:
+                try:
+                    coupon = Coupon.objects.get(code=coupon_code)
+                    if coupon.is_valid():
+                        from decimal import Decimal
+                        # Calculate discount using Decimal for precision
+                        discount_percent = Decimal(str(coupon.discount_percent))
+                        total_decimal = Decimal(str(total_amount))
+                        
+                        discount_amount = round(total_decimal * (discount_percent / 100), 2)
+                        total_amount = round(total_decimal - discount_amount, 2)
+                    else:
+                        # Coupon exists but is not valid - don't apply but don't fail the order
+                        coupon = None
+                except Coupon.DoesNotExist:
+                    # Invalid code - don't apply but don't fail the order
+                    pass
+
+            # 3. Create Order (Pending)
             order = Order.objects.create(
                 user=request.user if request.user.is_authenticated else None,
                 full_name=user_details.get('full_name'),
@@ -81,8 +104,16 @@ class CreateOrderView(APIView):
                 phone=user_details.get('phone'),
                 address=user_details.get('address'),
                 total_amount=total_amount,
+                coupon=coupon,
+                discount_amount=discount_amount,
                 status='PENDING'
             )
+            
+            # Increment coupon usage if applied
+            if coupon:
+                from django.db.models import F
+                # Atomic increment to prevent race conditions
+                Coupon.objects.filter(id=coupon.id).update(times_used=F('times_used') + 1)
 
             for product, quantity, price, color, size in order_items_data:
                 OrderItem.objects.create(
@@ -93,6 +124,7 @@ class CreateOrderView(APIView):
                     selected_color=color,
                     selected_size=size
                 )
+
 
             # 3. Initialize Paystack Transaction
             paystack_url = "https://api.paystack.co/transaction/initialize"
@@ -325,3 +357,62 @@ class HealthCheckView(APIView):
                 "status": "unhealthy",
                 "error": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ValidateCouponView(APIView):
+    """
+    Validate a coupon code and return discount information.
+    Used at checkout before order creation.
+    """
+    def post(self, request):
+        code = request.data.get('code', '').strip().upper()
+        cart_total = request.data.get('cart_total', 0)
+        
+        if not code:
+            return Response({
+                "valid": False,
+                "message": "Please enter a coupon code"
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            coupon = Coupon.objects.get(code=code)
+        except Coupon.DoesNotExist:
+            return Response({
+                "valid": False,
+                "message": "Invalid coupon code"
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        # Check if coupon is valid
+        if not coupon.is_valid():
+            if not coupon.is_active:
+                message = "This coupon has been deactivated"
+            elif coupon.times_used >= coupon.max_uses:
+                message = "This coupon has reached its usage limit"
+            else:
+                message = "This coupon has expired"
+            
+            return Response({
+                "valid": False,
+                "message": message
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Calculate discount
+        try:
+            cart_total = float(cart_total)
+        except (ValueError, TypeError):
+            cart_total = 0
+        
+        discount_amount = round(cart_total * (coupon.discount_percent / 100), 2)
+        new_total = round(cart_total - discount_amount, 2)
+        
+        return Response({
+            "valid": True,
+            "code": coupon.code,
+            "discount_percent": coupon.discount_percent,
+            "discount_amount": discount_amount,
+            "new_total": new_total,
+            "owner_name": coupon.owner_name,
+            "owner_role": coupon.owner_role,
+            "remaining_uses": coupon.get_remaining_uses(),
+            "message": f"{coupon.discount_percent}% discount applied!"
+        }, status=status.HTTP_200_OK)

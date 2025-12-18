@@ -7,7 +7,26 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://aces-shop-backend-w8ro7.ondigitalocean.app';
+// Helper to determine API URL based on environment
+const getApiUrl = () => {
+    // Check if explicitly set in environment
+    if (process.env.NEXT_PUBLIC_API_URL) {
+        return process.env.NEXT_PUBLIC_API_URL;
+    }
+
+    // Fallback logic for local development vs production
+    if (typeof window !== 'undefined') {
+        const hostname = window.location.hostname;
+        if (hostname === 'localhost' || hostname === '127.0.0.1') {
+            return 'http://127.0.0.1:8000';
+        }
+    }
+
+    // Default production URL
+    return 'https://aces-shop-backend-w8ro7.ondigitalocean.app';
+};
+
+const API_BASE_URL = getApiUrl();
 
 const steps = [
     { id: '01', name: 'Shopping Cart', href: '#', status: 'current' },
@@ -27,6 +46,74 @@ export default function CartPage() {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
+    // Coupon State
+    const [couponCode, setCouponCode] = useState('');
+    const [couponLoading, setCouponLoading] = useState(false);
+    const [couponError, setCouponError] = useState('');
+    const [appliedCoupon, setAppliedCoupon] = useState<{
+        code: string;
+        discount_percent: number;
+        discount_amount: number;
+        owner_name: string;
+        owner_role: string;
+    } | null>(null);
+
+    // Calculate final total with discount
+    const discountAmount = appliedCoupon ? appliedCoupon.discount_amount : 0;
+    const finalTotal = total - discountAmount;
+
+    // Validate coupon code
+    const validateCoupon = async () => {
+        if (!couponCode.trim()) {
+            setCouponError('Please enter a coupon code');
+            return;
+        }
+
+        setCouponLoading(true);
+        setCouponError('');
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/shop/validate-coupon/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    code: couponCode.trim().toUpperCase(),
+                    cart_total: total
+                }),
+            });
+
+            const data = await response.json();
+
+            if (data.valid) {
+                setAppliedCoupon({
+                    code: data.code,
+                    discount_percent: data.discount_percent,
+                    discount_amount: data.discount_amount,
+                    owner_name: data.owner_name,
+                    owner_role: data.owner_role,
+                });
+                setCouponError('');
+            } else {
+                setCouponError(data.message || 'Invalid coupon code');
+                setAppliedCoupon(null);
+            }
+        } catch (error) {
+            console.error('Coupon validation error:', error);
+            const msg = error instanceof Error ? error.message : 'Unknown error';
+            setCouponError(`Failed to validate: ${msg}`);
+            setAppliedCoupon(null);
+        } finally {
+            setCouponLoading(false);
+        }
+    };
+
+    // Remove applied coupon
+    const removeCoupon = () => {
+        setAppliedCoupon(null);
+        setCouponCode('');
+        setCouponError('');
+    };
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
@@ -43,6 +130,8 @@ export default function CartPage() {
             const orderData = {
                 ...formData,
                 items: items.map(item => ({ id: item.id, quantity: item.quantity, color: item.color, size: item.size })),
+                // Include coupon code if applied
+                coupon_code: appliedCoupon?.code || '',
             };
 
             const response = await fetch(`${API_BASE_URL}/api/shop/orders/create/`, {
@@ -224,14 +313,79 @@ export default function CartPage() {
                             Order Summary
                         </h2>
 
+                        {/* Coupon Code Section */}
+                        <div className="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                            <label htmlFor="coupon-code" className="block text-sm font-semibold text-gray-700 mb-2">
+                                🎟️ Have a Coupon Code?
+                            </label>
+                            {appliedCoupon ? (
+                                // Show applied coupon
+                                <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-green-800 font-bold text-sm">
+                                                ✓ {appliedCoupon.code}
+                                            </p>
+                                            <p className="text-green-600 text-xs">
+                                                {appliedCoupon.discount_percent}% off applied
+                                            </p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={removeCoupon}
+                                            className="text-red-500 hover:text-red-700 text-sm font-medium"
+                                        >
+                                            Remove
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                // Show coupon input
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        id="coupon-code"
+                                        value={couponCode}
+                                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                                        placeholder="Enter code"
+                                        className="flex-1 rounded-lg border-0 py-2.5 px-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-blue-600 sm:text-sm uppercase"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={validateCoupon}
+                                        disabled={couponLoading}
+                                        className="px-4 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                    >
+                                        {couponLoading ? '...' : 'Apply'}
+                                    </button>
+                                </div>
+                            )}
+                            {couponError && (
+                                <p className="mt-2 text-sm text-red-600">{couponError}</p>
+                            )}
+                        </div>
+
                         <dl className="mt-6 space-y-4">
                             <div className="flex items-center justify-between pt-2">
                                 <dt className="text-base font-medium text-gray-500">Subtotal</dt>
                                 <dd className="text-base font-medium text-gray-900">GHS {total.toFixed(2)}</dd>
                             </div>
+
+                            {/* Show discount if coupon applied */}
+                            {appliedCoupon && (
+                                <div className="flex items-center justify-between text-green-600">
+                                    <dt className="text-base font-medium">
+                                        Discount ({appliedCoupon.discount_percent}%)
+                                    </dt>
+                                    <dd className="text-base font-bold">-GHS {discountAmount.toFixed(2)}</dd>
+                                </div>
+                            )}
+
                             <div className="flex items-center justify-between border-t border-gray-100 pt-4">
                                 <dt className="text-lg font-bold text-gray-900">Order Total</dt>
-                                <dd className="text-2xl font-bold text-blue-600">GHS {total.toFixed(2)}</dd>
+                                <dd className="text-2xl font-bold text-blue-600">
+                                    GHS {finalTotal.toFixed(2)}
+                                </dd>
                             </div>
                         </dl>
 

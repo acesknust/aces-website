@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Product, Order, OrderItem, ProductImage
+from .models import Category, Product, Order, OrderItem, ProductImage, Coupon
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -353,3 +353,106 @@ class OrderAdmin(admin.ModelAdmin):
 
         return response
     export_production_manifest.short_description = "📥 Export Orders (CSV)"
+
+
+@admin.register(Coupon)
+class CouponAdmin(admin.ModelAdmin):
+    """
+    Admin for managing Committee Head discount coupons.
+    """
+    list_display = [
+        'code', 
+        'owner_name', 
+        'owner_role', 
+        '_discount_display', 
+        '_usage_display', 
+        '_status_badge',
+        'is_active',  # Added for list_editable to work
+        'expires_at',
+        'created_at'
+    ]
+    list_filter = ['is_active', 'owner_role', 'discount_percent', 'created_at']
+    search_fields = ['code', 'owner_name', 'owner_role']
+    ordering = ['-created_at']
+    list_per_page = 20
+    
+    # Make is_active editable directly in list view
+    list_editable = ['is_active']
+    
+    fieldsets = (
+        ("Coupon Details", {
+            "fields": ("code", "owner_name", "owner_role", "discount_percent")
+        }),
+        ("Usage Limits", {
+            "fields": ("max_uses", "times_used", "expires_at", "is_active"),
+            "description": "Control how many times this coupon can be used and when it expires."
+        }),
+    )
+    
+    readonly_fields = ['times_used', 'created_at']
+    
+    def _discount_display(self, obj):
+        return f"{obj.discount_percent}% OFF"
+    _discount_display.short_description = "Discount"
+    
+    def _usage_display(self, obj):
+        remaining = obj.get_remaining_uses()
+        return format_html(
+            '<span style="font-weight: bold;">{}</span> / {} used',
+            obj.times_used,
+            obj.max_uses
+        )
+    _usage_display.short_description = "Usage"
+    
+    def _status_badge(self, obj):
+        if obj.is_valid():
+            return format_html(
+                '<span style="background-color: #10b981; color: white; padding: 3px 10px; border-radius: 15px; font-size: 11px;">✓ Active</span>'
+            )
+        elif not obj.is_active:
+            return format_html(
+                '<span style="background-color: #6b7280; color: white; padding: 3px 10px; border-radius: 15px; font-size: 11px;">Disabled</span>'
+            )
+        elif obj.times_used >= obj.max_uses:
+            return format_html(
+                '<span style="background-color: #f59e0b; color: white; padding: 3px 10px; border-radius: 15px; font-size: 11px;">Max Used</span>'
+            )
+        else:
+            return format_html(
+                '<span style="background-color: #ef4444; color: white; padding: 3px 10px; border-radius: 15px; font-size: 11px;">Expired</span>'
+            )
+    _status_badge.short_description = "Status"
+    
+    def get_urls(self):
+        from django.urls import path
+        urls = super().get_urls()
+        custom_urls = [
+            path('generate-code/', self.admin_site.admin_view(self.generate_code_view), name='coupon-generate-code'),
+        ]
+        return custom_urls + urls
+    
+    def generate_code_view(self, request):
+        """AJAX endpoint to generate a unique code."""
+        from django.http import JsonResponse
+        owner_name = request.GET.get('owner_name', '')
+        owner_role = request.GET.get('owner_role', '')
+        
+        # Generate unique code
+        code = Coupon.generate_unique_code(owner_name, owner_role)
+        
+        # Ensure uniqueness
+        attempts = 0
+        while Coupon.objects.filter(code=code).exists() and attempts < 10:
+            code = Coupon.generate_unique_code(owner_name, owner_role)
+            attempts += 1
+        
+        return JsonResponse({'code': code})
+    
+    def add_view(self, request, form_url='', extra_context=None):
+        """Add JavaScript for auto-generating codes."""
+        extra_context = extra_context or {}
+        extra_context['show_generate_button'] = True
+        return super().add_view(request, form_url, extra_context)
+    
+    class Media:
+        js = ('admin/js/coupon_admin.js',)  # We'll create this file
