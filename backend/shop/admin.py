@@ -141,22 +141,47 @@ class OrderAdmin(admin.ModelAdmin):
         ]
         return custom_urls + urls
 
+    def changelist_view(self, request, extra_context=None):
+        # LAZY CLEANUP: Auto-fail stale pending orders when admin checks the list
+        from django.utils import timezone
+        from datetime import timedelta
+        
+        # Threshold: 48 hours
+        threshold = timezone.now() - timedelta(hours=48)
+        Order.objects.filter(status='PENDING', created_at__lt=threshold).update(status='FAILED')
+        
+        return super().changelist_view(request, extra_context=extra_context)
+
     def toggle_complete(self, request, order_id):
         from django.shortcuts import get_object_or_404, redirect
         from django.utils import timezone
         from django.contrib import messages
         
         order = get_object_or_404(Order, pk=order_id)
+        
+        # Guard: Cannot complete unpaid orders
+        if not order.completed_at and order.status not in ['PAID', 'FULFILLED']:
+            messages.error(request, f"⚠️ Create failed: Order #{order.id} is {order.status}. Payment must be verified (PAID) before completing.")
+            return redirect('admin:shop_order_changelist')
+
         if order.completed_at:
             order.completed_at = None
-            order.status = 'PAID' if order.status == 'FULFILLED' else order.status # Revert to Paid if it was Fulfilled
-            messages.info(request, f"Order #{order.id} marked as Incomplete.")
+            # Only revert to PAID if it was FULFILLED (don't touch if it was somehow else)
+            if order.status == 'FULFILLED':
+                order.status = 'PAID'
+            messages.info(request, f"Order #{order.id} marked as Incomplete (Status reverted to PAID).")
         else:
             order.completed_at = timezone.now()
             order.status = 'FULFILLED'
-            messages.success(request, f"Order #{order.id} marked as Completed.")
+            messages.success(request, f"Order #{order.id} marked as Completed (FULFILLED).")
+        
         order.save()
         return redirect('admin:shop_order_changelist')
+
+    @admin.action(description="Mark selected orders as Failed (Cancel)")
+    def mark_as_failed(self, request, queryset):
+        updated = queryset.update(status='FAILED')
+        self.message_user(request, f"{updated} orders marked as FAILED.", messages.SUCCESS)
 
     def toggle_delivery(self, request, order_id):
         from django.shortcuts import get_object_or_404, redirect
@@ -164,6 +189,12 @@ class OrderAdmin(admin.ModelAdmin):
         from django.contrib import messages
         
         order = get_object_or_404(Order, pk=order_id)
+        
+        # Guard: Cannot deliver items that are not completed (Fulfilled)
+        if not order.delivered_at and not order.completed_at:
+             messages.error(request, f"⚠️ Delivery failed: Order #{order.id} is not Completed. Please mark as Completed before delivering.")
+             return redirect('admin:shop_order_changelist')
+
         if order.delivered_at:
             order.delivered_at = None
             messages.info(request, f"Order #{order.id} marked as Not Delivered.")
@@ -176,7 +207,7 @@ class OrderAdmin(admin.ModelAdmin):
     date_hierarchy = 'created_at'
     list_per_page = 20
     inlines = [OrderItemInline]
-    actions = ["mark_as_fulfilled", "export_production_manifest"]
+    actions = ["mark_as_fulfilled", "export_production_manifest", "mark_as_failed"]
     
     # Premium Fieldsets Layout
     fieldsets = (
