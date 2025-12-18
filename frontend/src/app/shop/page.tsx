@@ -3,7 +3,16 @@ import ProductGrid from '@/components/shop/ProductGrid';
 
 async function getProducts() {
     // Production-ready: Use environment variable, fallback to production backend
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://aces-shop-backend-w8ro7.ondigitalocean.app';
+    // Production-ready: Use environment variable, fallback to production backend
+    let apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+    if (!apiUrl) {
+        if (process.env.NODE_ENV === 'development') {
+            apiUrl = 'http://127.0.0.1:8000';
+        } else {
+            apiUrl = 'https://aces-shop-backend-w8ro7.ondigitalocean.app';
+        }
+    }
     const res = await fetch(`${apiUrl}/api/shop/products/`, {
         cache: 'no-store' // Disable caching entirely - always fetch fresh data
     });
