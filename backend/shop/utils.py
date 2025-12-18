@@ -139,10 +139,13 @@ def send_customer_email(order):
         
     email.send(fail_silently=False)
 
-def send_admin_email(order, admin_email='semanusebuava@gmail.com'):
+def send_admin_email(order, admin_email=None):
     """
     Sends an "Ultimate Premium" notification to the Admin.
     """
+    # Use provided email, or fallback to settings.ADMIN_EMAIL
+    if not admin_email:
+        admin_email = getattr(settings, 'ADMIN_EMAIL', 'acesknust.development@gmail.com')
     subject = f"✨ New Order #{order.id} - GHS {order.total_amount}"
     # Determine the Admin URL dynamically
     try:
