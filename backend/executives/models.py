@@ -7,7 +7,13 @@ class AcademicYear(models.Model):
         upload_to='executives/banners/', 
         blank=True, 
         null=True,
-        help_text=_("Group photo displayed in the hero section for this year.")
+        help_text=_("Hero banner for the Executives page.")
+    )
+    group_photo = models.ImageField(
+        upload_to='executives/group_photos/', 
+        blank=True, 
+        null=True,
+        help_text=_("Group photo displayed on the About page.")
     )
     description = models.TextField(
         blank=True, 

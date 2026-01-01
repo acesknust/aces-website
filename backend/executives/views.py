@@ -33,10 +33,11 @@ class ExecutiveSerializer(serializers.ModelSerializer):
 class AcademicYearSerializer(serializers.ModelSerializer):
     executives = serializers.SerializerMethodField()
     hero_banner = serializers.SerializerMethodField()
+    group_photo = serializers.SerializerMethodField()
     
     class Meta:
         model = AcademicYear
-        fields = ['id', 'name', 'hero_banner', 'description', 'show_description', 'is_current', 'executives']
+        fields = ['id', 'name', 'hero_banner', 'group_photo', 'description', 'show_description', 'is_current', 'executives']
     
     def get_hero_banner(self, obj):
         """Return absolute URL for the hero banner"""
@@ -45,6 +46,15 @@ class AcademicYearSerializer(serializers.ModelSerializer):
             return request.build_absolute_uri(obj.hero_banner.url)
         elif obj.hero_banner:
             return obj.hero_banner.url
+        return None
+
+    def get_group_photo(self, obj):
+        """Return absolute URL for the group photo (About page)"""
+        request = self.context.get('request')
+        if obj.group_photo and request:
+            return request.build_absolute_uri(obj.group_photo.url)
+        elif obj.group_photo:
+            return obj.group_photo.url
         return None
     
     def get_executives(self, obj):

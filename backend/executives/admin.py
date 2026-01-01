@@ -45,23 +45,32 @@ class ExecutiveInline(admin.TabularInline):
 
 @admin.register(AcademicYear)
 class AcademicYearAdmin(admin.ModelAdmin):
-    list_display = ['name', 'is_current', 'display_exec_count', 'banner_preview', 'created_at']
+    list_display = ['name', 'is_current', 'display_exec_count', 'banner_preview', 'group_photo_preview', 'created_at']
     list_filter = ['is_current']
     search_fields = ['name', 'description']
     inlines = [ExecutiveInline]
     
-    # Organize the layout
+    # Organize the layout with CLEAR labels for non-developers
     fieldsets = (
-        ("Year Configuration", {
+        ("📅 Year Configuration", {
             "fields": ("name", "is_current"),
             "description": "Define the academic year (e.g. 2024-2025) and set if it's the active one."
         }),
-        ("Hero Banner & Content", {
-            "fields": ("hero_banner", "banner_preview", "description", "show_description"),
+        ("🖼️ ABOUT PAGE - Group Photo", {
+            "fields": ("group_photo", "group_photo_preview"),
+            "description": "⬆️ Upload the group photo that appears at the TOP of the ABOUT page (/about)."
+        }),
+        ("🎯 EXECUTIVES PAGE - Hero Banner", {
+            "fields": ("hero_banner", "banner_preview"),
+            "description": "⬆️ Upload the hero banner for the EXECUTIVES page (/executives)."
+        }),
+        ("📝 Welcome Message", {
+            "fields": ("description", "show_description"),
+            "description": "Optional welcome text shown below the executives on the /executives page.",
             "classes": ("collapse",),
         }),
     )
-    readonly_fields = ['banner_preview']
+    readonly_fields = ['banner_preview', 'group_photo_preview']
 
     def display_exec_count(self, obj):
         count = obj.executives.count()
@@ -72,7 +81,13 @@ class AcademicYearAdmin(admin.ModelAdmin):
         if obj.hero_banner:
             return format_html('<img src="{}" style="max-height: 100px; max-width: 200px; object-fit: cover; border-radius: 8px;" />', obj.hero_banner.url)
         return "No Banner"
-    banner_preview.short_description = "Banner Preview"
+    banner_preview.short_description = "Executives Page Preview"
+
+    def group_photo_preview(self, obj):
+        if obj.group_photo:
+            return format_html('<img src="{}" style="max-height: 100px; max-width: 200px; object-fit: cover; border-radius: 8px;" />', obj.group_photo.url)
+        return "No Group Photo"
+    group_photo_preview.short_description = "About Page Preview"
 
 class SocialLinkInline(admin.TabularInline):
     model = SocialLink
