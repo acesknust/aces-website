@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'scholarship.apps.ScholarshipConfig',
     'event.apps.EventConfig',
     'shop.apps.ShopConfig',
+    'executives', # Executives app
 
     # Third party
     'rest_framework',

@@ -38,6 +38,7 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('api/user/', include('users.urls', namespace='users')),
     path('api/shop/', include('shop.urls')),
+    path('api/executives/', include('executives.urls')), # Executives API
     # path('docs/', include_docs_urls(title='ACES WEBSITE API')),
     # path('schema/', get_schema_view(
     #     title="ACES WEBSITE API",
