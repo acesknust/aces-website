@@ -8,4 +8,7 @@ urlpatterns = [
     path('verify-payment/', views.VerifyPaymentView.as_view(), name='verify-payment'),
     path('validate-coupon/', views.ValidateCouponView.as_view(), name='validate-coupon'),
     path('health/', views.HealthCheckView.as_view(), name='health-check'),
+    # Paystack Webhook - receives payment notifications server-side
+    # Configure this URL in Paystack Dashboard: https://your-domain.com/api/shop/webhook/
+    path('webhook/', views.PaystackWebhookView.as_view(), name='paystack-webhook'),
 ]
