@@ -239,68 +239,11 @@ class VerifyPaymentView(APIView):
             "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}",
         }
         
-        # Helper to finish verification
-        def complete_verification(order_obj):
-             try:
-                 # 1. ATOMIC DB UPDATES
-                 with transaction.atomic():
-                    # Refresh to ensure latest status and lock
-                    current_order = Order.objects.select_for_update().get(id=order_obj.id)
-                    
-                    if current_order.status == 'PAID':
-                        serializer = OrderSerializer(current_order)
-                        return Response({
-                            "message": "Order already paid",
-                            "order": serializer.data
-                        }, status=status.HTTP_200_OK)
-
-                    # Decrement Stock
-                    # Use select_related to fetch associated products efficiently
-                    order_items = current_order.items.select_related('product').all()
-                    
-                    for item in order_items:
-                        # Lock Product row to prevent race conditions on stock
-                        product = Product.objects.select_for_update().get(id=item.product.id)
-                        product.stock -= item.quantity
-                        product.save()
-
-                    current_order.status = 'PAID'
-                    current_order.verification_code = str(uuid.uuid4())
-                    current_order.save()
-             except Exception as e:
-                 return Response({"error": f"Verification failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-             # 2. SEND EMAILS (Async / Non-blocking & Parallel)
-             # We use separate threads for Customer and Admin to ensure one doesn't block the other (e.g. slow SMTP)
-             import threading
-
-             def run_safe_email(func, order):
-                 try:
-                    func(order)
-                 except Exception as e:
-                     print(f"EMAIL THREAD ERROR ({func.__name__}): {e}")
-
-             t_customer = threading.Thread(target=run_safe_email, args=(send_customer_email, current_order))
-             t_admin = threading.Thread(target=run_safe_email, args=(send_admin_email, current_order))
-             
-             t_customer.daemon = True # Daemonize to ensure it doesn't block server shutdown
-             t_admin.daemon = True
-             
-             t_customer.start()
-             t_admin.start()
-
-             # 3. RETURN RESPONSE
-             serializer = OrderSerializer(current_order)
-             return Response({
-                "message": "Payment verified successfully",
-                "order": serializer.data
-             }, status=status.HTTP_200_OK)
-
         # MOCK VERIFICATION
         if reference.startswith('mock-'):
             try:
                 order = Order.objects.get(paystack_reference=reference)
-                return complete_verification(order)
+                return self._complete_verification(order)
             except Order.DoesNotExist:
                 return Response({"error": "Order not found for mock reference"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -314,12 +257,170 @@ class VerifyPaymentView(APIView):
                 except Order.DoesNotExist:
                     return Response({"error": "Order not found for reference"}, status=status.HTTP_404_NOT_FOUND)
                 
-                return complete_verification(order)
+                return self._complete_verification(order)
             else:
                 return Response({"error": "Payment verification failed"}, status=status.HTTP_400_BAD_REQUEST)
                 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def _complete_verification(self, order_obj):
+        """
+        Shared logic for completing payment verification.
+        Can be called from frontend callback OR webhook handler.
+        """
+        try:
+            # 1. ATOMIC DB UPDATES
+            with transaction.atomic():
+                # Refresh to ensure latest status and lock
+                current_order = Order.objects.select_for_update().get(id=order_obj.id)
+                
+                if current_order.status == 'PAID':
+                    serializer = OrderSerializer(current_order)
+                    return Response({
+                        "message": "Order already paid",
+                        "order": serializer.data
+                    }, status=status.HTTP_200_OK)
+
+                # Decrement Stock
+                order_items = current_order.items.select_related('product').all()
+                
+                for item in order_items:
+                    # Lock Product row to prevent race conditions on stock
+                    product = Product.objects.select_for_update().get(id=item.product.id)
+                    product.stock -= item.quantity
+                    product.save()
+
+                current_order.status = 'PAID'
+                current_order.verification_code = str(uuid.uuid4())
+                current_order.save()
+        except Exception as e:
+            return Response({"error": f"Verification failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        # 2. SEND EMAILS (Async / Non-blocking & Parallel)
+        import threading
+
+        def run_safe_email(func, order):
+            try:
+                func(order)
+            except Exception as e:
+                print(f"EMAIL THREAD ERROR ({func.__name__}): {e}")
+
+        t_customer = threading.Thread(target=run_safe_email, args=(send_customer_email, current_order))
+        t_admin = threading.Thread(target=run_safe_email, args=(send_admin_email, current_order))
+        
+        t_customer.daemon = True
+        t_admin.daemon = True
+        
+        t_customer.start()
+        t_admin.start()
+
+        # 3. RETURN RESPONSE
+        serializer = OrderSerializer(current_order)
+        return Response({
+            "message": "Payment verified successfully",
+            "order": serializer.data
+        }, status=status.HTTP_200_OK)
+
+
+class PaystackWebhookView(APIView):
+    """
+    Receives payment notifications directly from Paystack.
+    This is the AUTHORITATIVE source of payment confirmation.
+    
+    Paystack sends a POST request with event data when payments are processed.
+    We verify the webhook signature using HMAC SHA512.
+    
+    Configure this URL in your Paystack Dashboard:
+    https://your-domain.com/api/shop/webhook/
+    
+    SECURITY:
+    - CSRF exempt (Paystack servers don't have Django sessions)
+    - No Django authentication required (validated via HMAC signature instead)
+    - Signature verification ensures only genuine Paystack requests are processed
+    """
+    
+    # Bypass Django REST Framework's authentication/permission checks
+    # Security is handled via HMAC signature verification instead
+    authentication_classes = []
+    permission_classes = []
+    
+    def post(self, request):
+        import hmac
+        import hashlib
+        import logging
+        
+        logger = logging.getLogger(__name__)
+        
+        # 1. Verify Webhook Signature
+        # Paystack signs the payload with your secret key
+        paystack_signature = request.headers.get('x-paystack-signature', '')
+        
+        if not paystack_signature:
+            logger.warning("WEBHOOK: Missing signature header")
+            return Response({"error": "Missing signature"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Compute HMAC SHA512 signature
+        secret = settings.PAYSTACK_SECRET_KEY.encode('utf-8')
+        computed_signature = hmac.new(
+            secret,
+            request.body,
+            hashlib.sha512
+        ).hexdigest()
+        
+        if not hmac.compare_digest(paystack_signature, computed_signature):
+            logger.warning("WEBHOOK: Invalid signature - possible tampering attempt")
+            return Response({"error": "Invalid signature"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        # 2. Parse Event Data
+        try:
+            event_type = request.data.get('event', '')
+            data = request.data.get('data', {})
+            reference = data.get('reference', '')
+            
+            logger.info(f"WEBHOOK: Received {event_type} for reference {reference}")
+            
+        except Exception as e:
+            logger.error(f"WEBHOOK: Failed to parse payload - {e}")
+            return Response({"error": "Invalid payload"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # 3. Handle charge.success Event
+        if event_type == 'charge.success':
+            if not reference:
+                logger.warning("WEBHOOK: charge.success without reference")
+                return Response({"error": "Missing reference"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            try:
+                order = Order.objects.get(paystack_reference=reference)
+                
+                # Skip if already processed
+                if order.status == 'PAID':
+                    logger.info(f"WEBHOOK: Order #{order.id} already PAID, skipping")
+                    return Response({"status": "already_processed"}, status=status.HTTP_200_OK)
+                
+                # Process payment using shared verification logic
+                verify_view = VerifyPaymentView()
+                result = verify_view._complete_verification(order)
+                
+                logger.info(f"WEBHOOK: Order #{order.id} marked as PAID successfully")
+                
+                # Webhook should always return 200 to acknowledge receipt
+                # (even if processing had issues - Paystack will retry otherwise)
+                return Response({"status": "processed"}, status=status.HTTP_200_OK)
+                
+            except Order.DoesNotExist:
+                logger.warning(f"WEBHOOK: No order found for reference {reference}")
+                # Still return 200 to prevent Paystack retries for non-existent orders
+                return Response({"status": "order_not_found"}, status=status.HTTP_200_OK)
+            except Exception as e:
+                logger.error(f"WEBHOOK: Error processing charge.success - {e}")
+                # Return 200 to prevent infinite retries, but log the error
+                return Response({"status": "error_logged"}, status=status.HTTP_200_OK)
+        
+        # 4. Log Other Events (for debugging/monitoring)
+        # Paystack sends various events like transfer.success, refund.processed, etc.
+        logger.info(f"WEBHOOK: Ignoring event type: {event_type}")
+        return Response({"status": "event_ignored"}, status=status.HTTP_200_OK)
 
 
 class HealthCheckView(APIView):

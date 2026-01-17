@@ -161,7 +161,12 @@ class OrderAdmin(admin.ModelAdmin):
         
         # Guard: Cannot complete unpaid orders
         if not order.completed_at and order.status not in ['PAID', 'FULFILLED']:
-            messages.error(request, f"⚠️ Create failed: Order #{order.id} is {order.status}. Payment must be verified (PAID) before completing.")
+            messages.error(request, f"⚠️ Cannot complete: Order #{order.id} is {order.status}. Payment must be verified (PAID) before completing.")
+            return redirect('admin:shop_order_changelist')
+        
+        # Guard: Cannot un-complete a delivered order
+        if order.completed_at and order.delivered_at:
+            messages.error(request, f"🚫 Cannot revert: Order #{order.id} has already been DELIVERED. Un-deliver it first if needed.")
             return redirect('admin:shop_order_changelist')
 
         if order.completed_at:
@@ -178,10 +183,42 @@ class OrderAdmin(admin.ModelAdmin):
         order.save()
         return redirect('admin:shop_order_changelist')
 
-    @admin.action(description="Mark selected orders as Failed (Cancel)")
+    @admin.action(description="❌ Mark selected orders as Failed (Cancel)")
     def mark_as_failed(self, request, queryset):
-        updated = queryset.update(status='FAILED')
-        self.message_user(request, f"{updated} orders marked as FAILED.", messages.SUCCESS)
+        from django.contrib import messages
+        
+        # Separate orders by whether they can be cancelled
+        # FULFILLED orders with delivered_at cannot be cancelled
+        # FULFILLED orders without delivered_at can be cancelled (reverts to unfulfilled state)
+        delivered_orders = queryset.filter(delivered_at__isnull=False)
+        cancellable_orders = queryset.filter(delivered_at__isnull=True).exclude(status='FAILED')
+        already_failed = queryset.filter(status='FAILED')
+        
+        delivered_count = delivered_orders.count()
+        already_failed_count = already_failed.count()
+        
+        # Only cancel non-delivered orders
+        if cancellable_orders.exists():
+            # Clear completion timestamps when cancelling
+            updated = cancellable_orders.update(status='FAILED', completed_at=None)
+            messages.success(request, f"❌ {updated} order(s) marked as FAILED/Cancelled.")
+        else:
+            updated = 0
+        
+        # Warn about delivered orders that cannot be cancelled
+        if delivered_count > 0:
+            delivered_ids = list(delivered_orders.values_list('id', flat=True)[:5])
+            delivered_str = ", ".join([f"#{id}" for id in delivered_ids])
+            if delivered_count > 5:
+                delivered_str += f"... and {delivered_count - 5} more"
+            messages.error(
+                request, 
+                f"🚫 {delivered_count} order(s) cannot be cancelled because they are DELIVERED: {delivered_str}"
+            )
+        
+        # Info about already failed orders
+        if already_failed_count > 0:
+            messages.info(request, f"ℹ️ {already_failed_count} order(s) were already FAILED.")
 
     def toggle_delivery(self, request, order_id):
         from django.shortcuts import get_object_or_404, redirect
@@ -272,9 +309,34 @@ class OrderAdmin(admin.ModelAdmin):
 
     def mark_as_fulfilled(self, request, queryset):
         from django.utils import timezone
+        from django.contrib import messages
+        
         now = timezone.now()
-        updated = queryset.update(status='FULFILLED', completed_at=now)
-        self.message_user(request, f"{updated} orders marked as Fulfilled/Completed.")
+        
+        # Separate orders into paid and unpaid
+        paid_orders = queryset.filter(status__in=['PAID', 'FULFILLED'])
+        unpaid_orders = queryset.exclude(status__in=['PAID', 'FULFILLED'])
+        
+        unpaid_count = unpaid_orders.count()
+        
+        # Only update PAID orders
+        if paid_orders.exists():
+            updated = paid_orders.update(status='FULFILLED', completed_at=now)
+            messages.success(request, f"✅ {updated} order(s) marked as Fulfilled/Completed.")
+        else:
+            updated = 0
+        
+        # Warn about unpaid orders that were skipped
+        if unpaid_count > 0:
+            # Get the IDs of skipped orders for clarity
+            skipped_ids = list(unpaid_orders.values_list('id', flat=True)[:10])  # Limit to first 10
+            skipped_str = ", ".join([f"#{id}" for id in skipped_ids])
+            if unpaid_count > 10:
+                skipped_str += f"... and {unpaid_count - 10} more"
+            messages.warning(
+                request, 
+                f"⚠️ {unpaid_count} order(s) were SKIPPED because they are not PAID: {skipped_str}"
+            )
     mark_as_fulfilled.short_description = "✅ Mark Selected as Fulfilled/Completed"
 
     def _status_badge(self, obj):
