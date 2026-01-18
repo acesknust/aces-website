@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'event.apps.EventConfig',
     'shop.apps.ShopConfig',
     'executives', # Executives app
+    'courses', # Courses app
 
     # Third party
     'rest_framework',
