@@ -1,6 +1,7 @@
 'use client'
 import Link from 'next/link'
-import { BiSolidRightArrowCircle, BiBook, BiCalendar, BiDownload, BiCode, BiError, BiRefresh } from 'react-icons/bi'
+import { motion, AnimatePresence } from 'framer-motion'
+import { ChevronDown, Download, Book, ExternalLink, AlertCircle, RefreshCw, GraduationCap, Info } from 'lucide-react'
 import { useEffect, useState, useCallback } from 'react'
 
 interface Course {
@@ -13,7 +14,8 @@ interface Course {
 }
 
 interface Semester {
-  semester: number;
+  id: number;
+  semester_number: number;
   courses: Course[];
   semester_name?: string;
 }
@@ -33,10 +35,35 @@ interface CoursesData {
     total_courses: number;
     resource_platforms: string[];
     last_updated: string;
-    version?: string;
-    contact?: string;
   };
 }
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.4, ease: "easeOut" }
+  }
+};
+
+const accordionVariants = {
+  closed: { height: 0, opacity: 0 },
+  open: {
+    height: "auto",
+    opacity: 1,
+    transition: { duration: 0.3, ease: "easeInOut" }
+  }
+};
 
 export default function CoursesCard() {
   const [coursesData, setCoursesData] = useState<CoursesData | null>(null);
@@ -44,25 +71,55 @@ export default function CoursesCard() {
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
 
+  // New state for navigation
+  const [selectedYear, setSelectedYear] = useState<number>(1);
+  const [expandedSemesters, setExpandedSemesters] = useState<Set<string>>(new Set());
+  const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
+
   const fetchCoursesData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      
-      const response = await fetch('/data/aces_courses.json');
-      
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiUrl}/api/courses/years/`);
+
       if (!response.ok) {
         throw new Error(`Failed to fetch courses data: ${response.status} ${response.statusText}`);
       }
-      
-      const data = await response.json();
-      
-      // Validate the data structure
-      if (!data.program || !data.years || !Array.isArray(data.years)) {
-        throw new Error('Invalid courses data structure');
+
+      const yearsData = await response.json();
+
+      const totalYears = yearsData.length;
+      let totalCourses = 0;
+      yearsData.forEach((year: Year) => {
+        year.semesters.forEach((semester: Semester) => {
+          totalCourses += semester.courses.length;
+        });
+      });
+
+      const transformedData: CoursesData = {
+        program: "ACES",
+        description: "Academic Course - Computer Engineering Curriculum",
+        years: yearsData,
+        metadata: {
+          total_years: totalYears,
+          total_courses: totalCourses,
+          resource_platforms: ["Firebase Storage", "Google Drive"],
+          last_updated: new Date().toISOString()
+        }
+      };
+
+      setCoursesData(transformedData);
+
+      // Set first year as selected and expand first semester by default
+      if (yearsData.length > 0) {
+        setSelectedYear(yearsData[0].year);
+        const firstSemester = yearsData[0].semesters[0];
+        if (firstSemester) {
+          setExpandedSemesters(new Set([`${yearsData[0].year}-${firstSemester.semester_number}`]));
+        }
       }
-      
-      setCoursesData(data);
     } catch (error) {
       console.error('Error fetching courses data:', error);
       setError(error instanceof Error ? error.message : 'Failed to load courses data');
@@ -81,295 +138,362 @@ export default function CoursesCard() {
     fetchCoursesData();
   }, [fetchCoursesData]);
 
-  const getResourceType = useCallback((url: string) => {
-    if (url.includes('firebase')) return 'Firebase Storage';
-    if (url.includes('drive.google.com')) return 'Google Drive';
-    if (url.includes('github.com')) return 'GitHub';
-    if (url.includes('dropbox.com')) return 'Dropbox';
-    if (url.includes('onedrive')) return 'OneDrive';
-    if (url.includes('.pdf')) return 'PDF Document';
-    return 'External Link';
-  }, []);
+  const toggleSemester = (yearNum: number, semesterNum: number) => {
+    const key = `${yearNum}-${semesterNum}`;
+    setExpandedSemesters(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(key)) {
+        newSet.delete(key);
+      } else {
+        newSet.add(key);
+      }
+      return newSet;
+    });
+  };
 
-  const getYearColor = useCallback((year: number) => {
-    switch (year) {
-      case 1: return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 2: return 'bg-green-100 text-green-800 border-green-200';
-      case 3: return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 4: return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 5: return 'bg-indigo-100 text-indigo-800 border-indigo-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  }, []);
+  const getResourceType = (url: string) => {
+    if (url.includes('firebase')) return 'Firebase';
+    if (url.includes('drive.google.com')) return 'Drive';
+    if (url.includes('.pdf')) return 'PDF';
+    return 'Link';
+  };
 
-  const getSemesterName = useCallback((semester: number) => {
-    switch (semester) {
-      case 1: return 'First Semester';
-      case 2: return 'Second Semester';
-      case 3: return 'Summer Semester';
-      default: return `Semester ${semester}`;
-    }
-  }, []);
+  const getYearColor = (year: number) => {
+    const colors: Record<number, { bg: string; text: string; border: string; tab: string; tabActive: string }> = {
+      1: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200', tab: 'hover:bg-blue-50', tabActive: 'bg-blue-600 text-white' },
+      2: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', tab: 'hover:bg-emerald-50', tabActive: 'bg-emerald-600 text-white' },
+      3: { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', tab: 'hover:bg-amber-50', tabActive: 'bg-amber-600 text-white' },
+      4: { bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-200', tab: 'hover:bg-purple-50', tabActive: 'bg-purple-600 text-white' },
+    };
+    return colors[year] || colors[1];
+  };
 
-  const formatDate = useCallback((dateString: string) => {
-    try {
-      return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-      });
-    } catch {
-      return dateString;
-    }
-  }, []);
+  const getYearName = (year: number) => {
+    const names: Record<number, string> = { 1: 'Freshman', 2: 'Sophomore', 3: 'Junior', 4: 'Senior' };
+    return names[year] || `Year ${year}`;
+  };
 
-  const getTotalCoursesByYear = useCallback((yearData: Year) => {
-    return yearData.semesters.reduce((total, semester) => total + semester.courses.length, 0);
-  }, []);
+  const getSemesterName = (semester: number) => {
+    return semester === 1 ? 'First Semester' : semester === 2 ? 'Second Semester' : `Semester ${semester}`;
+  };
+
+  const selectedYearData = coursesData?.years.find(y => y.year === selectedYear);
 
   // Error state
   if (!loading && error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md text-center">
-          <BiError className="mx-auto text-red-500 text-4xl mb-4" />
-          <h2 className="text-lg font-semibold text-red-800 mb-2">Failed to Load Courses</h2>
-          <p className="text-red-600 text-sm mb-4">{error}</p>
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="bg-red-50 border border-red-200 rounded-2xl p-8 max-w-md text-center shadow-lg"
+        >
+          <AlertCircle className="mx-auto text-red-500 w-12 h-12 mb-4" />
+          <h2 className="text-xl font-semibold text-red-800 mb-2">Failed to Load Courses</h2>
+          <p className="text-red-600 text-sm mb-6">{error}</p>
           <button
             onClick={handleRetry}
-            className="inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors"
+            className="inline-flex items-center px-6 py-3 bg-red-600 text-white font-medium rounded-xl hover:bg-red-700 transition-all duration-300 shadow-md hover:shadow-lg"
           >
-            <BiRefresh className="mr-2" />
+            <RefreshCw className="mr-2 w-4 h-4" />
             Try Again {retryCount > 0 && `(${retryCount})`}
           </button>
-        </div>
+        </motion.div>
       </div>
     );
   }
 
-  // No data state (after successful load)
+  // No data state
   if (!loading && !coursesData) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
-        <div className="text-center">
-          <BiBook className="mx-auto text-gray-400 text-5xl mb-4" />
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="text-center"
+        >
+          <Book className="mx-auto text-gray-300 w-16 h-16 mb-4" />
           <h2 className="text-2xl font-semibold text-gray-600 mb-2">No Courses Available</h2>
-          <p className="text-gray-500">Course data is currently unavailable. Please check back later.</p>
-        </div>
+          <p className="text-gray-500">Course data is currently unavailable.</p>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-4">
+    <div className="max-w-6xl mx-auto px-4 py-8">
       {loading ? (
-        // Enhanced loading state
+        // Loading skeleton
         <div className="space-y-6">
-          {/* Loading header */}
-          <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 animate-pulse">
-            <div className="h-8 bg-gradient-to-r from-gray-200 to-gray-300 rounded mb-4"></div>
-            <div className="h-4 bg-gray-200 rounded mb-6 w-2/3"></div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="bg-gray-200 rounded-lg h-16"></div>
-              ))}
-            </div>
+          <div className="h-32 bg-gradient-to-r from-gray-200 to-gray-100 rounded-2xl animate-pulse" />
+          <div className="flex gap-2">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="h-12 w-24 bg-gray-200 rounded-xl animate-pulse" />
+            ))}
           </div>
-          
-          {/* Loading course cards */}
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="bg-white rounded-lg shadow-md p-6 border border-gray-200 animate-pulse">
-              <div className="h-6 bg-gray-200 rounded mb-4"></div>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {[...Array(6)].map((_, j) => (
-                  <div key={j} className="bg-gray-100 rounded-lg p-4">
-                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                    <div className="h-3 bg-gray-200 rounded mb-3 w-1/2"></div>
-                    <div className="h-8 bg-gray-200 rounded"></div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
+          <div className="space-y-4">
+            {[1, 2].map(i => (
+              <div key={i} className="h-64 bg-gray-100 rounded-2xl animate-pulse" />
+            ))}
+          </div>
         </div>
       ) : coursesData ? (
-        <div className="space-y-8">
-          {/* Enhanced Program Header */}
-          <div className="bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 text-white rounded-xl p-8 mb-8 shadow-lg">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
-              <div className="mb-4 lg:mb-0">
-                <h1 className="text-4xl font-bold mb-3">{coursesData.program}</h1>
-                <p className="text-blue-100 text-lg leading-relaxed max-w-3xl">{coursesData.description}</p>
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={containerVariants}
+          className="space-y-8"
+        >
+          {/* Compact Header */}
+          <motion.div
+            variants={cardVariants}
+            className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 rounded-2xl p-6 shadow-xl"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <GraduationCap className="w-8 h-8 text-white/80" />
+                  <h1 className="text-2xl font-bold text-white">{coursesData.program}</h1>
+                </div>
+                <p className="text-blue-100 text-sm">{coursesData.description}</p>
               </div>
-              <div className="flex-shrink-0">
-                <BiBook className="text-6xl text-white opacity-20" />
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg p-4 text-center">
-                <div className="text-2xl font-bold">{coursesData.metadata.total_years}</div>
-                <div className="text-blue-100 text-sm">Academic Years</div>
-              </div>
-              <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg p-4 text-center">
-                <div className="text-2xl font-bold">{coursesData.metadata.total_courses}</div>
-                <div className="text-blue-100 text-sm">Total Courses</div>
-              </div>
-              <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg p-4 text-center">
-                <div className="text-2xl font-bold">{coursesData.metadata.resource_platforms.length}</div>
-                <div className="text-blue-100 text-sm">Resource Platforms</div>
-              </div>
-              <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg p-4 text-center">
-                <div className="text-sm font-semibold">Last Updated</div>
-                <div className="text-blue-100 text-xs">{formatDate(coursesData.metadata.last_updated)}</div>
-              </div>
-            </div>
-
-            {/* Additional metadata */}
-            {(coursesData.metadata.version || coursesData.metadata.contact) && (
-              <div className="mt-6 pt-4 border-t border-white border-opacity-20">
-                <div className="flex flex-wrap gap-4 text-sm text-blue-100">
-                  {coursesData.metadata.version && (
-                    <span>Version: {coursesData.metadata.version}</span>
-                  )}
-                  {coursesData.metadata.contact && (
-                    <span>Contact: {coursesData.metadata.contact}</span>
-                  )}
+              <div className="hidden md:flex gap-6 text-center">
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2">
+                  <div className="text-2xl font-bold text-white">{coursesData.metadata.total_courses}</div>
+                  <div className="text-xs text-blue-200">Courses</div>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2">
+                  <div className="text-2xl font-bold text-white">{coursesData.metadata.total_years}</div>
+                  <div className="text-xs text-blue-200">Years</div>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          </motion.div>
 
-          {/* Enhanced Course Years */}
-          {coursesData.years.map((yearData) => (
-            <div key={yearData.year} className="space-y-6">
-              {/* Year Overview */}
-              <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-4 border-l-4 border-blue-500">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900">
-                      Year {yearData.year} {yearData.year_name && `- ${yearData.year_name}`}
-                    </h2>
-                    <p className="text-gray-600">
-                      {getTotalCoursesByYear(yearData)} courses across {yearData.semesters.length} semesters
-                    </p>
-                  </div>
-                  <span className={`px-4 py-2 rounded-full text-sm font-medium border ${getYearColor(yearData.year)}`}>
-                    Year {yearData.year}
-                  </span>
-                </div>
-              </div>
-
-              {/* Semesters */}
-              {yearData.semesters.map((semesterData) => (
-                <div
-                  key={`${yearData.year}-${semesterData.semester}`}
-                  className="bg-white rounded-xl shadow-md border border-gray-200 hover:shadow-lg transition-all duration-300"
+          {/* Year Tabs */}
+          <motion.div
+            variants={cardVariants}
+            className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide"
+          >
+            {coursesData.years.map((year) => {
+              const colors = getYearColor(year.year);
+              const isActive = selectedYear === year.year;
+              return (
+                <motion.button
+                  key={year.year}
+                  onClick={() => {
+                    setSelectedYear(year.year);
+                    // Expand first semester of selected year
+                    const firstSem = year.semesters[0];
+                    if (firstSem) {
+                      setExpandedSemesters(new Set([`${year.year}-${firstSem.semester_number}`]));
+                    }
+                  }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`
+                    flex-shrink-0 px-6 py-3 rounded-xl font-medium transition-all duration-300
+                    ${isActive
+                      ? `${colors.tabActive} shadow-lg`
+                      : `bg-white border-2 ${colors.border} ${colors.text} ${colors.tab}`
+                    }
+                  `}
                 >
-                  {/* Enhanced Semester Header */}
-                  <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-t-xl p-6 border-b border-gray-200">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                      <div className="mb-2 sm:mb-0">
-                        <h3 className="text-xl font-bold text-gray-900">
-                          {getSemesterName(semesterData.semester)}
-                          {semesterData.semester_name && ` (${semesterData.semester_name})`}
-                        </h3>
-                        <p className="text-gray-600 text-sm">
-                          Year {yearData.year} • {semesterData.courses.length} courses
-                        </p>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <BiCalendar className="text-gray-400" />
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getYearColor(yearData.year)}`}>
-                          {semesterData.courses.length} Courses
-                        </span>
-                      </div>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-bold">{year.year}</span>
+                    <span className="hidden sm:inline text-sm opacity-80">
+                      {year.year_name || getYearName(year.year)}
+                    </span>
                   </div>
+                </motion.button>
+              );
+            })}
+          </motion.div>
 
-                  {/* Enhanced Courses Grid */}
-                  <div className="p-6">
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {semesterData.courses.map((course, courseIndex) => (
-                        <div
-                          key={courseIndex}
-                          className="bg-gradient-to-br from-gray-50 to-white rounded-lg p-5 border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all duration-300 group"
-                        >
-                          {/* Enhanced Course Header */}
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="flex-1">
-                              <h4 className="font-semibold text-gray-900 text-sm leading-tight mb-2 group-hover:text-blue-700 transition-colors">
-                                {course.name}
-                              </h4>
-                              <div className="flex flex-wrap gap-2 mb-2">
-                                {course.code && (
-                                  <span className="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded border">
-                                    {course.code}
-                                  </span>
-                                )}
-                                {course.credits && (
-                                  <span className="inline-block px-2 py-1 bg-green-100 text-green-800 text-xs rounded border">
-                                    {course.credits} Credits
-                                  </span>
-                                )}
-                              </div>
-                              {course.description && (
-                                <p className="text-xs text-gray-600 mb-2 line-clamp-2">
-                                  {course.description}
-                                </p>
-                              )}
-                              {course.prerequisite && (
-                                <p className="text-xs text-orange-600 mb-2">
-                                  <strong>Prerequisite:</strong> {course.prerequisite}
-                                </p>
-                              )}
-                            </div>
-                            <BiBook className="text-blue-500 text-xl flex-shrink-0 ml-3 group-hover:text-blue-600 transition-colors" />
-                          </div>
-
-                          {/* Enhanced Resource Info */}
-                          <div className="flex items-center space-x-2 mb-4">
-                            <BiCode className="text-gray-400 text-sm" />
-                            <span className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded">
-                              {getResourceType(course.resource_url)}
-                            </span>
-                          </div>
-
-                          {/* Enhanced Action Button */}
-                          <Link
-                            href={course.resource_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center justify-center w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-medium rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-sm hover:shadow-md group-hover:scale-105"
-                          >
-                            <BiDownload className="mr-2 text-base" />
-                            Access Resources
-                            <BiSolidRightArrowCircle className="ml-2 text-base opacity-75" />
-                          </Link>
-                        </div>
-                      ))}
+          {/* Selected Year Content */}
+          <AnimatePresence mode="wait">
+            {selectedYearData && (
+              <motion.div
+                key={selectedYear}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-4"
+              >
+                {/* Year Summary */}
+                <div className={`${getYearColor(selectedYear).bg} rounded-xl p-4 border ${getYearColor(selectedYear).border}`}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className={`text-xl font-bold ${getYearColor(selectedYear).text}`}>
+                        Year {selectedYear} - {selectedYearData.year_name || getYearName(selectedYear)}
+                      </h2>
+                      <p className="text-gray-600 text-sm">
+                        {selectedYearData.semesters.reduce((acc, s) => acc + s.courses.length, 0)} courses across {selectedYearData.semesters.length} semesters
+                      </p>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          ))}
 
-          {/* Footer Information */}
-          <div className="bg-gray-50 rounded-lg p-6 mt-12 border border-gray-200">
-            <div className="text-center text-sm text-gray-600">
-              <p className="mb-2">
-                <strong>{coursesData.program}</strong> - {coursesData.metadata.total_courses} courses across {coursesData.metadata.total_years} years
-              </p>
-              <p className="text-xs">
-                Resources available on: {coursesData.metadata.resource_platforms.join(', ')}
-              </p>
-              <p className="text-xs mt-1">
-                Last updated: {formatDate(coursesData.metadata.last_updated)}
-              </p>
-            </div>
-          </div>
-        </div>
+                {/* Semester Accordions */}
+                {selectedYearData.semesters.map((semester, index) => {
+                  const isExpanded = expandedSemesters.has(`${selectedYear}-${semester.semester_number}`);
+                  const colors = getYearColor(selectedYear);
+
+                  return (
+                    <motion.div
+                      key={`${selectedYear}-${semester.semester_number}`}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1, duration: 0.3 }}
+                      className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden"
+                    >
+                      {/* Accordion Header */}
+                      <button
+                        onClick={() => toggleSemester(selectedYear, semester.semester_number)}
+                        className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className={`w-10 h-10 rounded-xl ${colors.bg} ${colors.text} flex items-center justify-center font-bold`}>
+                            {semester.semester_number}
+                          </div>
+                          <div className="text-left">
+                            <h3 className="font-semibold text-gray-900">
+                              {semester.semester_name || getSemesterName(semester.semester_number)}
+                            </h3>
+                            <p className="text-sm text-gray-500">{semester.courses.length} courses</p>
+                          </div>
+                        </div>
+                        <motion.div
+                          animate={{ rotate: isExpanded ? 180 : 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <ChevronDown className="w-5 h-5 text-gray-400" />
+                        </motion.div>
+                      </button>
+
+                      {/* Accordion Content */}
+                      <AnimatePresence>
+                        {isExpanded && (
+                          <motion.div
+                            initial="closed"
+                            animate="open"
+                            exit="closed"
+                            variants={accordionVariants}
+                            className="overflow-hidden"
+                          >
+                            <div className="px-6 pb-6">
+                              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {semester.courses.map((course, idx) => (
+                                  <motion.div
+                                    key={idx}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: idx * 0.05 }}
+                                    className="group bg-gray-50 hover:bg-white rounded-xl p-4 border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all duration-300"
+                                  >
+                                    <div className="flex items-start justify-between mb-3">
+                                      <div className="flex-1">
+                                        <h4 className="font-medium text-gray-900 text-sm group-hover:text-blue-600 transition-colors">
+                                          {course.name}
+                                        </h4>
+                                        <div className="flex flex-wrap gap-1.5 mt-2">
+                                          {course.code && (
+                                            <span className="inline-block px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-md font-medium">
+                                              {course.code}
+                                            </span>
+                                          )}
+                                          {course.credits && (
+                                            <span className="inline-block px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs rounded-md">
+                                              {course.credits} Credits
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+                                      <Book className="w-5 h-5 text-gray-300 group-hover:text-blue-400 transition-colors flex-shrink-0" />
+                                    </div>
+
+                                    {course.description && (
+                                      <>
+                                        <button
+                                          onClick={() => setActiveTooltip(activeTooltip === `${selectedYear}-${semester.semester_number}-${idx}` ? null : `${selectedYear}-${semester.semester_number}-${idx}`)}
+                                          className="flex items-center gap-1.5 text-gray-400 hover:text-blue-500 transition-colors mb-3"
+                                        >
+                                          <Info className="w-3.5 h-3.5" />
+                                          <span className="text-xs">Course Info</span>
+                                        </button>
+
+                                        {/* Modal Overlay */}
+                                        <AnimatePresence>
+                                          {activeTooltip === `${selectedYear}-${semester.semester_number}-${idx}` && (
+                                            <motion.div
+                                              initial={{ opacity: 0 }}
+                                              animate={{ opacity: 1 }}
+                                              exit={{ opacity: 0 }}
+                                              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+                                              onClick={() => setActiveTooltip(null)}
+                                            >
+                                              <motion.div
+                                                initial={{ scale: 0.9, opacity: 0 }}
+                                                animate={{ scale: 1, opacity: 1 }}
+                                                exit={{ scale: 0.9, opacity: 0 }}
+                                                className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[80vh] overflow-hidden"
+                                                onClick={(e) => e.stopPropagation()}
+                                              >
+                                                <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-4">
+                                                  <h3 className="text-white font-semibold">{course.name}</h3>
+                                                  {course.code && <span className="text-blue-200 text-sm">{course.code}</span>}
+                                                </div>
+                                                <div className="p-4 max-h-[60vh] overflow-y-auto">
+                                                  <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">{course.description}</p>
+                                                </div>
+                                                <div className="border-t p-3 flex justify-end">
+                                                  <button
+                                                    onClick={() => setActiveTooltip(null)}
+                                                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors"
+                                                  >
+                                                    Close
+                                                  </button>
+                                                </div>
+                                              </motion.div>
+                                            </motion.div>
+                                          )}
+                                        </AnimatePresence>
+                                      </>
+                                    )}
+
+                                    <Link
+                                      href={course.resource_url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center justify-center gap-2 w-full py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-sm font-medium rounded-lg transition-all duration-300 shadow-sm hover:shadow-md group-hover:scale-[1.02]"
+                                    >
+                                      <Download className="w-4 h-4" />
+                                      Download
+                                      <span className="text-xs opacity-70">({getResourceType(course.resource_url)})</span>
+                                    </Link>
+                                  </motion.div>
+                                ))}
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </motion.div>
+                  );
+                })}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Footer */}
+          <motion.div
+            variants={cardVariants}
+            className="text-center text-sm text-gray-500 pt-8 border-t border-gray-100"
+          >
+            <p>Resources available on: {coursesData.metadata.resource_platforms.join(' • ')}</p>
+          </motion.div>
+        </motion.div>
       ) : null}
     </div>
   );
