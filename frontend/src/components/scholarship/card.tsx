@@ -53,7 +53,7 @@ const shineVariants = {
     x: '100%',
     transition: {
       repeat: Infinity,
-      repeatType: "loop",
+      repeatType: "loop" as const,
       duration: 1.5,
       ease: "linear",
       repeatDelay: 0.5

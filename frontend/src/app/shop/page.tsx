@@ -1,6 +1,8 @@
 import React from 'react';
 import ProductGrid from '@/components/shop/ProductGrid';
 
+export const dynamic = 'force-dynamic';
+
 async function getProducts() {
     // Production-ready: Use environment variable, fallback to production backend
     // Production-ready: Use environment variable, fallback to production backend
