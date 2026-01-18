@@ -11,12 +11,10 @@ import {
   XCircle,
   ImageIcon,
   X,
-  Sparkles,
   Maximize2,
   Share2
 } from 'lucide-react'
 import { useEffect, useState, useCallback, useMemo } from 'react'
-import { format } from 'date-fns'
 
 interface Scholarship {
   id: string | number;
@@ -364,8 +362,8 @@ export default function ScholarshipCards() {
                             animate={daysLeft <= 7 ? { scale: [1, 1.05, 1] } : {}}
                             transition={{ repeat: Infinity, duration: 1.5 }}
                             className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border shadow-sm ${daysLeft <= 7 ? 'bg-red-50 text-red-600 border-red-100' :
-                                daysLeft <= 30 ? 'bg-orange-50 text-orange-600 border-orange-100' :
-                                  'bg-green-50 text-green-600 border-green-100'
+                              daysLeft <= 30 ? 'bg-orange-50 text-orange-600 border-orange-100' :
+                                'bg-green-50 text-green-600 border-green-100'
                               }`}
                           >
                             <Clock className="w-3.5 h-3.5" /> {daysLeft === 0 ? 'Due Today!' : `${daysLeft} days left`}
