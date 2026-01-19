@@ -12,8 +12,13 @@ export const metadata: Metadata = {
     default: 'ACES-KNUST',
   },
   description: 'The Official Website For The Association Of Computer Engineering Students, Kwame Nkrumah University of Science and Technology.',
+  icons: {
+    icon: '/images/aceslogo.png',
+  },
 };
 
+
+import { CartProvider } from '@/context/CartContext';
 
 export default function RootLayout({
   children,
@@ -22,7 +27,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <CartProvider>
+          {children}
+        </CartProvider>
+      </body>
     </html>
   )
 }
