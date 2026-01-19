@@ -31,7 +31,7 @@ export default function UpdateEventForm({ params }: { params: any }) {
 
   useEffect(() => {
     // Fetch event data when the component mounts and return not found if the event is not found
-    getEvent(params.id as string).then((res) => {
+    getEvent(id).then((res) => {
       if (res?.data) {
         const eventdata = res.data;
         setFormData(

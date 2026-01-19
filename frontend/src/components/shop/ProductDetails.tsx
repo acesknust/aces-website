@@ -10,6 +10,12 @@ interface ProductImage {
     color?: string;
 }
 
+interface ProductSize {
+    id: number;
+    name: string;
+    is_available: boolean;
+}
+
 interface ProductDetailsProps {
     product: {
         id: number;
@@ -20,8 +26,10 @@ interface ProductDetailsProps {
         image_color?: string; // Explicit color for main image
         stock: number;
         is_active: boolean;
+        has_sizes?: boolean;
         category?: { name: string };
         images?: ProductImage[]; // Variant images
+        sizes?: ProductSize[]; // Custom sizes from admin
     };
 }
 
@@ -170,30 +178,36 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
                         </div>
                     )}
 
-                    {/* Size Selection */}
-                    <div>
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-sm font-medium text-gray-900">Select Size</h3>
-                            <a href="#" className="text-sm text-blue-600 hover:underline">Size Guide</a>
+                    {/* Size Selection (conditional) */}
+                    {product.has_sizes !== false && (
+                        <div>
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-sm font-medium text-gray-900">Select Size</h3>
+                                <a href="#" className="text-sm text-blue-600 hover:underline">Size Guide</a>
+                            </div>
+                            <div className="flex flex-wrap gap-3">
+                                {/* Use custom sizes if defined, otherwise fallback to defaults */}
+                                {(product.sizes && product.sizes.length > 0
+                                    ? product.sizes.filter(s => s.is_available).map(size => size.name)
+                                    : ['S', 'M', 'L', 'XL', 'XXL']
+                                ).map((size) => (
+                                    <button
+                                        key={size}
+                                        onClick={() => setSelectedSize(size)}
+                                        className={`h-12 px-5 min-w-[3.5rem] rounded-xl flex items-center justify-center text-sm font-bold transition-all duration-200 border-2 ${selectedSize === size
+                                            ? 'border-gray-900 bg-gray-900 text-white shadow-md transform scale-105'
+                                            : 'border-gray-200 bg-white text-gray-900 hover:border-gray-400 hover:bg-gray-50'
+                                            }`}
+                                    >
+                                        {size}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
-                        <div className="grid grid-cols-5 gap-3 sm:flex sm:flex-wrap">
-                            {['S', 'M', 'L', 'XL', 'XXL'].map((size) => (
-                                <button
-                                    key={size}
-                                    onClick={() => setSelectedSize(size)}
-                                    className={`h-12 w-full sm:w-14 rounded-xl flex items-center justify-center text-sm font-bold transition-all duration-200 border-2 ${selectedSize === size
-                                        ? 'border-gray-900 bg-gray-900 text-white shadow-md transform scale-105'
-                                        : 'border-gray-200 bg-white text-gray-900 hover:border-gray-400 hover:bg-gray-50'
-                                        }`}
-                                >
-                                    {size}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
+                    )}
 
                     {/* Warning Message */}
-                    {(!selectedColor && hasVariants) || !selectedSize ? (
+                    {((!selectedColor && hasVariants) || (product.has_sizes !== false && !selectedSize)) ? (
                         <div className="rounded-xl bg-amber-50 p-4 border border-amber-100 flex items-start gap-3 animate-pulse">
                             <div className="p-1 rounded-full bg-amber-100 text-amber-600">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -201,7 +215,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
                                 </svg>
                             </div>
                             <p className="text-sm text-amber-800 font-medium pt-0.5">
-                                Please select {hasVariants && !selectedColor ? 'a style' : ''} {hasVariants && !selectedColor && !selectedSize ? 'and' : ''} {!selectedSize ? 'a size' : ''} to continue.
+                                Please select {hasVariants && !selectedColor ? 'a style' : ''} {hasVariants && !selectedColor && (product.has_sizes !== false && !selectedSize) ? 'and' : ''} {(product.has_sizes !== false && !selectedSize) ? 'a size' : ''} to continue.
                             </p>
                         </div>
                     ) : null}
@@ -221,7 +235,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
                             }}
                             selectedColor={selectedColor}
                             selectedSize={selectedSize}
-                            disabled={(hasVariants && !selectedColor) || !selectedSize}
+                            disabled={(hasVariants && !selectedColor) || (product.has_sizes !== false && !selectedSize)}
                         />
                         <p className="mt-3 text-center text-xs text-gray-400">Secure payment via Paystack • 24/7 Support</p>
                     </div>

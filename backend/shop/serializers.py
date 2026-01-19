@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Category, Product, Order, OrderItem, ProductImage
+from .models import Category, Product, Order, OrderItem, ProductImage, ProductSize
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -11,13 +11,21 @@ class ProductImageSerializer(serializers.ModelSerializer):
         model = ProductImage
         fields = ['id', 'image', 'color']
 
+
+class ProductSizeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductSize
+        fields = ['id', 'name', 'is_available']
+
+
 class ProductSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     images = ProductImageSerializer(many=True, read_only=True)
+    sizes = ProductSizeSerializer(many=True, read_only=True)
     
     class Meta:
         model = Product
-        fields = ['id', 'name', 'slug', 'description', 'price', 'image', 'image_color', 'stock', 'is_active', 'category', 'images']
+        fields = ['id', 'name', 'slug', 'description', 'price', 'image', 'image_color', 'stock', 'is_active', 'has_sizes', 'category', 'images', 'sizes']
 
 class OrderItemSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source='product.name', read_only=True)

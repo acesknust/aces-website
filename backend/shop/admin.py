@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Product, Order, OrderItem, ProductImage, Coupon
+from .models import Category, Product, Order, OrderItem, ProductImage, Coupon, ProductSize
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -10,12 +10,35 @@ class ProductImageInline(admin.TabularInline):
     model = ProductImage
     extra = 1
 
+
+class ProductSizeInline(admin.TabularInline):
+    model = ProductSize
+    extra = 1 # Show one empty row by default to encourage adding
+    fields = ['name', 'display_order', 'is_available']
+    ordering = ['display_order', 'name']
+    verbose_name = "Specific Size"
+    verbose_name_plural = "Specific Sizes (Leave empty for default S-XXL)"
+    # classes = ['collapse'] # Removed to make it immediately visible
+
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ['name', 'category', 'price', 'stock', 'is_active']
-    list_filter = ['category', 'is_active']
+    list_display = ['name', 'category', 'price', 'stock', 'is_active', 'has_sizes']
+    list_filter = ['category', 'is_active', 'has_sizes']
     prepopulated_fields = {'slug': ('name',)}
-    inlines = [ProductImageInline]
+    inlines = [ProductImageInline, ProductSizeInline]
+    fieldsets = (
+        (None, {
+            'fields': ('name', 'slug', 'category', 'description', 'price', 'stock', 'is_active')
+        }),
+        ('Images', {
+            'fields': ('image', 'image_color'),
+        }),
+        ('Size Options', {
+            'fields': ('has_sizes',),
+            'description': 'Check "Has sizes" to enable size selection. <strong>Note:</strong> If you keep "Has sizes" checked but do not add any specific "Size Variants" below, the standard sizes (S, M, L, XL, XXL) will be used automatically.',
+        }),
+    )
 
 class OrderItemInline(admin.TabularInline):
     model = OrderItem

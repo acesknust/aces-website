@@ -29,7 +29,7 @@ export default function UpdateScholarshipForm({ params }: { params: any }) {
 
   useEffect(() => {
     // Fetch scholarship data when the component mounts and return not found if the scholarship is not found
-    getScholarship(params.id as string).then((res) => {
+    getScholarship(id).then((res) => {
       if (res?.data) {
         const scholarshipdata = res.data;
         setFormData(

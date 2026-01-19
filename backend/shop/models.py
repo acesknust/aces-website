@@ -28,6 +28,7 @@ class Product(models.Model):
     image_color = models.CharField(max_length=50, blank=True, null=True, help_text="Color of the main image (e.g. Black)")
     stock = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True, db_index=True)
+    has_sizes = models.BooleanField(default=True, help_text="Show size selector on product page (uncheck for caps, etc.)")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -38,6 +39,26 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class ProductSize(models.Model):
+    """
+    Custom sizes for individual products.
+    Allows different size options per product (e.g., S/M/L for shirts, 7/8/9 for shoes).
+    """
+    product = models.ForeignKey(Product, related_name='sizes', on_delete=models.CASCADE)
+    name = models.CharField(max_length=20, verbose_name="Size Label (e.g., S, M, 42)", help_text="Enter the size here (e.g., 'Small', 'S', '44')")
+    display_order = models.PositiveIntegerField(default=0, verbose_name="Sort Order", help_text="e.g. 1 for Small, 2 for Medium")
+    is_available = models.BooleanField(default=True, verbose_name="In Stock?")
+
+    class Meta:
+        ordering = ['display_order', 'name']
+        unique_together = ['product', 'name']
+        verbose_name = "Product Size"
+        verbose_name_plural = "Product Sizes"
+
+    def __str__(self):
+        return f"{self.product.name} - {self.name}"
 
 class Order(models.Model):
     STATUS_CHOICES = (

@@ -155,10 +155,13 @@ const About = () => {
             transition={{ duration: 0.8 }}
             className="w-full overflow-hidden"
           >
-            <img
+            <Image
               src={groupPhoto || fallbackGroupPhoto}
               alt="ACES KNUST Group Photo"
+              width={1920}
+              height={1280}
               className="w-full h-auto object-cover"
+              priority
             />
           </motion.div>
 
