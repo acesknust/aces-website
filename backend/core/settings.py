@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'shop.apps.ShopConfig',
     'executives', # Executives app
     'courses', # Courses app
+    'staff', # Department Staff app
 
     # Third party
     'rest_framework',

@@ -40,6 +40,7 @@ urlpatterns = [
     path('api/shop/', include('shop.urls')),
     path('api/executives/', include('executives.urls')), # Executives API
     path('api/courses/', include('courses.urls')), # Courses API
+    path('api/staff/', include('staff.urls')), # Staff API
     # path('docs/', include_docs_urls(title='ACES WEBSITE API')),
     # path('schema/', get_schema_view(
     #     title="ACES WEBSITE API",
