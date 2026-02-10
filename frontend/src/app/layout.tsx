@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import './style.css'
 
+import { CartProvider } from '@/context/CartContext';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -16,9 +17,6 @@ export const metadata: Metadata = {
     icon: '/images/aceslogo.png',
   },
 };
-
-
-import { CartProvider } from '@/context/CartContext';
 
 export default function RootLayout({
   children,

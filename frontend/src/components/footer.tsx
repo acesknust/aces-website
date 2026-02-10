@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { FaInstagram, FaLinkedin, FaLocationArrow } from 'react-icons/fa';
 import { FaSquareXTwitter } from 'react-icons/fa6';
 import Link from 'next/link';
+import Image from 'next/image';
 
 // Social media links - centralized for easy updates
 const SOCIAL_LINKS = {
@@ -70,7 +71,7 @@ const Footer = () => {
         <div className="border-b border-gray-600 pb-4 flex flex-col md:flex-row justify-between items-center text-sm">
           <div className="flex items-center">
             <div className="mr-3">
-              <img src="/images/logo-white.png" alt="ACES Logo" className="h-14 w-14 object-contain" />
+              <Image src="/images/logo-white.png" alt="ACES Logo" width={56} height={56} className="h-14 w-14 object-contain" />
             </div>
             <div>
               <div className="font-semibold leading-tight">Association of Computer<br />Engineering Students</div>

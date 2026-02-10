@@ -88,10 +88,20 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
 };
 
+// Safe defaults for when useCart is called outside a CartProvider (e.g., header on non-shop pages)
+const defaultCartContext: CartContextType = {
+    items: [],
+    addItem: () => { },
+    removeItem: () => { },
+    updateQuantity: () => { },
+    clearCart: () => { },
+    total: 0,
+};
+
 export const useCart = () => {
     const context = useContext(CartContext);
     if (context === undefined) {
-        throw new Error('useCart must be used within a CartProvider');
+        return defaultCartContext;
     }
     return context;
 };
