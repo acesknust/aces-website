@@ -4,7 +4,6 @@ Django settings for core project.
 
 from pathlib import Path
 import os
-from azure.storage.blob import BlobServiceClient
 from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,19 +20,21 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # Local
+    # Local Apps
     'users.apps.UsersConfig',
     'scholarship.apps.ScholarshipConfig',
     'event.apps.EventConfig',
     'shop.apps.ShopConfig',
-    'executives', # Executives app
-    'courses', # Courses app
-    'staff', # Department Staff app
+    'executives.apps.ExecutivesConfig',
+    'courses.apps.CoursesConfig',
+    'staff.apps.StaffConfig',
+    'payment_logs.apps.PaymentLogsConfig',  # Webhook audit trail
 
     # Third party
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
+    'django_filters',
     'storages',  # Required for DigitalOcean Spaces
 ]
 
@@ -172,7 +173,16 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
-    ]
+    ],
+    # Rate Limiting — prevents brute-force on login, coupon guessing, order spam
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '30/minute',     # Anonymous users: 30 requests/min
+        'user': '60/minute',     # Authenticated users: 60 requests/min
+    },
 }
 
 CORS_ALLOWED_ORIGINS = [origin.strip() for origin in os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000').split(',')]
@@ -199,3 +209,49 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', EMAIL_HOST_USER) # Default to host user if undefined
+
+# =============================================================================
+# Logging Configuration — persistent error logs
+# =============================================================================
+LOG_DIR = os.path.join(BASE_DIR, 'logs')
+os.makedirs(LOG_DIR, exist_ok=True)
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{asctime}] {levelname} {name} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'file': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(LOG_DIR, 'django.log'),
+            'maxBytes': 5 * 1024 * 1024,  # 5 MB
+            'backupCount': 3,
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'WARNING',
+        },
+        'shop': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'payment_logs': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}

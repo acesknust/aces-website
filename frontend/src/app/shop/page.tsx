@@ -1,11 +1,10 @@
 import React from 'react';
 import ProductGrid from '@/components/shop/ProductGrid';
 
-export const dynamic = 'force-dynamic';
+// ISR: Revalidate product data every 60 seconds (was: force-dynamic + no-store)
+export const revalidate = 60;
 
 async function getProducts() {
-    // Production-ready: Use environment variable, fallback to production backend
-    // Production-ready: Use environment variable, fallback to production backend
     let apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
     if (!apiUrl) {
@@ -16,11 +15,10 @@ async function getProducts() {
         }
     }
     const res = await fetch(`${apiUrl}/api/shop/products/`, {
-        cache: 'no-store' // Disable caching entirely - always fetch fresh data
+        next: { revalidate: 60 }  // Cache for 60s, then refresh in background
     });
 
     if (!res.ok) {
-        // This will activate the closest `error.js` Error Boundary
         throw new Error('Failed to fetch products');
     }
 
