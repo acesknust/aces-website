@@ -26,7 +26,6 @@
   color: rgb(var(--foreground-rgb));
 } */
 
-
 .slick-slide > div {
   margin: 0 10px;
 }
@@ -35,5 +34,31 @@
   width: 100%;
 }
 
+/* Shining animation for loading placeholder */
+@keyframes shine {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
 
+.animate-shine {
+  animation: shine 1.5s infinite;
+}
+
+/* Shimmer animation for Executives loading cards */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 1.5s infinite;
+}
 
