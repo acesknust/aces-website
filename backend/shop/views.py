@@ -1,11 +1,13 @@
 """
 Shop views — Production-hardened (Feb 2026 Audit)
+Payment deduplication patch (Feb 18, 2026)
 """
 import hmac
 import hashlib
 import logging
 import threading
 import uuid
+from datetime import timedelta
 
 import requests
 from decimal import Decimal
@@ -13,6 +15,7 @@ from decimal import Decimal
 from django.conf import settings
 from django.db import transaction
 from django.db.models import F
+from django.utils import timezone
 from django.shortcuts import get_object_or_404
 
 from rest_framework import generics, status
@@ -105,35 +108,97 @@ class CreateOrderView(APIView):
                 except Coupon.DoesNotExist:
                     pass
 
-            # 3. Create Order + Items ATOMICALLY (FIX: prevents orphaned orders)
+            # 3. Create or Reuse Order + Items ATOMICALLY
+            # FIX (Feb 2026): Reuse existing PENDING order for same email
+            # to prevent duplicate orders when users click checkout multiple times.
+            #
+            # IMPORTANT: The select_for_update() lock and the order update MUST be
+            # in the SAME transaction.atomic() block. Otherwise, the row lock is
+            # released between the lookup and update, allowing a race condition.
+            email = user_details.get('email')
+
             with transaction.atomic():
-                order = Order.objects.create(
-                    user=request.user if request.user.is_authenticated else None,
-                    full_name=user_details.get('full_name'),
-                    email=user_details.get('email'),
-                    phone=user_details.get('phone'),
-                    address=user_details.get('address'),
-                    total_amount=total_amount,
-                    coupon=coupon,
-                    discount_amount=discount_amount,
-                    status='PENDING'
-                )
+                existing_order = Order.objects.select_for_update().filter(
+                    email=email,
+                    status='PENDING',
+                    created_at__gte=timezone.now() - timedelta(hours=1)
+                ).order_by('-created_at').first()
 
-                if coupon:
-                    Coupon.objects.filter(id=coupon.id).update(times_used=F('times_used') + 1)
+                if existing_order and existing_order.paystack_reference:
+                    # Reuse the existing PENDING order, but update it with
+                    # current cart data in case the user changed items between clicks.
+                    order = existing_order
 
-                # FIX: bulk_create instead of loop (fewer DB round-trips)
-                OrderItem.objects.bulk_create([
-                    OrderItem(
-                        order=order,
-                        product=product,
-                        quantity=quantity,
-                        price=price,
-                        selected_color=color,
-                        selected_size=size
+                    # Handle coupon changes between retries:
+                    # If user switched coupons, fix the usage counts.
+                    old_coupon = order.coupon
+                    if old_coupon != coupon:
+                        # Decrement old coupon's count (it was incremented on first create)
+                        # Guard: PositiveIntegerField cannot go below 0
+                        if old_coupon:
+                            Coupon.objects.filter(
+                                id=old_coupon.id, times_used__gt=0
+                            ).update(times_used=F('times_used') - 1)
+                        # Increment new coupon's count
+                        if coupon:
+                            Coupon.objects.filter(id=coupon.id).update(
+                                times_used=F('times_used') + 1
+                            )
+
+                    order.full_name = user_details.get('full_name')
+                    order.phone = user_details.get('phone')
+                    order.address = user_details.get('address')
+                    order.total_amount = total_amount
+                    order.coupon = coupon
+                    order.discount_amount = discount_amount
+                    order.save()
+
+                    # Replace old items with current cart
+                    order.items.all().delete()
+                    OrderItem.objects.bulk_create([
+                        OrderItem(
+                            order=order,
+                            product=product,
+                            quantity=quantity,
+                            price=price,
+                            selected_color=color,
+                            selected_size=size
+                        )
+                        for product, quantity, price, color, size in order_items_data
+                    ])
+
+                    logger.info(
+                        f"REUSING existing PENDING order #{order.id} for {email} "
+                        f"(updated with current cart data)"
                     )
-                    for product, quantity, price, color, size in order_items_data
-                ])
+                else:
+                    # Create a fresh order
+                    order = Order.objects.create(
+                        user=request.user if request.user.is_authenticated else None,
+                        full_name=user_details.get('full_name'),
+                        email=email,
+                        phone=user_details.get('phone'),
+                        address=user_details.get('address'),
+                        total_amount=total_amount,
+                        coupon=coupon,
+                        discount_amount=discount_amount,
+                        status='PENDING'
+                    )
+
+                    if coupon:
+                        Coupon.objects.filter(id=coupon.id).update(times_used=F('times_used') + 1)
+
+                    OrderItem.objects.bulk_create([
+                        OrderItem(
+                            order=order,
+                            product=product,
+                            quantity=quantity,
+                            price=price,
+                            selected_color=color,
+                            selected_size=size
+                        )
+                        for product, quantity, price, color, size in order_items_data
+                    ])
 
             # 4. Initialize Paystack Transaction
             paystack_url = "https://api.paystack.co/transaction/initialize"
@@ -425,6 +490,18 @@ class PaystackWebhookView(APIView):
                 log_entry.processing_error = "Event missing reference"
                 log_entry.save()
                 return Response({"error": "Missing reference"}, status=status.HTTP_400_BAD_REQUEST)
+
+            # FIX (Feb 2026): Idempotency check — skip if this reference
+            # was already successfully processed by a previous webhook delivery.
+            if WebhookLog.objects.filter(
+                reference=reference,
+                status='processed'
+            ).exclude(id=log_entry.id).exists():
+                log_entry.status = 'ignored'
+                log_entry.processing_error = "Already processed (idempotent skip)"
+                log_entry.save()
+                logger.info(f"WEBHOOK: Skipping duplicate delivery for {reference}")
+                return Response({"status": "already_processed"}, status=status.HTTP_200_OK)
 
             try:
                 order = Order.objects.get(paystack_reference=reference)

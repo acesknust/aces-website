@@ -121,9 +121,15 @@ export default function CartPage() {
     // Update steps based on state
     const currentStep = isCheckingOut ? 1 : 0; // 0 = Cart, 1 = Details
 
+    // FIX (Feb 2026): Ref-based lock prevents double checkout even during redirect
+    const checkoutLockRef = React.useRef(false);
+
     const handleCheckout = async (e: React.FormEvent) => {
-        // ... (existing checkout logic)
         e.preventDefault();
+
+        // Double-click / re-submit guard
+        if (loading || checkoutLockRef.current) return;
+        checkoutLockRef.current = true;
         setLoading(true);
 
         try {
@@ -151,8 +157,10 @@ export default function CartPage() {
             const data = await response.json();
 
             if (data.authorization_url) {
+                // Keep lock active — user is being redirected to Paystack
                 window.location.href = data.authorization_url;
             } else {
+                checkoutLockRef.current = false;
                 alert('Payment initialization failed');
             }
 
@@ -161,6 +169,7 @@ export default function CartPage() {
             let errorMessage = 'Something went wrong. Please try again.';
             if (error instanceof Error) errorMessage = error.message;
             alert(`Checkout Error: ${errorMessage}`);
+            checkoutLockRef.current = false; // Unlock on error so user can retry
         } finally {
             setLoading(false);
         }
