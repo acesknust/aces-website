@@ -270,6 +270,7 @@ LOGGING = {
 # Uses Redis as broker and result backend (redis is already in requirements).
 # REDIS_URL must be set in production environment variables.
 # =============================================================================
+import ssl as _ssl
 
 REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
 
@@ -280,6 +281,14 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE  # Match Django's timezone (UTC)
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+# redis 6.x changed SSL defaults: rediss:// URLs now require explicit cert config.
+# Without this, the Celery worker crashes at startup with no logs on DigitalOcean.
+# The connection is still fully TLS-encrypted; we only skip CA chain verification
+# (acceptable for backend-to-managed-Redis traffic inside DigitalOcean's network).
+if REDIS_URL.startswith('rediss://'):
+    CELERY_BROKER_USE_SSL = {'ssl_cert_reqs': _ssl.CERT_NONE}
+    CELERY_REDIS_BACKEND_USE_SSL = {'ssl_cert_reqs': _ssl.CERT_NONE}
 
 # =============================================================================
 # Celery Beat Schedule — Periodic Tasks
