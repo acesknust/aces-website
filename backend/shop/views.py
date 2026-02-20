@@ -297,7 +297,7 @@ class CreateOrderView(APIView):
 
         except Exception as e:
             logger.error(f"ORDER CREATION ERROR: {e}", exc_info=True)
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"error": "An unexpected error occurred. Please try again."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 # =============================================================================
@@ -380,7 +380,15 @@ class VerifyPaymentView(APIView):
 
                 for item in order_items:
                     product = Product.objects.select_for_update().get(id=item.product.id)
-                    product.stock -= item.quantity
+                    if product.stock >= item.quantity:
+                        product.stock -= item.quantity
+                    else:
+                        logger.warning(
+                            f"STOCK UNDERFLOW: Product #{product.id} ({product.name}) "
+                            f"had {product.stock} but order needed {item.quantity}. "
+                            f"Setting stock to 0."
+                        )
+                        product.stock = 0
                     product.save()
 
                 current_order.status = 'PAID'
@@ -389,7 +397,7 @@ class VerifyPaymentView(APIView):
 
         except Exception as e:
             logger.error(f"VERIFICATION DB ERROR: {e}", exc_info=True)
-            return Response({"error": f"Verification failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"error": "Payment verification failed. Please contact support."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         # Send Emails (Async / Non-blocking)
         def run_safe_email(func, order):
@@ -428,138 +436,200 @@ class PaystackWebhookView(APIView):
     """
     authentication_classes = []
     permission_classes = []
+    throttle_classes = []  # Webhook endpoint must NEVER be rate-limited
 
     def post(self, request):
-        # 1. Log the Raw Request (The "Inbox" Step)
+        # =====================================================================
+        # CRITICAL: Cache request.body FIRST — before ANY access to request.data
+        # =====================================================================
+        # In DRF, accessing request.data causes the JSON parser to consume the
+        # raw WSGI input stream (sets Django's _read_started = True). Any
+        # subsequent access to request.body then raises RawPostDataException.
+        # We MUST read and cache the raw bytes here, before request.data is
+        # ever touched, so the HMAC signature check below always has the original
+        # payload bytes to work with.
+        # =====================================================================
+        try:
+            raw_body = request.body  # Must be first — caches raw bytes before DRF parses JSON
+        except Exception:
+            raw_body = b''
+
+        # =====================================================================
+        # STEP 1: Log the Raw Request (The "Inbox" Step)
+        # This ALWAYS succeeds first so we have a record of every webhook hit.
+        # =====================================================================
         client_ip = request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR', ''))
 
         log_entry = WebhookLog.objects.create(
             provider='paystack',
             payload=request.data,
-            headers=dict(request.headers),
+            headers={k: v for k, v in request.headers.items()
+                     if k.lower() not in ('authorization', 'cookie')},
             ip_address=client_ip.split(',')[0].strip() if client_ip else None
         )
 
-        # 2. Verify Webhook Signature
-        paystack_signature = request.headers.get('x-paystack-signature', '')
-
-        if not paystack_signature:
-            logger.warning("WEBHOOK: Missing signature header")
-            log_entry.status = 'ignored'
-            log_entry.processing_error = "Missing signature header"
-            log_entry.save()
-            return Response({"error": "Missing signature"}, status=status.HTTP_400_BAD_REQUEST)
-
-        secret = settings.PAYSTACK_SECRET_KEY.encode('utf-8')
-        computed_signature = hmac.new(
-            secret,
-            request.body,
-            hashlib.sha512
-        ).hexdigest()
-
-        if not hmac.compare_digest(paystack_signature, computed_signature):
-            logger.warning("WEBHOOK: Invalid signature")
-            log_entry.status = 'ignored'
-            log_entry.processing_error = "Invalid HMAC signature"
-            log_entry.save()
-            return Response({"error": "Invalid signature"}, status=status.HTTP_401_UNAUTHORIZED)
-
-        # 3. Parse Event Data
+        # =====================================================================
+        # STEP 2: Extract event metadata EARLY
+        # Parse event_type and reference BEFORE signature verification so that
+        # ALL log entries (even failed/ignored ones) show what event arrived.
+        # This fixes the empty reference/event_type issue in the admin dashboard.
+        # =====================================================================
+        event_type = ''
+        data = {}
+        reference = ''
         try:
-            event_type = request.data.get('event', '')
-            data = request.data.get('data', {})
-            reference = data.get('reference', '')
-
+            event_type = request.data.get('event', '') or ''
+            data = request.data.get('data', {}) or {}
+            reference = data.get('reference', '') or ''
             log_entry.event_type = event_type
             log_entry.reference = reference
             log_entry.save()
+        except Exception as meta_err:
+            # If parsing fails, log but continue with empty values.
+            # The log entry already has the raw payload for manual inspection.
+            logger.warning(f"WEBHOOK: Failed to extract event metadata: {meta_err}")
 
-            logger.info(f"WEBHOOK: Received {event_type} for reference {reference}")
+        # =====================================================================
+        # MASTER SAFETY NET
+        # Everything below is wrapped in a try-except so that ANY unhandled
+        # error (e.g., PAYSTACK_SECRET_KEY is None, database timeout, etc.)
+        # still returns HTTP 200. This prevents Paystack from retrying
+        # endlessly due to our server errors.
+        # =====================================================================
+        try:
+            # =================================================================
+            # STEP 3: Verify Webhook Signature (HMAC-SHA512)
+            # =================================================================
+            paystack_signature = request.headers.get('x-paystack-signature', '')
 
-        except Exception as e:
-            logger.error(f"WEBHOOK: Failed to parse payload - {e}")
-            log_entry.status = 'failed'
-            log_entry.processing_error = f"Payload parsing error: {str(e)}"
-            log_entry.save()
-            return Response({"error": "Invalid payload"}, status=status.HTTP_400_BAD_REQUEST)
-
-        # 4. Handle charge.success Event
-        if event_type == 'charge.success':
-            if not reference:
+            if not paystack_signature:
+                logger.warning(f"WEBHOOK: Missing signature header for {event_type} ref={reference}")
                 log_entry.status = 'ignored'
-                log_entry.processing_error = "Event missing reference"
+                log_entry.processing_error = "Missing signature header"
                 log_entry.save()
-                return Response({"error": "Missing reference"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"status": "missing_signature"}, status=status.HTTP_200_OK)
 
-            # FIX (Feb 2026): Idempotency check — skip if this reference
-            # was already successfully processed by a previous webhook delivery.
-            if WebhookLog.objects.filter(
-                reference=reference,
-                status='processed'
-            ).exclude(id=log_entry.id).exists():
+            secret = settings.PAYSTACK_SECRET_KEY.encode('utf-8')
+            computed_signature = hmac.new(
+                secret,
+                raw_body,  # Use pre-cached raw bytes — NOT request.body (stream already consumed)
+                hashlib.sha512
+            ).hexdigest()
+
+            if not hmac.compare_digest(paystack_signature, computed_signature):
+                logger.warning(f"WEBHOOK: Invalid signature for {event_type} ref={reference}")
                 log_entry.status = 'ignored'
-                log_entry.processing_error = "Already processed (idempotent skip)"
+                log_entry.processing_error = "Invalid HMAC signature"
                 log_entry.save()
-                logger.info(f"WEBHOOK: Skipping duplicate delivery for {reference}")
-                return Response({"status": "already_processed"}, status=status.HTTP_200_OK)
+                return Response({"status": "invalid_signature"}, status=status.HTTP_200_OK)
 
-            try:
-                order = Order.objects.get(paystack_reference=reference)
+            logger.info(f"WEBHOOK: Verified {event_type} for reference {reference}")
 
-                if order.status == 'PAID':
+            # =================================================================
+            # STEP 4: Handle charge.success Event
+            # =================================================================
+            if event_type == 'charge.success':
+                if not reference:
                     log_entry.status = 'ignored'
-                    log_entry.processing_error = "Order already PAID"
+                    log_entry.processing_error = "charge.success event missing reference"
                     log_entry.save()
+                    return Response({"status": "missing_reference"}, status=status.HTTP_200_OK)
+
+                # Idempotency check — skip if this reference was already
+                # successfully processed by a previous webhook delivery.
+                if WebhookLog.objects.filter(
+                    reference=reference,
+                    status='processed'
+                ).exclude(id=log_entry.id).exists():
+                    log_entry.status = 'ignored'
+                    log_entry.processing_error = "Already processed (idempotent skip)"
+                    log_entry.save()
+                    logger.info(f"WEBHOOK: Skipping duplicate delivery for {reference}")
                     return Response({"status": "already_processed"}, status=status.HTTP_200_OK)
 
-                # FIX: Verify amount from webhook payload matches order
-                webhook_amount_kobo = data.get('amount', 0)
-                expected_amount_kobo = int(order.total_amount * 100)
+                try:
+                    order = Order.objects.get(paystack_reference=reference)
 
-                if webhook_amount_kobo != expected_amount_kobo:
-                    logger.critical(
-                        f"WEBHOOK AMOUNT MISMATCH: Order #{order.id} expected {expected_amount_kobo}, "
-                        f"webhook says {webhook_amount_kobo}. Reference: {reference}"
-                    )
+                    if order.status == 'PAID':
+                        log_entry.status = 'ignored'
+                        log_entry.processing_error = "Order already PAID"
+                        log_entry.save()
+                        return Response({"status": "already_paid"}, status=status.HTTP_200_OK)
+
+                    # Verify amount from webhook payload matches order
+                    webhook_amount_kobo = data.get('amount', 0)
+                    expected_amount_kobo = int(order.total_amount * 100)
+
+                    if webhook_amount_kobo != expected_amount_kobo:
+                        logger.critical(
+                            f"WEBHOOK AMOUNT MISMATCH: Order #{order.id} expected "
+                            f"{expected_amount_kobo}, webhook says {webhook_amount_kobo}. "
+                            f"Reference: {reference}"
+                        )
+                        log_entry.status = 'failed'
+                        log_entry.processing_error = (
+                            f"Amount mismatch: expected {expected_amount_kobo}, "
+                            f"got {webhook_amount_kobo}"
+                        )
+                        log_entry.save()
+                        return Response({"status": "amount_mismatch"}, status=status.HTTP_200_OK)
+
+                    # Process payment via shared verification logic
+                    verify_view = VerifyPaymentView()
+                    result = verify_view._complete_verification(order)
+
+                    if result.status_code == 200:
+                        log_entry.status = 'processed'
+                        log_entry.save()
+                        logger.info(f"WEBHOOK: Order #{order.id} marked as PAID")
+                        return Response({"status": "processed"}, status=status.HTTP_200_OK)
+                    else:
+                        log_entry.status = 'failed'
+                        log_entry.processing_error = f"Verification failed: {result.data}"
+                        log_entry.save()
+                        return Response({"status": "verification_failed"}, status=status.HTTP_200_OK)
+
+                except Order.DoesNotExist:
+                    logger.warning(f"WEBHOOK: No order found for reference {reference}")
+                    log_entry.status = 'ignored'
+                    log_entry.processing_error = "Order not found"
+                    log_entry.save()
+                    return Response({"status": "order_not_found"}, status=status.HTTP_200_OK)
+
+                except Exception as e:
+                    logger.error(f"WEBHOOK: Error processing charge.success - {e}")
                     log_entry.status = 'failed'
-                    log_entry.processing_error = (
-                        f"Amount mismatch: expected {expected_amount_kobo}, got {webhook_amount_kobo}"
-                    )
+                    log_entry.processing_error = str(e)
                     log_entry.save()
-                    return Response({"status": "amount_mismatch"}, status=status.HTTP_200_OK)
+                    return Response({"status": "error_logged"}, status=status.HTTP_200_OK)
 
-                # Process payment
-                verify_view = VerifyPaymentView()
-                result = verify_view._complete_verification(order)
+            # =================================================================
+            # STEP 5: Non-charge.success events (e.g., transfer.success, etc.)
+            # Log and acknowledge — we only process charge.success.
+            # =================================================================
+            log_entry.status = 'ignored'
+            log_entry.processing_error = f"Event type '{event_type}' not handled"
+            log_entry.save()
+            return Response({"status": "event_ignored"}, status=status.HTTP_200_OK)
 
-                if result.status_code == 200:
-                    log_entry.status = 'processed'
-                    log_entry.save()
-                    logger.info(f"WEBHOOK: Order #{order.id} marked as PAID")
-                else:
-                    log_entry.status = 'failed'
-                    log_entry.processing_error = f"Verification failed: {result.data}"
-                    log_entry.save()
-
-                return Response({"status": "processed"}, status=status.HTTP_200_OK)
-
-            except Order.DoesNotExist:
-                logger.warning(f"WEBHOOK: No order found for reference {reference}")
-                log_entry.status = 'ignored'
-                log_entry.processing_error = "Order not found"
-                log_entry.save()
-                return Response({"status": "order_not_found"}, status=status.HTTP_200_OK)
-            except Exception as e:
-                logger.error(f"WEBHOOK: Error processing charge.success - {e}")
+        except Exception as e:
+            # =================================================================
+            # MASTER CATCH-ALL: Handles ANY unhandled exception so that
+            # Paystack ALWAYS gets HTTP 200 and never retries due to our bugs.
+            # Examples: PAYSTACK_SECRET_KEY is None, database timeout,
+            # unexpected data format, etc.
+            # =================================================================
+            logger.error(
+                f"WEBHOOK: Unhandled exception in webhook handler: {e}",
+                exc_info=True
+            )
+            try:
                 log_entry.status = 'failed'
-                log_entry.processing_error = str(e)
+                log_entry.processing_error = f"Unhandled server error: {str(e)}"
                 log_entry.save()
-                return Response({"status": "error_logged"}, status=status.HTTP_200_OK)
-
-        log_entry.status = 'ignored'
-        log_entry.processing_error = f"Event type {event_type} not handled"
-        log_entry.save()
-        return Response({"status": "event_ignored"}, status=status.HTTP_200_OK)
+            except Exception:
+                pass  # If even the log save fails, still return 200
+            return Response({"status": "server_error"}, status=status.HTTP_200_OK)
 
 
 # =============================================================================

@@ -30,6 +30,10 @@ INSTALLED_APPS = [
     'staff.apps.StaffConfig',
     'payment_logs.apps.PaymentLogsConfig',  # Webhook audit trail
 
+    # Celery Beat — scheduled tasks (auto-expire pending orders, etc.)
+    'django_celery_beat',
+    'django_celery_results',
+
     # Third party
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
@@ -253,5 +257,42 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False,
         },
+        'shop.tasks': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
+
+# =============================================================================
+# Celery Configuration
+# Uses Redis as broker and result backend (redis is already in requirements).
+# REDIS_URL must be set in production environment variables.
+# =============================================================================
+
+REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
+
+CELERY_BROKER_URL = REDIS_URL
+CELERY_RESULT_BACKEND = 'django-db'  # Stores results in DB via django-celery-results
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE  # Match Django's timezone (UTC)
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+# =============================================================================
+# Celery Beat Schedule — Periodic Tasks
+# NOTE: Uses timedelta (already imported at top) instead of crontab to avoid
+# importing from Celery at settings-parse time, which can fail during builds.
+# =============================================================================
+
+CELERY_BEAT_SCHEDULE = {
+    # Auto-expire PENDING orders older than 24 hours.
+    # Runs every 60 minutes. Using timedelta avoids importing crontab at
+    # module load time, which can cause startup failures if Celery is absent.
+    'expire-pending-orders-hourly': {
+        'task': 'shop.expire_pending_orders',
+        'schedule': timedelta(hours=1),
     },
 }
