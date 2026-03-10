@@ -208,3 +208,44 @@ class Coupon(models.Model):
         
         return f"ACES-{role_prefix}-{random_suffix}"
 
+
+class SiteSettings(models.Model):
+    """
+    Singleton model for global site settings.
+    Only ONE row ever exists (enforced via save() override using pk=1).
+    Use SiteSettings.get() to safely fetch (or auto-create) the single row.
+    """
+    is_shop_open = models.BooleanField(
+        default=True,
+        verbose_name="Shop is Open",
+        help_text=(
+            "Uncheck to close the ACES Shop to all visitors. "
+            "Checkout and order creation will be blocked immediately."
+        )
+    )
+    closed_message = models.CharField(
+        max_length=300,
+        default="The ACES Shop is currently closed. Please check back soon!",
+        verbose_name="Closed Message",
+        help_text="Custom message shown to visitors when the shop is closed."
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Site Settings"
+        verbose_name_plural = "Site Settings"
+
+    def __str__(self):
+        state = "OPEN" if self.is_shop_open else "CLOSED"
+        return f"Site Settings \u2014 Shop is {state}"
+
+    def save(self, *args, **kwargs):
+        # Enforce singleton: always store as pk=1
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def get(cls):
+        """Return the singleton SiteSettings row, creating it with defaults if absent."""
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj

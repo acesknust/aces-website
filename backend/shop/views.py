@@ -22,7 +22,7 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Product, Category, Order, OrderItem, Coupon
+from .models import Product, Category, Order, OrderItem, Coupon, SiteSettings
 from .serializers import ProductSerializer, CategorySerializer, OrderSerializer
 from .utils import send_customer_email, send_admin_email
 from payment_logs.models import WebhookLog
@@ -57,6 +57,15 @@ class ProductDetailView(generics.RetrieveAPIView):
 
 class CreateOrderView(APIView):
     def post(self, request):
+        # --- KILL SWITCH: Block orders when the shop is closed ---
+        settings_obj = SiteSettings.get()
+        if not settings_obj.is_shop_open:
+            return Response(
+                {"error": settings_obj.closed_message},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
+        # ----------------------------------------------------------
+
         try:
             data = request.data
             cart_items = data.get('items', [])
@@ -663,6 +672,23 @@ class HealthCheckView(APIView):
                 "status": "unhealthy",
                 "error": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ShopStatusView(APIView):
+    """
+    Public endpoint — returns whether the ACES Shop is currently open.
+    The frontend polls this on every shop page load to decide whether
+    to show the product grid or a 'shop closed' banner.
+    """
+    def get(self, request):
+        s = SiteSettings.get()
+        return Response(
+            {
+                "is_open": s.is_shop_open,
+                "message": s.closed_message if not s.is_shop_open else "The ACES Shop is open!",
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class ValidateCouponView(APIView):

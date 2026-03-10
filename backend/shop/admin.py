@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Product, Order, OrderItem, ProductImage, Coupon, ProductSize
+from .models import Category, Product, Order, OrderItem, ProductImage, Coupon, ProductSize, SiteSettings
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -572,3 +572,45 @@ class CouponAdmin(admin.ModelAdmin):
     
     class Media:
         js = ('admin/js/coupon_admin.js',)  # We'll create this file
+
+
+# =============================================================================
+# Site Settings — Kill Switch Admin
+# =============================================================================
+
+@admin.register(SiteSettings)
+class SiteSettingsAdmin(admin.ModelAdmin):
+    """
+    Singleton editor for the Shop Kill Switch.
+    - Changelist auto-redirects to the edit form (no row list needed).
+    - Admins cannot add a second row or delete the one that exists.
+    """
+    fieldsets = (
+        ("🛒 Shop Availability", {
+            "fields": ("is_shop_open", "closed_message"),
+            "description": (
+                "<strong style='color:#dc2626;'>WARNING:</strong> Unchecking "
+                "\"Shop is Open\" will immediately close the shop for ALL visitors "
+                "and block new orders. Re-check to reopen."
+            ),
+        }),
+        ("Metadata", {
+            "fields": ("updated_at",),
+            "classes": ("collapse",),
+        }),
+    )
+    readonly_fields = ("updated_at",)
+
+    def has_add_permission(self, request):
+        # Block adding a second SiteSettings row
+        return not SiteSettings.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        # Never allow deletion of the singleton
+        return False
+
+    def changelist_view(self, request, extra_context=None):
+        """Redirect the changelist straight to the single settings object editor."""
+        from django.shortcuts import redirect
+        obj = SiteSettings.get()
+        return redirect(f"../{ obj.pk }/change/")

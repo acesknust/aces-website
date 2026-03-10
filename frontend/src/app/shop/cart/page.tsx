@@ -44,6 +44,7 @@ export default function CartPage() {
         address: '',
     });
     const [loading, setLoading] = useState(false);
+    const [checkoutError, setCheckoutError] = useState('');
     const router = useRouter();
 
     // Coupon State
@@ -127,6 +128,9 @@ export default function CartPage() {
     const handleCheckout = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        // Clear previous errors
+        setCheckoutError('');
+
         // Double-click / re-submit guard
         if (loading || checkoutLockRef.current) return;
         checkoutLockRef.current = true;
@@ -150,7 +154,18 @@ export default function CartPage() {
 
             if (!response.ok) {
                 const errData = await response.json().catch(() => ({}));
-                // Show detailed message if available (e.g. from Paystack response)
+
+                // Special handling for shop-closed (503)
+                if (response.status === 503) {
+                    setCheckoutError(
+                        errData.error ||
+                        'The ACES Shop is currently closed. Please check back later.'
+                    );
+                    checkoutLockRef.current = false;
+                    setLoading(false);
+                    return;
+                }
+
                 throw new Error(errData.details || errData.error || `Failed to create order: ${response.statusText}`);
             }
 
@@ -161,15 +176,15 @@ export default function CartPage() {
                 window.location.href = data.authorization_url;
             } else {
                 checkoutLockRef.current = false;
-                alert('Payment initialization failed');
+                setCheckoutError('Payment initialization failed. Please try again.');
             }
 
         } catch (error) {
             console.error('Checkout error:', error);
             let errorMessage = 'Something went wrong. Please try again.';
             if (error instanceof Error) errorMessage = error.message;
-            alert(`Checkout Error: ${errorMessage}`);
-            checkoutLockRef.current = false; // Unlock on error so user can retry
+            setCheckoutError(errorMessage);
+            checkoutLockRef.current = false;
         } finally {
             setLoading(false);
         }
@@ -439,6 +454,18 @@ export default function CartPage() {
                                         />
                                     </div>
                                 </div>
+
+                                {/* Inline checkout error banner */}
+                                {checkoutError && (
+                                    <div className="rounded-lg bg-red-50 border border-red-200 p-4">
+                                        <div className="flex items-start gap-3">
+                                            <svg className="h-5 w-5 text-red-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 15.5C3.312 17.333 4.274 19 5.814 19z" />
+                                            </svg>
+                                            <p className="text-sm font-medium text-red-800">{checkoutError}</p>
+                                        </div>
+                                    </div>
+                                )}
 
                                 <div className="pt-4">
                                     <button
