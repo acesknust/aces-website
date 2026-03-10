@@ -13,9 +13,10 @@ interface AddToCartButtonProps {
     selectedColor?: string;
     selectedSize?: string;
     disabled?: boolean;
+    isOutOfStock?: boolean;
 }
 
-const AddToCartButton: React.FC<AddToCartButtonProps> = ({ product, selectedColor, selectedSize, disabled }) => {
+const AddToCartButton: React.FC<AddToCartButtonProps> = ({ product, selectedColor, selectedSize, disabled, isOutOfStock }) => {
     const { addItem } = useCart();
     const [isAdded, setIsAdded] = useState(false);
 
@@ -60,7 +61,7 @@ const AddToCartButton: React.FC<AddToCartButtonProps> = ({ product, selectedColo
                         <svg className="h-5 w-5 transition-transform group-hover:-translate-y-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                         </svg>
-                        {disabled ? 'Select Option' : 'Add to Cart'}
+                        {isOutOfStock ? 'Out of Stock' : disabled ? 'Select Option' : 'Add to Cart'}
                     </>
                 )}
             </span>

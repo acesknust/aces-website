@@ -235,7 +235,8 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
                             }}
                             selectedColor={selectedColor}
                             selectedSize={selectedSize}
-                            disabled={(hasVariants && !selectedColor) || (product.has_sizes !== false && !selectedSize)}
+                            isOutOfStock={!product.is_active || product.stock <= 0}
+                            disabled={!product.is_active || product.stock <= 0 || (hasVariants && !selectedColor) || (product.has_sizes !== false && !selectedSize)}
                         />
                         <p className="mt-3 text-center text-xs text-gray-400">Secure payment via Paystack • 24/7 Support</p>
                     </div>
