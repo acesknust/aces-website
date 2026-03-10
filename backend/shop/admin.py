@@ -603,7 +603,12 @@ class SiteSettingsAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         # Block adding a second SiteSettings row
-        return not SiteSettings.objects.exists()
+        try:
+            return not SiteSettings.objects.exists()
+        except Exception:
+            # If migration hasn't run, exists() throws ProgrammingError
+            # Return False so the admin doesn't crash globally
+            return False
 
     def has_delete_permission(self, request, obj=None):
         # Never allow deletion of the singleton

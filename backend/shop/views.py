@@ -58,11 +58,28 @@ class ProductDetailView(generics.RetrieveAPIView):
 class CreateOrderView(APIView):
     def post(self, request):
         # --- KILL SWITCH: Block orders when the shop is closed ---
-        settings_obj = SiteSettings.get()
-        if not settings_obj.is_shop_open:
+        try:
+            # KILL SWITCH GUARD
+            # Check if the shop is globally closed before processing any data
+            try:
+                shop_status = SiteSettings.get()
+                is_open = shop_status.is_shop_open
+                closed_message = shop_status.closed_message
+            except Exception as e:
+                logger.warning(f"Kill switch check failed (migration pending?): {e}")
+                is_open = True
+                closed_message = ""
+
+            if not is_open:
+                return Response(
+                    {"error": closed_message},
+                    status=status.HTTP_503_SERVICE_UNAVAILABLE
+                )
+        except Exception as e:
+            logger.error(f"KILL SWITCH UNEXPECTED ERROR: {e}", exc_info=True)
             return Response(
-                {"error": settings_obj.closed_message},
-                status=status.HTTP_503_SERVICE_UNAVAILABLE
+                {"error": "Shop status check failed. Please try again later."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
         # ----------------------------------------------------------
 
@@ -676,19 +693,24 @@ class HealthCheckView(APIView):
 
 class ShopStatusView(APIView):
     """
-    Public endpoint — returns whether the ACES Shop is currently open.
-    The frontend polls this on every shop page load to decide whether
-    to show the product grid or a 'shop closed' banner.
+    Returns the current status of the shop from the database singleton.
     """
+    permission_classes = []
+    
     def get(self, request):
-        s = SiteSettings.get()
-        return Response(
-            {
-                "is_open": s.is_shop_open,
-                "message": s.closed_message if not s.is_shop_open else "The ACES Shop is open!",
-            },
-            status=status.HTTP_200_OK,
-        )
+        try:
+            settings_obj = SiteSettings.get()
+            is_open = settings_obj.is_shop_open
+            message = settings_obj.closed_message
+        except Exception as e:
+            logger.warning(f"ShopStatusView check failed (migration pending?): {e}")
+            is_open = True
+            message = ""
+
+        return Response({
+            "is_open": is_open,
+            "message": message
+        })
 
 
 class ValidateCouponView(APIView):
