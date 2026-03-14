@@ -1,4 +1,4 @@
-﻿alembic==1.17.2
+alembic==1.17.2
 amqp==5.3.1
 asgiref==3.9.2
 attrs==25.4.0
@@ -58,7 +58,7 @@ pillow==11.3.0
 prometheus_client==0.23.1
 prompt_toolkit==3.0.52
 pycparser==2.23
-PyJWT==2.10.1
+PyJWT==2.12.0
 PySocks==1.7.1
 python-crontab==3.3.0
 python-dateutil==2.9.0.post0
