@@ -1,0 +1,4 @@
+* text=auto
+
+# Force shell scripts to use LF line endings (critical for DigitalOcean/Linux)
+*.sh text eol=lf
