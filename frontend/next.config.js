@@ -51,6 +51,21 @@ const nextConfig = {
   async rewrites() {
     return [];
   },
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [
+          {
+            type: 'host',
+            value: 'acesknust.vercel.app',
+          },
+        ],
+        destination: 'https://www.acesknust.com/:path*',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;
