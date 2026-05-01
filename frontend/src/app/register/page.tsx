@@ -33,11 +33,16 @@ export default function RegisterPage() {
         alert('Account created successfully! Please log in.');
         router.push('/login');
       } else {
-        const data = await res.json();
-        setError(data.username?.[0] || data.email?.[0] || data.password?.[0] || 'Registration failed.');
+        const text = await res.text();
+        try {
+          const data = JSON.parse(text);
+          setError(data.username?.[0] || data.email?.[0] || data.password?.[0] || data.detail || 'Registration failed.');
+        } catch (e) {
+          setError(`Server Error (${res.status}): ${text.substring(0, 100)}`);
+        }
       }
-    } catch (err) {
-      setError('An error occurred while connecting to the server.');
+    } catch (err: any) {
+      setError(`Network Error: ${err.message || 'Could not reach server. Check NEXT_PUBLIC_API_URL.'}`);
     } finally {
       setLoading(false);
     }
