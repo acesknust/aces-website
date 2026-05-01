@@ -15,7 +15,8 @@ class Business(models.Model):
     name = models.CharField(max_length=255)
     slug = models.SlugField(unique=True, blank=True)
     description = models.TextField()
-    category = models.CharField(max_length=50, choices=BusinessCategory.choices, default=BusinessCategory.OTHER)
+    banner = models.ImageField(upload_to='student_businesses/banners/', blank=True, null=True)
+    payment_method = models.TextField(blank=True, help_text="e.g., MTN MoMo: 0541234567 (Kwame)")
     logo = models.ImageField(upload_to='student_businesses/logos/', blank=True, null=True)
     whatsapp_number = models.CharField(max_length=20, help_text="Include country code, e.g., 233541234567")
     instagram_handle = models.CharField(max_length=100, blank=True, null=True, help_text="e.g., @aces_knust")
@@ -44,6 +45,7 @@ class Business(models.Model):
 class Product(models.Model):
     business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='products')
     name = models.CharField(max_length=255)
+    category = models.CharField(max_length=50, choices=BusinessCategory.choices, default=BusinessCategory.OTHER)
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     image = models.ImageField(upload_to='student_businesses/products/')

@@ -7,8 +7,8 @@ class ProductInline(admin.TabularInline):
 
 @admin.register(Business)
 class BusinessAdmin(admin.ModelAdmin):
-    list_display = ('name', 'owner', 'category', 'whatsapp_number', 'is_approved', 'created_at')
-    list_filter = ('is_approved', 'category')
+    list_display = ('name', 'owner', 'whatsapp_number', 'is_approved', 'created_at')
+    list_filter = ('is_approved',)
     search_fields = ('name', 'owner__email', 'description')
     inlines = [ProductInline]
     prepopulated_fields = {'slug': ('name',)}
@@ -24,6 +24,6 @@ class BusinessAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'business', 'price', 'is_available')
-    list_filter = ('is_available', 'business')
+    list_display = ('name', 'business', 'category', 'price', 'is_available')
+    list_filter = ('is_available', 'category', 'business')
     search_fields = ('name', 'business__name')

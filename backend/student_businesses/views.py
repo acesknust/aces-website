@@ -56,3 +56,10 @@ class ProductDetail(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return Product.objects.filter(business__owner=self.request.user)
+
+class GlobalProductList(generics.ListAPIView):
+    serializer_class = ProductSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        return Product.objects.filter(business__is_approved=True, is_available=True)
