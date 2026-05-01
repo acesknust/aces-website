@@ -1,4 +1,5 @@
 from rest_framework import generics, permissions
+from django.shortcuts import get_object_or_404
 from .models import Business, Product
 from .serializers import BusinessSerializer, ProductSerializer
 
@@ -6,7 +7,6 @@ class BusinessList(generics.ListCreateAPIView):
     serializer_class = BusinessSerializer
 
     def get_queryset(self):
-        # Only show approved businesses on the public listing
         return Business.objects.filter(is_approved=True)
 
     def get_permissions(self):
@@ -18,9 +18,13 @@ class BusinessList(generics.ListCreateAPIView):
         serializer.save(owner=self.request.user)
 
 class BusinessDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Business.objects.all()
     serializer_class = BusinessSerializer
     lookup_field = 'slug'
+
+    def get_queryset(self):
+        if self.request.user.is_authenticated:
+            return Business.objects.filter(is_approved=True) | Business.objects.filter(owner=self.request.user)
+        return Business.objects.filter(is_approved=True)
 
     def get_permissions(self):
         if self.request.method in ['PUT', 'PATCH', 'DELETE']:
@@ -42,9 +46,8 @@ class ProductListCreate(generics.ListCreateAPIView):
         return Product.objects.filter(business__owner=self.request.user)
 
     def perform_create(self, serializer):
-        # Ensure the user owns the business they are adding a product to
         business_id = self.request.data.get('business')
-        business = Business.objects.get(id=business_id, owner=self.request.user)
+        business = get_object_or_404(Business, id=business_id, owner=self.request.user)
         serializer.save(business=business)
 
 class ProductDetail(generics.RetrieveUpdateDestroyAPIView):
