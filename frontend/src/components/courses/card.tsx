@@ -68,10 +68,15 @@ function formatSize(bytes: number | null) {
 // ─── Single Course Card ───
 function CourseCard({ course, yearNum, trackDownload }: { course: Course; yearNum: number; trackDownload: (id: number) => void }) {
   const theme = yearThemes[yearNum] || yearThemes[1];
-  const mainResource = course.resources?.[0];
-  const downloadUrl = mainResource?.download_url || course.resource_url;
-  const fileExt = mainResource?.file_extension || '';
-  const isExternal = downloadUrl?.includes('drive.google') || downloadUrl?.includes('firebase');
+  const [activeTab, setActiveTab] = useState<'all' | 'slides' | 'past_exam'>('all');
+
+  const filteredResources = useMemo(() => {
+    if (!course.resources) return [];
+    if (activeTab === 'all') return course.resources;
+    return course.resources.filter(r => r.resource_type === activeTab);
+  }, [course.resources, activeTab]);
+
+  const hasMultipleTypes = course.resources && course.resources.length > 1;
 
   return (
     <motion.div
@@ -101,40 +106,76 @@ function CourseCard({ course, yearNum, trackDownload }: { course: Course; yearNu
               {course.credits} Credits
             </span>
           )}
-          {fileExt && (
-            <span className="px-2 py-1 bg-gray-100 text-gray-500 text-xs font-medium rounded-lg uppercase">
-              {fileExt}
-            </span>
-          )}
         </div>
 
-        {/* Resource info */}
-        <div className="flex items-center gap-2 text-xs text-gray-400 mb-4">
-          {getFileIcon(fileExt)}
-          <span>{course.resource_count} {course.resource_count === 1 ? 'resource' : 'resources'}</span>
-          {mainResource?.file_size && <span>· {formatSize(mainResource.file_size)}</span>}
-        </div>
-
-        {/* Spacer to push button to bottom */}
+        {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Download button */}
-        {downloadUrl ? (
-          <a
-            href={downloadUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() => mainResource && trackDownload(mainResource.id)}
-            className="flex items-center justify-center gap-2.5 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-all duration-300 shadow-sm hover:shadow-md hover:shadow-blue-100 group-hover:scale-[1.02]"
-          >
-            {isExternal ? <ExternalLink className="w-4 h-4" /> : <Download className="w-4 h-4" />}
-            {isExternal ? 'Open Resource' : 'Download'}
-          </a>
-        ) : (
-          <div className="flex items-center justify-center w-full py-3 bg-gray-50 text-gray-400 text-sm font-medium rounded-xl border border-dashed border-gray-200">
-            No resources yet
-          </div>
-        )}
+        {/* Resource Tabs + List */}
+        <div className="mt-auto pt-3">
+          {course.resources && course.resources.length > 0 ? (
+            <div className="space-y-2">
+              {/* Filter Tabs */}
+              {hasMultipleTypes && (
+                <div className="flex gap-1 border-b border-gray-100 pb-2 mb-2">
+                  <button onClick={() => setActiveTab('all')} className={`text-[10px] uppercase tracking-wider px-2 py-1 rounded-md transition-colors ${activeTab === 'all' ? 'bg-blue-100 text-blue-700 font-bold' : 'text-gray-400 hover:bg-gray-100'}`}>
+                    All ({course.resource_count})
+                  </button>
+                  <button onClick={() => setActiveTab('slides')} className={`text-[10px] uppercase tracking-wider px-2 py-1 rounded-md transition-colors ${activeTab === 'slides' ? 'bg-blue-100 text-blue-700 font-bold' : 'text-gray-400 hover:bg-gray-100'}`}>
+                    Slides
+                  </button>
+                  <button onClick={() => setActiveTab('past_exam')} className={`text-[10px] uppercase tracking-wider px-2 py-1 rounded-md transition-colors ${activeTab === 'past_exam' ? 'bg-blue-100 text-blue-700 font-bold' : 'text-gray-400 hover:bg-gray-100'}`}>
+                    Past Qs
+                  </button>
+                </div>
+              )}
+
+              {/* Resource List */}
+              <div className="max-h-[160px] overflow-y-auto pr-1 space-y-2 scrollbar-thin">
+                {filteredResources.length > 0 ? filteredResources.map(res => {
+                  const isExternal = res.download_url?.includes('drive.google') || res.download_url?.includes('firebase');
+                  return (
+                    <a
+                      key={res.id}
+                      href={res.download_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => trackDownload(res.id)}
+                      className="group/link flex items-center justify-between p-2.5 rounded-xl bg-gray-50 border border-gray-100 hover:border-blue-200 hover:bg-blue-50/50 hover:shadow-sm transition-all text-sm"
+                    >
+                      <div className="flex items-center gap-2.5 overflow-hidden flex-1">
+                        {getFileIcon(res.file_extension)}
+                        <span className="text-gray-700 font-medium truncate group-hover/link:text-blue-600 transition-colors text-xs" title={res.title}>{res.title}</span>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                        {res.file_size && <span className="text-[10px] text-gray-400 hidden sm:inline-block">{formatSize(res.file_size)}</span>}
+                        <div className="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center group-hover/link:bg-blue-600 transition-colors">
+                          {isExternal ? <ExternalLink className="w-3.5 h-3.5 text-blue-600 group-hover/link:text-white transition-colors" /> : <Download className="w-3.5 h-3.5 text-blue-600 group-hover/link:text-white transition-colors" />}
+                        </div>
+                      </div>
+                    </a>
+                  );
+                }) : (
+                  <div className="text-xs text-gray-400 italic text-center py-3 bg-gray-50 rounded-xl">No {activeTab === 'slides' ? 'slides' : 'past questions'} available</div>
+                )}
+              </div>
+            </div>
+          ) : course.resource_url ? (
+            <a
+              href={course.resource_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2.5 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-all duration-300 shadow-sm hover:shadow-md"
+            >
+              <Download className="w-4 h-4" />
+              Download Materials
+            </a>
+          ) : (
+            <div className="flex items-center justify-center w-full py-3 bg-gray-50 text-gray-400 text-sm font-medium rounded-xl border border-dashed border-gray-200">
+              No resources yet
+            </div>
+          )}
+        </div>
       </div>
     </motion.div>
   );
@@ -331,7 +372,7 @@ export default function CoursesCard() {
                     <button
                       key={sem}
                       onClick={() => setSelectedSemester(sem)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${selectedSemester === sem ? 'bg-gray-900 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${selectedSemester === sem ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}
                     >
                       Sem {sem}
                     </button>
