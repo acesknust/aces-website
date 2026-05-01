@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CustomUser
+from .models import CustomUser, NewsletterSubscriber
 
 class CustomUserSerializer(serializers.ModelSerializer):
     """
@@ -28,8 +28,3 @@ class NewsletterSubscriberSerializer(serializers.ModelSerializer):
     class Meta:
         model = NewsletterSubscriber
         fields = ('email',)
-        if password is not None:
-            instance.set_password(password)
-        
-        instance.save()
-        return instance
