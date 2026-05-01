@@ -5,8 +5,6 @@ import Header from '@/components/header';
 import Footer from '@/components/footer';
 import Image from 'next/image';
 import Link from 'next/link';
-import Head from 'next/head';
-
 // Types for API response
 interface SocialLink {
   platform: string;
@@ -136,14 +134,6 @@ const About = () => {
 
   return (
     <>
-      <Head>
-        <title>About Us | ACES KNUST - Association of Computer Engineering Students</title>
-        <meta name="description" content="Learn about ACES KNUST - the official student body representing Computer Engineering students at KNUST. Discover our mission, vision, and meet our executive team." />
-        <meta name="keywords" content="ACES, KNUST, Computer Engineering, Student Association, Ghana, Technology, Engineering Students, ACES Executives, Mission, Vision" />
-        <meta property="og:title" content="About ACES KNUST" />
-        <meta property="og:description" content="The Association of Computer Engineering Students - Technology For Our Age" />
-        <meta property="og:type" content="website" />
-      </Head>
       <Header />
       <div className="min-h-screen bg-white pt-24">
         {/* Hero Section */}
