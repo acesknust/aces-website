@@ -1,9 +1,10 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.db.models import Q, F
-from .models import AcademicYear, Course, CourseResource
-from .serializers import AcademicYearSerializer, CourseSerializer
+from rest_framework.throttling import AnonRateThrottle
+from django.db.models import F
+from .models import AcademicYear, CourseResource
+from .serializers import AcademicYearSerializer
 
 
 class CourseListView(generics.ListAPIView):
@@ -22,35 +23,23 @@ class CourseListView(generics.ListAPIView):
         )
 
 
-class CourseSearchView(generics.ListAPIView):
-    """
-    Search courses by name or code.
-    Usage: GET /api/courses/search/?q=COE+252
-    Returns a flat list of matching courses (max 20).
-    """
-    serializer_class = CourseSerializer
-    pagination_class = None
-
-    def get_queryset(self):
-        q = self.request.query_params.get('q', '').strip()
-        if not q or len(q) < 2:
-            return Course.objects.none()
-        return Course.objects.filter(
-            Q(name__icontains=q) | Q(code__icontains=q)
-        ).select_related(
-            'semester__academic_year'
-        ).prefetch_related('resources')[:20]
+class DownloadRateThrottle(AnonRateThrottle):
+    """Limit downloads to 30 per minute per IP to prevent stat padding."""
+    rate = '30/min'
 
 
 class TrackDownloadView(APIView):
     """
     Increment download counter for a course resource.
     Fire-and-forget — always returns 204 No Content.
-    Frontend calls this when a student clicks a download link.
+    Rate limited to prevent abuse.
     """
+    throttle_classes = [DownloadRateThrottle]
+
     def post(self, request, pk):
-        updated = CourseResource.objects.filter(pk=pk, is_active=True).update(
+        CourseResource.objects.filter(pk=pk, is_active=True).update(
             download_count=F('download_count') + 1
         )
         return Response(status=status.HTTP_204_NO_CONTENT)
+
 

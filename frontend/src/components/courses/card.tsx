@@ -237,141 +237,191 @@ export default function CoursesCard() {
     );
   }, [searchQuery, allCourses]);
 
-  const renderCourseCard = (course: Course, idx: number, yearNum: number, semNum: number) => {
-    return (
-      <motion.div
-        key={`${course.id || idx}`}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: idx * 0.05 }}
-        className="group bg-gray-50 hover:bg-white rounded-xl p-4 border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all duration-300 flex flex-col h-full"
-      >
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex-1">
-            <h4 className="font-medium text-gray-900 text-sm group-hover:text-blue-600 transition-colors">
-              {course.name}
-            </h4>
-            <div className="flex flex-wrap gap-1.5 mt-2">
-              {course.code && (
-                <span className="inline-block px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-md font-medium">
-                  {course.code}
-                </span>
-              )}
-              {course.credits && (
-                <span className="inline-block px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs rounded-md">
-                  {course.credits} Credits
-                </span>
-              )}
-              {searchQuery && (
-                <span className="inline-block px-2 py-0.5 bg-gray-200 text-gray-700 text-xs rounded-md">
-                  Y{course._year}S{course._semester}
-                </span>
-              )}
-            </div>
-          </div>
-          <Book className="w-5 h-5 text-gray-300 group-hover:text-blue-400 transition-colors flex-shrink-0 ml-2" />
-        </div>
+// Separate component to hold per-card state (tooltips, tabs)
+function CourseCardItem({ 
+  course, 
+  idx, 
+  yearNum, 
+  semNum, 
+  searchQuery, 
+  getResourceType, 
+  trackDownload, 
+  formatSize 
+}: {
+  course: Course, 
+  idx: number, 
+  yearNum: number, 
+  semNum: number, 
+  searchQuery: string,
+  getResourceType: (url: string) => string,
+  trackDownload: (id: number) => void,
+  formatSize: (bytes: number | null) => string
+}) {
+  const [activeTooltip, setActiveTooltip] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<'all' | 'slides' | 'past_exam'>('all');
 
-        <div className="mt-auto pt-3 flex flex-col h-full">
-            {course.description && (
-              <>
-                <button
-                  onClick={() => setActiveTooltip(activeTooltip === `${yearNum}-${semNum}-${idx}` ? null : `${yearNum}-${semNum}-${idx}`)}
-                  className="flex items-center gap-1.5 text-gray-400 hover:text-blue-500 transition-colors mb-3 w-max"
-                >
-                  <Info className="w-3.5 h-3.5" />
-                  <span className="text-xs">Course Info</span>
-                </button>
+  const filteredResources = useMemo(() => {
+    if (!course.resources) return [];
+    if (activeTab === 'all') return course.resources;
+    return course.resources.filter(r => r.resource_type === activeTab);
+  }, [course.resources, activeTab]);
 
-                {/* Modal Overlay */}
-                <AnimatePresence>
-                  {activeTooltip === `${yearNum}-${semNum}-${idx}` && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
-                      onClick={() => setActiveTooltip(null)}
-                    >
-                      <motion.div
-                        initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0.9, opacity: 0 }}
-                        className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[80vh] flex flex-col"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-4 shrink-0 rounded-t-2xl">
-                          <h3 className="text-white font-semibold">{course.name}</h3>
-                          {course.code && <span className="text-blue-200 text-sm">{course.code}</span>}
-                        </div>
-                        <div className="p-4 overflow-y-auto">
-                          <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">{course.description}</p>
-                        </div>
-                        <div className="border-t p-3 flex justify-end shrink-0">
-                          <button
-                            onClick={() => setActiveTooltip(null)}
-                            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors"
-                          >
-                            Close
-                          </button>
-                        </div>
-                      </motion.div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </>
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: idx * 0.05 }}
+      className="group bg-gray-50 hover:bg-white rounded-xl p-4 border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all duration-300 flex flex-col h-full"
+    >
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex-1">
+          <h4 className="font-medium text-gray-900 text-sm group-hover:text-blue-600 transition-colors">
+            {course.name}
+          </h4>
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            {course.code && (
+              <span className="inline-block px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-md font-medium">
+                {course.code}
+              </span>
             )}
-
-            <div className="mt-auto">
-              {course.resources && course.resources.length > 0 ? (
-                  <div className="space-y-2 mt-2">
-                      <div className="text-xs font-semibold text-gray-500 mb-1 border-b pb-1 uppercase tracking-wider">{course.resource_count} Resource{course.resource_count !== 1 ? 's' : ''}</div>
-                      <div className="max-h-[160px] overflow-y-auto pr-1 space-y-2 scrollbar-thin">
-                      {course.resources.map(res => (
-                          <a
-                              key={res.id}
-                              href={res.download_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={() => trackDownload(res.id)}
-                              className="group/link flex items-center justify-between p-2 rounded bg-white border border-gray-100 hover:border-blue-300 hover:shadow-sm transition-all text-sm"
-                          >
-                              <div className="flex items-center gap-2 overflow-hidden flex-1">
-                                  {res.file_extension?.includes('pdf') ? <FileText className="w-4 h-4 text-red-500 flex-shrink-0" /> : 
-                                  res.file_extension?.includes('zip') || res.file_extension?.includes('rar') ? <FileArchive className="w-4 h-4 text-purple-500 flex-shrink-0" /> :
-                                  res.file_extension?.includes('ppt') ? <Presentation className="w-4 h-4 text-orange-500 flex-shrink-0" /> :
-                                  <Layers className="w-4 h-4 text-blue-500 flex-shrink-0" />}
-                                  <span className="text-gray-700 font-medium truncate group-hover/link:text-blue-600 transition-colors" title={res.title}>{res.title}</span>
-                              </div>
-                              <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                                  {res.file_size && <span className="text-[10px] text-gray-400 hidden sm:inline-block">{formatSize(res.file_size)}</span>}
-                                  <div className="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center group-hover/link:bg-blue-100 group-hover/link:text-blue-700 transition-colors">
-                                      <Download className="w-3 h-3 text-blue-500" />
-                                  </div>
-                              </div>
-                          </a>
-                      ))}
-                      </div>
-                  </div>
-              ) : course.resource_url ? (
-                  <a
-                    href={course.resource_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 w-full py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-sm font-medium rounded-lg transition-all duration-300 shadow-sm hover:shadow-md group-hover:scale-[1.02] mt-2"
-                  >
-                    <Download className="w-4 h-4" />
-                    Legacy Download
-                    <span className="text-xs opacity-70">({getResourceType(course.resource_url)})</span>
-                  </a>
-              ) : (
-                  <div className="text-xs text-gray-400 italic text-center py-2 bg-gray-100 rounded-lg mt-2">No resources available</div>
-              )}
-            </div>
+            {course.credits && (
+              <span className="inline-block px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs rounded-md">
+                {course.credits} Credits
+              </span>
+            )}
+            {searchQuery && course._year && (
+              <span className="inline-block px-2 py-0.5 bg-gray-200 text-gray-700 text-xs rounded-md">
+                Y{course._year}S{course._semester}
+              </span>
+            )}
+          </div>
         </div>
-      </motion.div>
-    );
-  };
+        <Book className="w-5 h-5 text-gray-300 group-hover:text-blue-400 transition-colors flex-shrink-0 ml-2" />
+      </div>
+
+      <div className="mt-auto pt-3 flex flex-col h-full">
+          {course.description && (
+            <>
+              <button
+                onClick={() => setActiveTooltip(!activeTooltip)}
+                className="flex items-center gap-1.5 text-gray-400 hover:text-blue-500 transition-colors mb-3 w-max"
+              >
+                <Info className="w-3.5 h-3.5" />
+                <span className="text-xs">Course Info</span>
+              </button>
+
+              {/* Modal Overlay */}
+              <AnimatePresence>
+                {activeTooltip && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+                    onClick={() => setActiveTooltip(false)}
+                  >
+                    <motion.div
+                      initial={{ scale: 0.9, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.9, opacity: 0 }}
+                      className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[80vh] flex flex-col"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-4 shrink-0 rounded-t-2xl">
+                        <h3 className="text-white font-semibold">{course.name}</h3>
+                        {course.code && <span className="text-blue-200 text-sm">{course.code}</span>}
+                      </div>
+                      <div className="p-4 overflow-y-auto">
+                        <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">{course.description}</p>
+                      </div>
+                      <div className="border-t p-3 flex justify-end shrink-0">
+                        <button
+                          onClick={() => setActiveTooltip(false)}
+                          className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors"
+                        >
+                          Close
+                        </button>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </>
+          )}
+
+          <div className="mt-auto">
+            {course.resources && course.resources.length > 0 ? (
+                <div className="space-y-2 mt-2">
+                    {/* Filter Tabs */}
+                    <div className="flex gap-1 border-b border-gray-100 pb-2 mb-2">
+                      <button 
+                        onClick={() => setActiveTab('all')}
+                        className={`text-[10px] uppercase tracking-wider px-2 py-1 rounded-md transition-colors ${activeTab === 'all' ? 'bg-blue-100 text-blue-700 font-bold' : 'text-gray-500 hover:bg-gray-100'}`}
+                      >
+                        All ({course.resource_count})
+                      </button>
+                      <button 
+                        onClick={() => setActiveTab('slides')}
+                        className={`text-[10px] uppercase tracking-wider px-2 py-1 rounded-md transition-colors ${activeTab === 'slides' ? 'bg-blue-100 text-blue-700 font-bold' : 'text-gray-500 hover:bg-gray-100'}`}
+                      >
+                        Slides
+                      </button>
+                      <button 
+                        onClick={() => setActiveTab('past_exam')}
+                        className={`text-[10px] uppercase tracking-wider px-2 py-1 rounded-md transition-colors ${activeTab === 'past_exam' ? 'bg-blue-100 text-blue-700 font-bold' : 'text-gray-500 hover:bg-gray-100'}`}
+                      >
+                        Past Qs
+                      </button>
+                    </div>
+
+                    <div className="max-h-[160px] overflow-y-auto pr-1 space-y-2 scrollbar-thin">
+                    {filteredResources.length > 0 ? filteredResources.map(res => (
+                        <a
+                            key={res.id}
+                            href={res.download_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => trackDownload(res.id)}
+                            className="group/link flex items-center justify-between p-2 rounded bg-white border border-gray-100 hover:border-blue-300 hover:shadow-sm transition-all text-sm"
+                        >
+                            <div className="flex items-center gap-2 overflow-hidden flex-1">
+                                {res.file_extension?.includes('pdf') ? <FileText className="w-4 h-4 text-red-500 flex-shrink-0" /> : 
+                                res.file_extension?.includes('zip') || res.file_extension?.includes('rar') ? <FileArchive className="w-4 h-4 text-purple-500 flex-shrink-0" /> :
+                                res.file_extension?.includes('ppt') ? <Presentation className="w-4 h-4 text-orange-500 flex-shrink-0" /> :
+                                <Layers className="w-4 h-4 text-blue-500 flex-shrink-0" />}
+                                <span className="text-gray-700 font-medium truncate group-hover/link:text-blue-600 transition-colors" title={res.title}>{res.title}</span>
+                            </div>
+                            <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                                {res.file_size && <span className="text-[10px] text-gray-400 hidden sm:inline-block">{formatSize(res.file_size)}</span>}
+                                <div className="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center group-hover/link:bg-blue-100 group-hover/link:text-blue-700 transition-colors">
+                                    <Download className="w-3 h-3 text-blue-500" />
+                                </div>
+                            </div>
+                        </a>
+                    )) : (
+                      <div className="text-xs text-gray-400 italic text-center py-2 bg-gray-50 rounded-lg">No {activeTab === 'slides' ? 'slides' : 'past questions'} available</div>
+                    )}
+                    </div>
+                </div>
+            ) : course.resource_url ? (
+                <a
+                  href={course.resource_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-sm font-medium rounded-lg transition-all duration-300 shadow-sm hover:shadow-md group-hover:scale-[1.02] mt-2"
+                >
+                  <Download className="w-4 h-4" />
+                  Legacy Download
+                  <span className="text-xs opacity-70">({getResourceType(course.resource_url)})</span>
+                </a>
+            ) : (
+                <div className="text-xs text-gray-400 italic text-center py-2 bg-gray-100 rounded-lg mt-2">No resources available</div>
+            )}
+          </div>
+      </div>
+    </motion.div>
+  );
+}
 
   // Error state
   if (!loading && error) {
@@ -498,9 +548,19 @@ export default function CoursesCard() {
                 </div>
                 {searchResults.length > 0 ? (
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {searchResults.map((course, idx) => 
-                            renderCourseCard(course, idx, course._year || 0, course._semester || 0)
-                        )}
+                        {searchResults.map((course, idx) => (
+                            <CourseCardItem
+                              key={course.id || idx}
+                              course={course}
+                              idx={idx}
+                              yearNum={course._year || 0}
+                              semNum={course._semester || 0}
+                              searchQuery={searchQuery}
+                              getResourceType={getResourceType}
+                              trackDownload={trackDownload}
+                              formatSize={formatSize}
+                            />
+                        ))}
                     </div>
                 ) : (
                     <div className="text-center py-12 bg-white rounded-2xl border border-gray-100 shadow-sm">
@@ -628,9 +688,19 @@ export default function CoursesCard() {
                                 <div className="px-6 pb-6">
                                   {semester.courses.length > 0 ? (
                                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                      {semester.courses.map((course, idx) => 
-                                        renderCourseCard(course, idx, selectedYear, semester.semester_number)
-                                      )}
+                                      {semester.courses.map((course, idx) => (
+                                        <CourseCardItem
+                                          key={course.id || idx}
+                                          course={course}
+                                          idx={idx}
+                                          yearNum={selectedYear}
+                                          semNum={semester.semester_number}
+                                          searchQuery={searchQuery}
+                                          getResourceType={getResourceType}
+                                          trackDownload={trackDownload}
+                                          formatSize={formatSize}
+                                        />
+                                      ))}
                                     </div>
                                   ) : (
                                     <div className="text-center py-6 text-gray-400 text-sm italic">
