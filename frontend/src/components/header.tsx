@@ -55,6 +55,11 @@ const Header = () => {
       label: 'Shop',
       href: '/shop',
       isActive: pathname?.startsWith('/shop')
+    },
+    {
+      label: 'Marketplace',
+      href: '/marketplace',
+      isActive: pathname?.startsWith('/marketplace')
     }
   ]
 
