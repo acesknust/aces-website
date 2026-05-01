@@ -34,6 +34,32 @@ class AdminLoginView(APIView):
         else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
+class StudentLoginView(APIView):
+    """
+    Login for all users (students and admins).
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request, format=None):
+        data = request.data
+        email = data.get('email', None)
+        password = data.get('password', None)
+
+        user = authenticate(email=email, password=password)
+        
+        if user is not None:
+            try:
+                refresh = RefreshToken.for_user(user)
+                return Response({
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                    'is_staff': user.is_staff
+                })
+            except Exception as e:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
 def authenticate(email, password):
     """
     Authenticate user.

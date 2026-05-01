@@ -17,7 +17,7 @@ const LoginPage: React.FC = () => {
   const handleLogin = async () => {
     setError(null);
     try {
-      const response = await axiosInstance.post('/user/admin/login/', {
+      const response = await axiosInstance.post('/user/login/', {
         email,
         password,
       });
@@ -28,7 +28,11 @@ const LoginPage: React.FC = () => {
       axiosInstance.defaults.headers['Authorization'] =
         'Bearer ' + localStorage.getItem('access_token');
 
-      adminNavigate();
+      if (response.data.is_staff) {
+        adminNavigate();
+      } else {
+        window.location.href = '/vendor-dashboard';
+      }
     } catch (error) {
       console.error('Login failed:', error);
       setError('Invalid email or password');
@@ -38,7 +42,7 @@ const LoginPage: React.FC = () => {
   return (
     <div className="flex flex-col items-center justify-center w-screen h-screen bg-gray-100">
       <div className="flex flex-col items-center justify-center w-96 h-96 bg-white rounded-lg shadow-sm">
-        <h1 className="text-3xl font-semibold text-gray-800">Admin Login</h1>
+        <h1 className="text-3xl font-semibold text-gray-800">Login</h1>
         <div className="w-72 mt-4">
           <label className="text-sm font-semibold text-gray-600">Email</label>
           <input
