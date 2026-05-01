@@ -1,6 +1,8 @@
 import axios , { AxiosInstance } from 'axios';
 
-const baseURL: string = 'https://acesknustbackend.azurewebsites.net/api';
+const baseURL: string = process.env.NEXT_PUBLIC_API_URL
+  ? `${process.env.NEXT_PUBLIC_API_URL}/api`
+  : 'http://localhost:8000/api';
 
 const axiosInstance: AxiosInstance = axios.create({
     baseURL: baseURL,

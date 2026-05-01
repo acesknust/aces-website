@@ -6,36 +6,8 @@ from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import CustomUser
 
-
 from .serializers import CustomUserSerializer
 
-
-# class UserCreate(APIView):
-#     """
-#     Creates user.
-#     """
-#     permission_classes = [AllowAny]
-    
-#     def post(self, request, format='json'):
-#         serializer = CustomUserSerializer(data=request.data)
-        
-#         if serializer.is_valid():
-#             user = serializer.save()
-            
-#             if user:
-#                 return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
- 
-# use generic views
-
-
-class UserCreate(generics.CreateAPIView):
-    """
-    Creates user.
-    """
-    permission_classes = [AllowAny]
-    serializer_class = CustomUserSerializer
 
 class AdminLoginView(APIView):
     """
@@ -88,6 +60,3 @@ class LogoutView(APIView):
             return Response(status=status.HTTP_205_RESET_CONTENT)
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-
-
-    

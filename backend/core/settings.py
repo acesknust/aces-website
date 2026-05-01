@@ -8,8 +8,13 @@ from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-3=n18lj@f2ae3sbuap&k=$1$)(mfu7o8#thg5)h^$v2!acwvqn')
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+
+SECRET_KEY = os.environ.get('SECRET_KEY')
+if not SECRET_KEY and not DEBUG:
+    raise ValueError("SECRET_KEY environment variable is required in production.")
+elif not SECRET_KEY:
+    SECRET_KEY = 'django-insecure-3=n18lj@f2ae3sbuap&k=$1$)(mfu7o8#thg5)h^$v2!acwvqn'
 ALLOWED_HOSTS = [h.strip() for h in os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')]
 # Always allow DigitalOcean app domains in production
 if not DEBUG:
