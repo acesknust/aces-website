@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
-import { Search, Store, Instagram, MessageCircle, ChevronRight, Filter } from 'lucide-react';
+import { Search, Store, Instagram, ChevronRight, Filter } from 'lucide-react';
 
 interface Business {
   id: number;

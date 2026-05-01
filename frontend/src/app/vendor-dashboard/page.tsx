@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
-import { Store, Plus, Image as ImageIcon, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { Store, Plus, CheckCircle, Clock } from 'lucide-react';
 
 const CATEGORIES = [
   'Food & Beverages',
@@ -200,6 +200,7 @@ export default function VendorDashboard() {
               {/* Business Status Card */}
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 flex flex-col md:flex-row items-center gap-6">
                 <div className="w-24 h-24 bg-gray-100 rounded-2xl flex items-center justify-center overflow-hidden shrink-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   {business.logo ? <img src={business.logo} alt={business.name} className="w-full h-full object-cover" /> : <Store className="text-gray-400" size={32} />}
                 </div>
                 <div className="flex-grow text-center md:text-left">
@@ -229,6 +230,7 @@ export default function VendorDashboard() {
                     {business.products.map((p: any) => (
                       <div key={p.id} className="flex gap-4 border border-gray-100 rounded-2xl p-4 bg-gray-50">
                         <div className="w-20 h-20 bg-gray-200 rounded-xl overflow-hidden shrink-0">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
                         </div>
                         <div>
