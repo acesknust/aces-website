@@ -1,6 +1,6 @@
 from rest_framework import generics, permissions
-from .models import Business
-from .serializers import BusinessSerializer
+from .models import Business, Product
+from .serializers import BusinessSerializer, ProductSerializer
 
 class BusinessList(generics.ListCreateAPIView):
     serializer_class = BusinessSerializer
@@ -33,3 +33,23 @@ class MyBusinessList(generics.ListAPIView):
 
     def get_queryset(self):
         return Business.objects.filter(owner=self.request.user)
+
+class ProductListCreate(generics.ListCreateAPIView):
+    serializer_class = ProductSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Product.objects.filter(business__owner=self.request.user)
+
+    def perform_create(self, serializer):
+        # Ensure the user owns the business they are adding a product to
+        business_id = self.request.data.get('business')
+        business = Business.objects.get(id=business_id, owner=self.request.user)
+        serializer.save(business=business)
+
+class ProductDetail(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = ProductSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Product.objects.filter(business__owner=self.request.user)
