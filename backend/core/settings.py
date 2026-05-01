@@ -143,25 +143,52 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# DigitalOcean Spaces Configuration (S3-compatible) for Media Files
-USE_SPACES = os.environ.get('USE_SPACES', 'False') == 'True'
+# =============================================================================
+# Cloud Storage Configuration (S3-compatible: Cloudflare R2 / DO Spaces / AWS)
+# =============================================================================
+# Enable cloud storage in production by setting USE_CLOUD_STORAGE=True
+# Supports Cloudflare R2 (recommended), DigitalOcean Spaces, or any S3-compatible service.
+#
+# Required env vars when enabled:
+#   S3_ACCESS_KEY, S3_SECRET_KEY, S3_BUCKET_NAME, S3_ENDPOINT_URL
+#   S3_PUBLIC_URL  (the public-facing URL for serving files)
+#
+# For Cloudflare R2:
+#   S3_ENDPOINT_URL = https://<account-id>.r2.cloudflarestorage.com
+#   S3_PUBLIC_URL   = https://pub-<hash>.r2.dev  (or your custom domain)
+# =============================================================================
 
-if USE_SPACES:
-    # Production: Use DigitalOcean Spaces for persistent media storage
-    AWS_ACCESS_KEY_ID = os.environ.get('SPACES_ACCESS_KEY')
-    AWS_SECRET_ACCESS_KEY = os.environ.get('SPACES_SECRET_KEY')
-    AWS_STORAGE_BUCKET_NAME = os.environ.get('SPACES_BUCKET_NAME', 'aces-shop-media')
-    AWS_S3_REGION_NAME = os.environ.get('SPACES_REGION', 'nyc3')
-    AWS_S3_ENDPOINT_URL = f"https://{AWS_S3_REGION_NAME}.digitaloceanspaces.com"
+USE_CLOUD_STORAGE = (
+    os.environ.get('USE_CLOUD_STORAGE', 
+    os.environ.get('USE_SPACES', 'False'))  # backward compat
+) == 'True'
+
+if USE_CLOUD_STORAGE:
+    # Credentials (with backward-compat fallbacks for old SPACES_* names)
+    AWS_ACCESS_KEY_ID = os.environ.get('S3_ACCESS_KEY', os.environ.get('SPACES_ACCESS_KEY'))
+    AWS_SECRET_ACCESS_KEY = os.environ.get('S3_SECRET_KEY', os.environ.get('SPACES_SECRET_KEY'))
+    AWS_STORAGE_BUCKET_NAME = os.environ.get('S3_BUCKET_NAME', os.environ.get('SPACES_BUCKET_NAME', 'aces-media'))
+    AWS_S3_ENDPOINT_URL = os.environ.get('S3_ENDPOINT_URL', '')
+    AWS_S3_REGION_NAME = os.environ.get('S3_REGION', 'auto')  # R2 uses 'auto'
+
+    # Public URL for serving files (R2 public domain or custom domain)
+    S3_PUBLIC_URL = os.environ.get('S3_PUBLIC_URL', '')
+
+    # S3 settings
     AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
     AWS_DEFAULT_ACL = 'public-read'
     AWS_S3_FILE_OVERWRITE = False
     AWS_QUERYSTRING_AUTH = False
-    
-    # Use Spaces for media files
+    AWS_S3_SIGNATURE_VERSION = 's3v4'  # Required for R2
+
+    # Use custom domain for serving files if provided
+    if S3_PUBLIC_URL:
+        AWS_S3_CUSTOM_DOMAIN = S3_PUBLIC_URL.replace('https://', '').rstrip('/')
+
+    # Storage backend
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-    MEDIA_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.{AWS_S3_REGION_NAME}.digitaloceanspaces.com/"
-    print(f"MEDIA STORAGE: DigitalOcean Spaces ({AWS_STORAGE_BUCKET_NAME})")
+    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/" if S3_PUBLIC_URL else f"{AWS_S3_ENDPOINT_URL}/{AWS_STORAGE_BUCKET_NAME}/"
+    print(f"MEDIA STORAGE: Cloud Storage ({AWS_STORAGE_BUCKET_NAME} via {AWS_S3_ENDPOINT_URL})")
 else:
     # Local development: use filesystem
     MEDIA_URL = '/media/'

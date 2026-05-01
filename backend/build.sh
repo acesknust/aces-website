@@ -1,6 +1,6 @@
 #!/bin/bash
 # Post-deploy script for DigitalOcean App Platform
-# This script runs migrations and loads initial course data
+# This script runs migrations, loads initial data, and migrates legacy resources
 
 echo "Running database migrations..."
 python manage.py migrate --no-input
@@ -20,4 +20,8 @@ else:
     print(f'Courses already exist ({Course.objects.count()} found). Skipping import.')
 "
 
+echo "Migrating legacy resource URLs to CourseResource objects..."
+python manage.py migrate_legacy_resources
+
 echo "Build complete!"
+
