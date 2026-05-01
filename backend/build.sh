@@ -2,6 +2,9 @@
 # Post-deploy script for DigitalOcean App Platform
 # This script runs migrations, loads initial data, and migrates legacy resources
 
+echo "Making migrations..."
+python manage.py makemigrations
+
 echo "Running database migrations..."
 python manage.py migrate --no-input
 
