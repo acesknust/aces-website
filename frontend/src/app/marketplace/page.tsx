@@ -207,7 +207,7 @@ export default function MarketplacePage() {
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">No businesses found</h3>
               <p className="text-gray-500 max-w-md mx-auto">
-                We couldn't find any businesses matching your search criteria. Try selecting a different category.
+                We couldn&apos;t find any businesses matching your search criteria. Try selecting a different category.
               </p>
             </motion.div>
           )}

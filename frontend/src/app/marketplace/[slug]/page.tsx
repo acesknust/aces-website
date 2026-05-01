@@ -226,7 +226,7 @@ export default function BusinessStorefront() {
                 <PackageSearch className="text-gray-300" size={32} />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">No products yet</h3>
-              <p className="text-gray-500">This business hasn't listed any products yet. Check back later!</p>
+              <p className="text-gray-500">This business hasn&apos;t listed any products yet. Check back later!</p>
             </motion.div>
           )}
         </div>

@@ -243,7 +243,7 @@ export default function VendorDashboard() {
                   </div>
                 ) : (
                   <div className="text-center py-8 bg-gray-50 rounded-2xl border border-dashed border-gray-200 mb-8">
-                    <p className="text-gray-500">You haven't added any products yet.</p>
+                    <p className="text-gray-500">You haven&apos;t added any products yet.</p>
                   </div>
                 )}
 
