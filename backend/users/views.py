@@ -60,3 +60,9 @@ class LogoutView(APIView):
             return Response(status=status.HTTP_205_RESET_CONTENT)
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+from .serializers import NewsletterSubscriberSerializer
+
+class SubscribeNewsletterView(generics.CreateAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = NewsletterSubscriberSerializer

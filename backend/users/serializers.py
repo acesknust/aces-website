@@ -20,6 +20,16 @@ class CustomUserSerializer(serializers.ModelSerializer):
         
         if password is not None:
             instance.set_password(password)
+        instance.save()
+        
+        return instance
+
+class NewsletterSubscriberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NewsletterSubscriber
+        fields = ('email',)
+        if password is not None:
+            instance.set_password(password)
         
         instance.save()
         return instance

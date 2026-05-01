@@ -32,16 +32,21 @@ const Footer = () => {
     setIsSubmitting(true);
     setMessage(null);
 
-    // Simulate API call - replace with actual endpoint when available
+    // Call API endpoint
     try {
-      // TODO: Replace with actual newsletter API endpoint
-      // await fetch('/api/newsletter/subscribe', {
-      //   method: 'POST',
-      //   body: JSON.stringify({ email }),
-      // });
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiUrl}/api/user/newsletter/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
 
-      // For now, show success message
-      await new Promise(resolve => setTimeout(resolve, 500));
+      if (!response.ok) {
+        throw new Error('Failed to subscribe');
+      }
+
       setMessage({ type: 'success', text: 'Thanks for subscribing!' });
       setEmail('');
     } catch {
