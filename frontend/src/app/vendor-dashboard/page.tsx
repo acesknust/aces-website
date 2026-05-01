@@ -24,13 +24,15 @@ export default function VendorDashboard() {
   // Forms state
   const [busName, setBusName] = useState('');
   const [busDesc, setBusDesc] = useState('');
-  const [busCategory, setBusCategory] = useState(CATEGORIES[0]);
   const [busWhatsapp, setBusWhatsapp] = useState('');
   const [busInsta, setBusInsta] = useState('');
+  const [busPayment, setBusPayment] = useState('');
   const [busLogo, setBusLogo] = useState<File | null>(null);
+  const [busBanner, setBusBanner] = useState<File | null>(null);
 
   const [prodName, setProdName] = useState('');
   const [prodDesc, setProdDesc] = useState('');
+  const [prodCategory, setProdCategory] = useState(CATEGORIES[0]);
   const [prodPrice, setProdPrice] = useState('');
   const [prodImage, setProdImage] = useState<File | null>(null);
 
@@ -73,10 +75,11 @@ export default function VendorDashboard() {
     const formData = new FormData();
     formData.append('name', busName);
     formData.append('description', busDesc);
-    formData.append('category', busCategory);
     formData.append('whatsapp_number', busWhatsapp);
+    if (busPayment) formData.append('payment_method', busPayment);
     if (busInsta) formData.append('instagram_handle', busInsta);
     if (busLogo) formData.append('logo', busLogo);
+    if (busBanner) formData.append('banner', busBanner);
 
     try {
       const res = await fetch(`${apiUrl}/api/student-businesses/`, {
@@ -107,6 +110,7 @@ export default function VendorDashboard() {
     const formData = new FormData();
     formData.append('business', business.id);
     formData.append('name', prodName);
+    formData.append('category', prodCategory);
     formData.append('description', prodDesc);
     formData.append('price', prodPrice);
     if (prodImage) formData.append('image', prodImage);
@@ -170,10 +174,8 @@ export default function VendorDashboard() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                    <select value={busCategory} onChange={e => setBusCategory(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                      {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method / Info</label>
+                    <input type="text" placeholder="e.g., MoMo: 054... (Kwame)" value={busPayment} onChange={e => setBusPayment(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp Number</label>
@@ -189,6 +191,10 @@ export default function VendorDashboard() {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Business Logo</label>
                     <input type="file" accept="image/*" onChange={e => setBusLogo(e.target.files?.[0] || null)} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm" />
                   </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Store Banner (Optional)</label>
+                  <input type="file" accept="image/*" onChange={e => setBusBanner(e.target.files?.[0] || null)} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm" />
                 </div>
                 <button type="submit" className="w-full py-4 bg-gray-900 text-white rounded-xl font-bold hover:bg-blue-600 transition-colors">
                   Submit for Approval
@@ -251,10 +257,16 @@ export default function VendorDashboard() {
                 <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
                   <h4 className="font-bold text-gray-900 flex items-center gap-2 mb-4"><Plus size={18} /> Add New Product</h4>
                   <form onSubmit={handleAddProduct} className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
                         <input required type="text" value={prodName} onChange={e => setProdName(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                        <select value={prodCategory} onChange={e => setProdCategory(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                          {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Price (GH₵)</label>

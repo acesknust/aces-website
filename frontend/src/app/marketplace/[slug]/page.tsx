@@ -25,6 +25,8 @@ interface Business {
   description: string;
   category: string;
   logo: string | null;
+  banner: string | null;
+  payment_method: string;
   whatsapp_number: string;
   instagram_handle: string | null;
   owner_name: string;
@@ -109,9 +111,18 @@ export default function BusinessStorefront() {
             animate={{ opacity: 1, y: 0 }}
             className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 flex flex-col md:flex-row gap-8 items-start md:items-center relative overflow-hidden"
           >
-            {/* Background decoration */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-50 to-teal-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 opacity-60"></div>
+            {/* Background Banner */}
+            {business.banner ? (
+              <div 
+                className="absolute inset-0 z-0 opacity-20 object-cover w-full h-full"
+                style={{ backgroundImage: `url(${business.banner})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+              ></div>
+            ) : (
+              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-50 to-teal-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 opacity-60 z-0"></div>
+            )}
             
+            <div className="absolute inset-0 bg-gradient-to-r from-white via-white/95 to-white/80 z-0"></div>
+
             <div className="w-32 h-32 md:w-40 md:h-40 rounded-3xl bg-gray-50 border-2 border-gray-100 overflow-hidden flex items-center justify-center shrink-0 shadow-md z-10">
               {business.logo ? (
                 <Image src={business.logo} alt={business.name} width={160} height={160} className="w-full h-full object-cover" />
@@ -128,9 +139,16 @@ export default function BusinessStorefront() {
                 </span>
               </div>
               
-              <p className="text-gray-600 mb-6 max-w-2xl text-lg leading-relaxed">
+              <p className="text-gray-600 mb-4 max-w-2xl text-lg leading-relaxed">
                 {business.description}
               </p>
+
+              {business.payment_method && (
+                <div className="mb-6 p-3 bg-blue-50 border border-blue-100 rounded-xl inline-block">
+                  <p className="text-sm font-semibold text-blue-900">Payment Methods</p>
+                  <p className="text-sm text-blue-800">{business.payment_method}</p>
+                </div>
+              )}
               
               <div className="flex flex-wrap items-center gap-4">
                 <a 

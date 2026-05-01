@@ -75,7 +75,7 @@ export default function RegisterPage() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
-                  placeholder="kelvin123"
+                  placeholder="aces_student"
                 />
               </div>
             </div>
@@ -90,7 +90,7 @@ export default function RegisterPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
-                  placeholder="kelvin@knust.edu.gh"
+                  placeholder="student@knust.edu.gh"
                 />
               </div>
             </div>
@@ -108,6 +108,7 @@ export default function RegisterPage() {
                   placeholder="••••••••"
                 />
               </div>
+              <p className="text-xs text-gray-500 mt-2 ml-1">Must be at least 8 characters long.</p>
             </div>
 
             <button
