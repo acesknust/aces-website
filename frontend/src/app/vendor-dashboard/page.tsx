@@ -7,7 +7,7 @@ import axiosInstance from '../api/axios';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
 import Link from 'next/link';
-import { Store, Plus, CheckCircle, Clock, ExternalLink, Package, AlertCircle, Edit3, X, Eye, EyeOff } from 'lucide-react';
+import { Store, Plus, CheckCircle, Clock, ExternalLink, Package, AlertCircle, Edit3, X, Eye, EyeOff, Trash2 } from 'lucide-react';
 
 const CATEGORIES = [
   'Food & Beverages',
@@ -177,6 +177,18 @@ export default function VendorDashboard() {
       fetchMyBusiness();
     } catch (err) {
       showToast('Failed to update product status.', 'error');
+    }
+  };
+
+  const handleDeleteProduct = async (productId: number) => {
+    if (!confirm('Are you sure you want to delete this product? This action cannot be undone.')) return;
+    
+    try {
+      await axiosInstance.delete(`/student-businesses/products/${productId}/`);
+      showToast('Product deleted successfully.', 'success');
+      fetchMyBusiness();
+    } catch (err) {
+      showToast('Failed to delete product.', 'error');
     }
   };
 
@@ -541,7 +553,7 @@ export default function VendorDashboard() {
                         <div className="min-w-0">
                           <h4 className="font-bold text-gray-900 line-clamp-1">{p.name}</h4>
                           <p className="text-blue-600 font-semibold text-sm mb-1">GH₵{p.price}</p>
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2 mt-2">
                             <span className="text-gray-400 text-xs">{p.category}</span>
                             <button 
                               onClick={() => handleToggleProduct(p.id, p.is_available)}
@@ -552,6 +564,12 @@ export default function VendorDashboard() {
                               }`}
                             >
                               {p.is_available ? <><Eye size={12}/> Available</> : <><EyeOff size={12}/> Hidden</>}
+                            </button>
+                            <button
+                              onClick={() => handleDeleteProduct(p.id)}
+                              className="text-xs px-2 py-1 rounded flex items-center gap-1 font-medium bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors"
+                            >
+                              <Trash2 size={12} /> Delete
                             </button>
                           </div>
                         </div>
