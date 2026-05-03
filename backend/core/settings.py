@@ -152,7 +152,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# STATICFILES_STORAGE is deprecated in Django 4.2+, handled via STORAGES below
 
 # =============================================================================
 # Cloud Storage Configuration (S3-compatible: Cloudflare R2 / DO Spaces / AWS)
@@ -196,12 +196,19 @@ if USE_CLOUD_STORAGE:
     if S3_PUBLIC_URL:
         AWS_S3_CUSTOM_DOMAIN = S3_PUBLIC_URL.replace('https://', '').rstrip('/')
 
-    # Storage backend
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    # Storage backend (Django 4.2+ uses STORAGES)
+    STORAGES = {
+        "default": {"BACKEND": "storages.backends.s3boto3.S3Boto3Storage"},
+        "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+    }
     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/" if S3_PUBLIC_URL else f"{AWS_S3_ENDPOINT_URL}/{AWS_STORAGE_BUCKET_NAME}/"
     print(f"MEDIA STORAGE: Cloud Storage ({AWS_STORAGE_BUCKET_NAME} via {AWS_S3_ENDPOINT_URL})")
 else:
     # Local development: use filesystem
+    STORAGES = {
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+        "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+    }
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
     print("MEDIA STORAGE: Local Filesystem")
