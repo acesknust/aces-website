@@ -172,7 +172,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 USE_CLOUD_STORAGE = (
     os.environ.get('USE_CLOUD_STORAGE', 
     os.environ.get('USE_SPACES', 'False'))  # backward compat
-) == 'True'
+).strip().lower() in ['true', '1', 'yes']
 
 if USE_CLOUD_STORAGE:
     # Credentials (with backward-compat fallbacks for old SPACES_* names)
@@ -187,7 +187,7 @@ if USE_CLOUD_STORAGE:
 
     # S3 settings
     AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
-    AWS_DEFAULT_ACL = 'public-read'
+    AWS_DEFAULT_ACL = None  # R2 does not support ACLs
     AWS_S3_FILE_OVERWRITE = False
     AWS_QUERYSTRING_AUTH = False
     AWS_S3_SIGNATURE_VERSION = 's3v4'  # Required for R2
