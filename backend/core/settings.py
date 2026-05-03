@@ -179,8 +179,8 @@ if USE_CLOUD_STORAGE:
     AWS_ACCESS_KEY_ID = os.environ.get('S3_ACCESS_KEY', os.environ.get('SPACES_ACCESS_KEY'))
     AWS_SECRET_ACCESS_KEY = os.environ.get('S3_SECRET_KEY', os.environ.get('SPACES_SECRET_KEY'))
     AWS_STORAGE_BUCKET_NAME = os.environ.get('S3_BUCKET_NAME', os.environ.get('SPACES_BUCKET_NAME', 'aces-media'))
-    AWS_S3_ENDPOINT_URL = os.environ.get('S3_ENDPOINT_URL', '')
-    AWS_S3_REGION_NAME = os.environ.get('S3_REGION', 'auto')  # R2 uses 'auto'
+    AWS_S3_ENDPOINT_URL = os.environ.get('S3_ENDPOINT_URL', '').rstrip('/')
+    AWS_S3_REGION_NAME = os.environ.get('S3_REGION', 'us-east-1')  # us-east-1 is the safest fallback for boto3 signature v4
 
     # Public URL for serving files (R2 public domain or custom domain)
     S3_PUBLIC_URL = os.environ.get('S3_PUBLIC_URL', '')
@@ -191,6 +191,7 @@ if USE_CLOUD_STORAGE:
     AWS_S3_FILE_OVERWRITE = False
     AWS_QUERYSTRING_AUTH = False
     AWS_S3_SIGNATURE_VERSION = 's3v4'  # Required for R2
+    AWS_S3_ADDRESSING_STYLE = 'path'   # Highly recommended for R2 to prevent TLS/DNS issues
 
     # Use custom domain for serving files if provided
     if S3_PUBLIC_URL:
