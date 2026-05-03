@@ -26,7 +26,13 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = '__all__'
+        fields = [
+            'id', 'business', 'name', 'category', 'description',
+            'price', 'image', 'is_available', 'created_at',
+            'business_name', 'business_slug', 'owner_name',
+            'whatsapp_number', 'additional_images',
+        ]
+        read_only_fields = ['business', 'created_at']
 
     def to_representation(self, instance):
         """Override to return absolute URLs for the image field."""

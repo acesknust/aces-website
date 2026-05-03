@@ -295,15 +295,21 @@ export default function VendorDashboard() {
       if (extraInput) extraInput.value = '';
       fetchMyBusinesses();
     } catch (err: any) {
+      console.error('Product submission error:', err.response?.status, err.response?.data);
       let detail = isEditingProduct ? 'Failed to update product.' : 'Failed to add product.';
       if (err.response?.data) {
-        if (err.response.data.detail) {
+        if (typeof err.response.data === 'string') {
+          detail = err.response.data;
+        } else if (err.response.data.detail) {
           detail = err.response.data.detail;
         } else if (typeof err.response.data === 'object') {
-          const errorValues = Object.values(err.response.data).flat();
-          if (errorValues.length > 0 && typeof errorValues[0] === 'string') {
-            detail = errorValues[0];
+          // Collect all field errors like { image: ["This field is required."] }
+          const parts: string[] = [];
+          for (const [key, val] of Object.entries(err.response.data)) {
+            const msgs = Array.isArray(val) ? val.join(', ') : String(val);
+            parts.push(`${key}: ${msgs}`);
           }
+          if (parts.length > 0) detail = parts.join(' | ');
         }
       }
       showToast(detail, 'error');
