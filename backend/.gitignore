@@ -1,0 +1,16 @@
+# Python
+*.pyc
+__pycache__/
+db.sqlite3
+.env
+venv/
+env/
+
+
+# Media
+media/
+staticfiles/
+products/
+
+# Logs
+logs/
