@@ -1,16 +1,17 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
-import { Search, Store, ShoppingBag, ChevronRight, Filter, ChevronLeft } from 'lucide-react';
+import {
+  Search, Store, ShoppingBag, ChevronRight, ChevronLeft,
+  SlidersHorizontal, X, Tag, AlertCircle,
+} from 'lucide-react';
 
-interface ProductImage {
-  id: number;
-  image: string;
-}
+// ─── Types ──────────────────────────────────────────────────────────────────
+interface ProductImage { id: number; image: string; }
 
 interface Product {
   id: number;
@@ -21,237 +22,295 @@ interface Product {
   category: string;
   business_name: string;
   business_slug: string;
+  is_available: boolean;
   additional_images?: ProductImage[];
 }
 
-const ImageSlider = ({ images, name, category }: { images: string[], name: string, category: string }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
+// ─── Image Carousel ─────────────────────────────────────────────────────────
+function ImageCarousel({ images, alt }: { images: string[]; alt: string }) {
+  const [idx, setIdx] = useState(0);
+  const validImages = images.filter(Boolean);
+  if (!validImages.length) {
+    return (
+      <div className="relative h-52 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center shrink-0">
+        <Store className="text-gray-300" size={48} />
+      </div>
+    );
+  }
+
+  const prev = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); setIdx(i => (i === 0 ? validImages.length - 1 : i - 1)); };
+  const next = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); setIdx(i => (i === validImages.length - 1 ? 0 : i + 1)); };
 
   return (
-    <div className="relative h-48 bg-gray-100 overflow-hidden group/slider shrink-0">
-      <img src={images[currentIndex]} alt={name} className="w-full h-full object-cover transition-transform duration-500 group-hover/slider:scale-105" />
-      
-      <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold text-gray-900 shadow-sm z-30">
-        {category.split(' ')[0]}
-      </div>
-
-      {images.length > 1 && (
+    <div className="relative h-52 bg-gray-100 overflow-hidden group/img shrink-0">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={validImages[idx]} alt={alt} className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-105" />
+      {validImages.length > 1 && (
         <>
-          <button 
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1)) }}
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-1 rounded-full opacity-0 group-hover/slider:opacity-100 transition-opacity z-20"
-          >
+          <button onClick={prev} aria-label="Previous image"
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-1.5 rounded-full opacity-0 group-hover/img:opacity-100 transition-all z-10 backdrop-blur-sm">
             <ChevronLeft size={14} />
           </button>
-          <button 
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1)) }}
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-1 rounded-full opacity-0 group-hover/slider:opacity-100 transition-opacity z-20"
-          >
+          <button onClick={next} aria-label="Next image"
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-1.5 rounded-full opacity-0 group-hover/img:opacity-100 transition-all z-10 backdrop-blur-sm">
             <ChevronRight size={14} />
           </button>
-          
-          <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1 z-20">
-            {images.map((_, i) => (
-              <div key={i} className={`h-1 rounded-full transition-all ${i === currentIndex ? 'w-3 bg-white' : 'w-1 bg-white/50'}`} />
+          <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5 z-10">
+            {validImages.map((_, i) => (
+              <button key={i} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIdx(i); }}
+                className={`rounded-full transition-all ${i === idx ? 'w-4 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/60 hover:bg-white/80'}`} />
             ))}
           </div>
         </>
       )}
     </div>
-  )
+  );
 }
 
+// ─── Skeleton Card ───────────────────────────────────────────────────────────
+function SkeletonCard() {
+  return (
+    <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col animate-pulse">
+      <div className="h-52 bg-gray-200" />
+      <div className="p-4 space-y-3">
+        <div className="h-4 bg-gray-200 rounded w-3/4" />
+        <div className="h-3 bg-gray-200 rounded w-1/2" />
+        <div className="h-3 bg-gray-200 rounded w-full" />
+        <div className="h-3 bg-gray-200 rounded w-5/6" />
+        <div className="h-9 bg-gray-200 rounded-xl mt-2" />
+      </div>
+    </div>
+  );
+}
+
+// ─── Category config ─────────────────────────────────────────────────────────
 const CATEGORIES = [
-  'All',
-  'Food & Beverages',
-  'Fashion & Apparel',
-  'Technology & Electronics',
-  'Services',
-  'Beauty & Cosmetics',
-  'Other'
+  { label: 'All', emoji: '🏪' },
+  { label: 'Food & Beverages', emoji: '🍔' },
+  { label: 'Fashion & Apparel', emoji: '👗' },
+  { label: 'Technology & Electronics', emoji: '💻' },
+  { label: 'Services', emoji: '🛠️' },
+  { label: 'Beauty & Cosmetics', emoji: '💄' },
+  { label: 'Other', emoji: '📦' },
 ];
 
+// ─── Product Card ────────────────────────────────────────────────────────────
+function ProductCard({ product }: { product: Product }) {
+  const allImages = [product.image, ...(product.additional_images?.map(i => i.image) || [])];
+  const catEmoji = CATEGORIES.find(c => product.category.includes(c.label.split(' ')[0]))?.emoji || '📦';
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.25 }}
+      className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex flex-col group"
+    >
+      <div className="relative">
+        <ImageCarousel images={allImages} alt={product.name} />
+        {/* Category badge */}
+        <div className="absolute top-2 left-2 z-10 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded-full text-xs font-semibold text-gray-700 shadow-sm border border-gray-100 flex items-center gap-1">
+          <span>{catEmoji}</span>
+          <span className="hidden sm:inline">{product.category.split(' ')[0]}</span>
+        </div>
+        {!product.is_available && (
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-10">
+            <span className="px-3 py-1.5 bg-gray-900 text-white font-bold rounded-lg text-sm transform -rotate-6 shadow-lg">Out of Stock</span>
+          </div>
+        )}
+      </div>
+
+      <div className="p-4 flex flex-col flex-grow">
+        <div className="flex items-start justify-between gap-2 mb-1.5">
+          <h3 className="font-bold text-gray-900 text-base leading-snug line-clamp-2 flex-grow">{product.name}</h3>
+          <span className="text-blue-600 font-extrabold whitespace-nowrap text-sm bg-blue-50 px-2 py-0.5 rounded-lg shrink-0">
+            GH₵{Number(product.price).toLocaleString()}
+          </span>
+        </div>
+
+        {product.description && (
+          <p className="text-gray-500 text-sm line-clamp-2 flex-grow mb-3">{product.description}</p>
+        )}
+
+        <div className="mt-auto pt-3 border-t border-gray-100">
+          <Link href={`/marketplace/${product.business_slug}`}
+            className="flex items-center justify-between group/link">
+            <div className="flex items-center gap-1.5 overflow-hidden">
+              <Store size={14} className="text-gray-400 shrink-0" />
+              <span className="text-xs font-semibold text-gray-600 truncate group-hover/link:text-blue-600 transition-colors">
+                {product.business_name}
+              </span>
+            </div>
+            <span className="flex items-center gap-1 text-xs text-blue-600 font-semibold shrink-0 group-hover/link:gap-2 transition-all">
+              View Store <ChevronRight size={14} />
+            </span>
+          </Link>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── Main Page ───────────────────────────────────────────────────────────────
 export default function MarketplacePage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const [showMobileFilter, setShowMobileFilter] = useState(false);
+
+  // Debounce search input
+  useEffect(() => {
+    clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => setDebouncedSearch(searchQuery), 350);
+    return () => clearTimeout(searchTimerRef.current);
+  }, [searchQuery]);
 
   useEffect(() => {
     const fetchProducts = async () => {
+      setIsLoading(true);
+      setFetchError(false);
       try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-        const response = await fetch(`${apiUrl}/api/student-businesses/products/global/`);
-        if (response.ok) {
-          const data = await response.json();
-          setProducts(data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch products:', error);
+        const params = new URLSearchParams();
+        if (activeCategory !== 'All') params.set('category', activeCategory);
+        if (debouncedSearch) params.set('search', debouncedSearch);
+        const response = await fetch(`${apiUrl}/api/student-businesses/products/global/?${params}`);
+        if (!response.ok) throw new Error('Failed to fetch');
+        const data = await response.json();
+        setProducts(data);
+      } catch {
+        setFetchError(true);
       } finally {
         setIsLoading(false);
       }
     };
-
     fetchProducts();
-  }, []);
+  }, [activeCategory, debouncedSearch]);
 
-  const filteredProducts = products.filter((prod) => {
-    const matchesSearch = prod.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          prod.business_name.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    // Exact match for category unless 'All'
-    const catSearch = activeCategory === 'All' 
-        ? true 
-        : activeCategory === 'Services' 
-          ? prod.category.includes('Services') 
-          : prod.category === activeCategory;
-
-    return matchesSearch && catSearch;
-  });
+  const productCount = products.length;
 
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-gray-50 pt-28 pb-20">
-        
-        {/* Hero Section */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
-          <div className="text-center max-w-3xl mx-auto space-y-4">
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-medium text-sm mb-2"
+      <div className="min-h-screen bg-gray-50">
+
+        {/* Hero */}
+        <div className="bg-white border-b border-gray-100 pt-28 pb-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+              className="text-center mb-8"
             >
-              <ShoppingBag size={16} />
-              <span>Student Product Feed</span>
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 text-blue-700 font-semibold text-sm mb-4 border border-blue-100">
+                <ShoppingBag size={15} /> Student Marketplace
+              </div>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight mb-3">
+                ACES <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">Marketplace</span>
+              </h1>
+              <p className="text-gray-500 text-lg max-w-xl mx-auto">
+                Discover products &amp; services from fellow KNUST engineering students.
+              </p>
             </motion.div>
-            <motion.h1 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight"
+
+            {/* Search bar */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+              className="max-w-2xl mx-auto"
             >
-              ACES <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">Marketplace</span>
-            </motion.h1>
-            <motion.p 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-lg text-gray-600"
-            >
-              Discover products and services offered by fellow engineering students.
-            </motion.p>
+              <div className="relative flex items-center">
+                <Search className="absolute left-4 text-gray-400 pointer-events-none" size={20} />
+                <input
+                  type="search"
+                  placeholder="Search products, stores..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-12 pr-4 py-4 rounded-2xl border border-gray-200 bg-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-gray-800 placeholder-gray-400 text-base"
+                />
+                {searchQuery && (
+                  <button onClick={() => setSearchQuery('')} className="absolute right-4 text-gray-400 hover:text-gray-700">
+                    <X size={18} />
+                  </button>
+                )}
+              </div>
+            </motion.div>
           </div>
+        </div>
 
-          {/* Search & Filters */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="mt-10 max-w-4xl mx-auto"
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+          {/* Category filter — desktop horizontal scroll */}
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
+            className="mb-6"
           >
-            <div className="relative flex items-center mb-6">
-              <Search className="absolute left-4 text-gray-400" size={20} />
-              <input
-                type="text"
-                placeholder="Search for products or stores..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 rounded-2xl border border-gray-200 bg-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-gray-800"
-              />
-            </div>
-
-            {/* Category Pills */}
-            <div className="flex flex-wrap gap-2 justify-center">
-              {CATEGORIES.map((cat) => (
+            {/* Mobile: compact pill row */}
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 md:flex-wrap md:overflow-visible md:mx-0 md:px-0">
+              {CATEGORIES.map(({ label, emoji }) => (
                 <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                    activeCategory === cat 
-                      ? 'bg-gray-900 text-white shadow-md' 
-                      : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                  key={label}
+                  onClick={() => setActiveCategory(label)}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all duration-200 border shrink-0 ${
+                    activeCategory === label
+                      ? 'bg-gray-900 text-white border-gray-900 shadow-md'
+                      : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400 hover:text-gray-900'
                   }`}
                 >
-                  {cat}
+                  <span>{emoji}</span> {label}
                 </button>
               ))}
             </div>
           </motion.div>
-        </div>
 
-        {/* Global Product Grid */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Count + Sort row */}
+          <div className="flex items-center justify-between mb-5">
+            <p className="text-sm text-gray-500">
+              {isLoading ? 'Loading…' : `${productCount} product${productCount !== 1 ? 's' : ''} found`}
+            </p>
+            {activeCategory !== 'All' && (
+              <button onClick={() => setActiveCategory('All')}
+                className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 border border-gray-200 px-2.5 py-1 rounded-full hover:bg-gray-100 transition-colors">
+                <Tag size={12} /> {activeCategory} <X size={12} />
+              </button>
+            )}
+          </div>
+
+          {/* Product Grid */}
           {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                <div key={i} className="bg-white h-72 rounded-3xl animate-pulse border border-gray-100 shadow-sm" />
-              ))}
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+              {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
             </div>
-          ) : filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <AnimatePresence>
-                {filteredProducts.map((prod, idx) => (
-                  <motion.div
-                    key={prod.id}
-                    layout
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ duration: 0.3, delay: (idx % 8) * 0.05 }}
-                    className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col"
-                  >
-                    <ImageSlider 
-                      images={[prod.image, ...(prod.additional_images?.map(img => img.image) || [])]} 
-                      name={prod.name} 
-                      category={prod.category} 
-                    />
-                    
-                    <div className="p-5 flex flex-col flex-grow">
-                      <div className="flex justify-between items-start mb-1 gap-2">
-                        <h3 className="font-bold text-gray-900 text-lg leading-tight line-clamp-1">{prod.name}</h3>
-                        <span className="text-blue-600 font-extrabold whitespace-nowrap">
-                          GH₵{prod.price}
-                        </span>
-                      </div>
-                      
-                      <p className="text-gray-500 text-sm mb-4 line-clamp-2">
-                        {prod.description}
-                      </p>
-                      
-                      <div className="mt-auto pt-4 border-t border-gray-100">
-                        <Link 
-                          href={`/marketplace/${prod.business_slug}`}
-                          className="flex items-center justify-between group/link"
-                        >
-                          <div className="flex items-center gap-2 overflow-hidden">
-                            <Store size={16} className="text-gray-400 shrink-0" />
-                            <span className="text-sm font-medium text-gray-700 truncate group-hover/link:text-blue-600 transition-colors">
-                              {prod.business_name}
-                            </span>
-                          </div>
-                          <ChevronRight size={16} className="text-gray-400 group-hover/link:text-blue-600 group-hover/link:translate-x-1 transition-all shrink-0" />
-                        </Link>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
+          ) : fetchError ? (
+            <div className="text-center py-24">
+              <AlertCircle className="mx-auto text-red-400 mb-4" size={48} />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Could not load products</h3>
+              <p className="text-gray-500 mb-6">Please check your connection and try again.</p>
+              <button onClick={() => { setSearchQuery(''); setActiveCategory('All'); }}
+                className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors">
+                Try again
+              </button>
+            </div>
+          ) : products.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+              <AnimatePresence mode="popLayout">
+                {products.map((prod) => <ProductCard key={prod.id} product={prod} />)}
               </AnimatePresence>
             </div>
           ) : (
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center py-20 bg-white rounded-3xl border border-gray-100 shadow-sm"
-            >
-              <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Filter className="text-gray-400" size={32} />
-              </div>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              className="text-center py-24 bg-white rounded-3xl border border-gray-100 shadow-sm">
+              <SlidersHorizontal className="mx-auto text-gray-300 mb-4" size={48} />
               <h3 className="text-xl font-bold text-gray-900 mb-2">No products found</h3>
-              <p className="text-gray-500 max-w-md mx-auto">
-                We couldn&apos;t find any products matching your search criteria. Try a different term or category.
-              </p>
+              <p className="text-gray-500 mb-6">Try adjusting your search or category filter.</p>
+              <button onClick={() => { setSearchQuery(''); setActiveCategory('All'); }}
+                className="px-6 py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-blue-600 transition-colors">
+                Clear Filters
+              </button>
             </motion.div>
           )}
         </div>

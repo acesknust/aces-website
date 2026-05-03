@@ -6,12 +6,13 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
-import { Store, Instagram, MessageCircle, ArrowLeft, PackageSearch, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+  Store, Instagram, MessageCircle, ArrowLeft, PackageSearch,
+  ChevronLeft, ChevronRight, Phone, MapPin, X, ZoomIn,
+} from 'lucide-react';
 
-interface ProductImage {
-  id: number;
-  image: string;
-}
+// ─── Types ───────────────────────────────────────────────────────────────────
+interface ProductImage { id: number; image: string; }
 
 interface Product {
   id: number;
@@ -20,46 +21,8 @@ interface Product {
   price: string;
   image: string;
   is_available: boolean;
+  category: string;
   additional_images?: ProductImage[];
-}
-
-const ImageSlider = ({ images, name, isAvailable }: { images: string[], name: string, isAvailable: boolean }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  return (
-    <div className="relative h-60 bg-gray-100 overflow-hidden group/slider">
-      <img src={images[currentIndex]} alt={name} className="w-full h-full object-cover transition-transform duration-500 group-hover/slider:scale-105" />
-      
-      {!isAvailable && (
-        <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center z-10">
-          <span className="px-4 py-2 bg-gray-900 text-white font-bold rounded-lg transform -rotate-12">OUT OF STOCK</span>
-        </div>
-      )}
-
-      {images.length > 1 && (
-        <>
-          <button 
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1)) }}
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-1.5 rounded-full opacity-0 group-hover/slider:opacity-100 transition-opacity z-20"
-          >
-            <ChevronLeft size={16} />
-          </button>
-          <button 
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1)) }}
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-1.5 rounded-full opacity-0 group-hover/slider:opacity-100 transition-opacity z-20"
-          >
-            <ChevronRight size={16} />
-          </button>
-          
-          <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5 z-20">
-            {images.map((_, i) => (
-              <div key={i} className={`h-1.5 rounded-full transition-all ${i === currentIndex ? 'w-4 bg-white' : 'w-1.5 bg-white/50'}`} />
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  )
 }
 
 interface Business {
@@ -76,145 +39,332 @@ interface Business {
   products: Product[];
 }
 
+// ─── Lightbox ─────────────────────────────────────────────────────────────────
+function Lightbox({ src, alt, onClose }: { src: string; alt: string; onClose: () => void }) {
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [onClose]);
+
+  return (
+    <div className="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm"
+      onClick={onClose}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={src} alt={alt}
+        className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl"
+        onClick={(e) => e.stopPropagation()} />
+      <button onClick={onClose} aria-label="Close"
+        className="absolute top-4 right-4 text-white bg-white/10 hover:bg-white/20 rounded-full p-2.5 transition-colors backdrop-blur-sm">
+        <X size={22} />
+      </button>
+    </div>
+  );
+}
+
+// ─── Product Image Gallery ────────────────────────────────────────────────────
+function ProductGallery({ images, name }: { images: string[]; name: string }) {
+  const [idx, setIdx] = useState(0);
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const validImages = images.filter(Boolean);
+
+  if (!validImages.length) {
+    return (
+      <div className="relative aspect-square bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center">
+        <Store className="text-gray-300" size={64} />
+      </div>
+    );
+  }
+
+  const prev = () => setIdx(i => (i === 0 ? validImages.length - 1 : i - 1));
+  const next = () => setIdx(i => (i === validImages.length - 1 ? 0 : i + 1));
+
+  return (
+    <>
+      <div className="flex flex-col gap-3">
+        {/* Main image */}
+        <div className="relative aspect-square bg-gray-100 rounded-2xl overflow-hidden group/gallery cursor-zoom-in"
+          onClick={() => setLightboxSrc(validImages[idx])}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={validImages[idx]} alt={name} className="w-full h-full object-contain bg-white" />
+          <div className="absolute inset-0 bg-black/0 group-hover/gallery:bg-black/10 transition-colors flex items-center justify-center">
+            <ZoomIn className="text-white opacity-0 group-hover/gallery:opacity-100 transition-opacity drop-shadow-lg" size={32} />
+          </div>
+          {validImages.length > 1 && (
+            <>
+              <button onClick={(e) => { e.stopPropagation(); prev(); }} aria-label="Previous"
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-2 rounded-full opacity-0 group-hover/gallery:opacity-100 transition-all z-10">
+                <ChevronLeft size={18} />
+              </button>
+              <button onClick={(e) => { e.stopPropagation(); next(); }} aria-label="Next"
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-2 rounded-full opacity-0 group-hover/gallery:opacity-100 transition-all z-10">
+                <ChevronRight size={18} />
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* Thumbnails */}
+        {validImages.length > 1 && (
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            {validImages.map((src, i) => (
+              <button key={i} onClick={() => setIdx(i)}
+                className={`shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-all ${i === idx ? 'border-blue-500 shadow-md' : 'border-transparent opacity-60 hover:opacity-100'}`}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={src} alt={`${name} ${i + 1}`} className="w-full h-full object-cover" />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {lightboxSrc && <Lightbox src={lightboxSrc} alt={name} onClose={() => setLightboxSrc(null)} />}
+    </>
+  );
+}
+
+// ─── Product Card (Storefront) ────────────────────────────────────────────────
+function StorefrontProductCard({ product, onBuy }: { product: Product; onBuy: (p: Product) => void }) {
+  const allImages = [product.image, ...(product.additional_images?.map(i => i.image) || [])];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+      className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 flex flex-col group"
+    >
+      {/* Inline carousel for storefront cards */}
+      <div className="relative h-52 bg-gray-100 overflow-hidden group/img">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={allImages[0]} alt={product.name} className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-500" />
+        {!product.is_available && (
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center">
+            <span className="px-3 py-1.5 bg-gray-900 text-white font-bold rounded-lg text-xs transform -rotate-6 shadow-lg">Out of Stock</span>
+          </div>
+        )}
+        {allImages.length > 1 && (
+          <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-0.5 rounded-full backdrop-blur-sm">
+            +{allImages.length - 1} more
+          </div>
+        )}
+      </div>
+
+      <div className="p-4 flex flex-col flex-grow">
+        <div className="flex items-start justify-between gap-2 mb-1">
+          <h3 className="font-bold text-gray-900 text-base leading-snug line-clamp-2 flex-grow">{product.name}</h3>
+          <span className="text-blue-600 font-extrabold text-sm bg-blue-50 px-2 py-0.5 rounded-lg shrink-0 whitespace-nowrap">
+            GH₵{Number(product.price).toLocaleString()}
+          </span>
+        </div>
+        {product.description && (
+          <p className="text-gray-500 text-sm line-clamp-2 mb-4 flex-grow">{product.description}</p>
+        )}
+        <button
+          onClick={() => onBuy(product)}
+          disabled={!product.is_available}
+          className={`mt-auto w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-sm transition-all ${
+            product.is_available
+              ? 'bg-gray-900 text-white hover:bg-[#25D366] hover:shadow-md'
+              : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+          }`}
+        >
+          <MessageCircle size={16} />
+          {product.is_available ? 'Buy via WhatsApp' : 'Unavailable'}
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── Storefront Skeleton ─────────────────────────────────────────────────────
+function StorefrontSkeleton() {
+  return (
+    <div className="min-h-screen bg-gray-50 pt-28 pb-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="h-5 w-32 bg-gray-200 rounded mb-6 animate-pulse" />
+        <div className="bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-gray-100 mb-10 animate-pulse">
+          <div className="flex flex-col md:flex-row gap-6 items-start">
+            <div className="w-40 h-40 bg-gray-200 rounded-3xl shrink-0" />
+            <div className="space-y-3 flex-grow">
+              <div className="h-8 bg-gray-200 rounded w-48" />
+              <div className="h-4 bg-gray-200 rounded w-full" />
+              <div className="h-4 bg-gray-200 rounded w-3/4" />
+              <div className="flex gap-3 pt-2">
+                <div className="h-10 w-36 bg-gray-200 rounded-xl" />
+                <div className="h-10 w-28 bg-gray-200 rounded-xl" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 animate-pulse">
+              <div className="h-52 bg-gray-200" />
+              <div className="p-4 space-y-3">
+                <div className="h-4 bg-gray-200 rounded w-3/4" />
+                <div className="h-3 bg-gray-200 rounded w-full" />
+                <div className="h-9 bg-gray-200 rounded-xl" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Storefront Page ─────────────────────────────────────────────────────
 export default function BusinessStorefront() {
   const params = useParams();
   const slug = params.slug as string;
   const [business, setBusiness] = useState<Business | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [notFound, setNotFound] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   useEffect(() => {
+    if (!slug) return;
     const fetchBusiness = async () => {
       try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
         const response = await fetch(`${apiUrl}/api/student-businesses/${slug}/`);
-        if (response.ok) {
-          const data = await response.json();
-          setBusiness(data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch business:', error);
+        if (response.status === 404) { setNotFound(true); return; }
+        if (response.ok) setBusiness(await response.json());
+        else setNotFound(true);
+      } catch {
+        setNotFound(true);
       } finally {
         setIsLoading(false);
       }
     };
-
-    if (slug) {
-      fetchBusiness();
-    }
+    fetchBusiness();
   }, [slug]);
+
+  const formatPhone = (raw: string) => {
+    let phone = raw.replace(/\D/g, ''); // strip all non-digits
+    if (phone.startsWith('0')) phone = '233' + phone.substring(1);
+    return phone;
+  };
 
   const handleWhatsAppBuy = (product: Product) => {
     if (!business?.whatsapp_number) return;
-    
-    // Format number: remove + and leading 0 if needed
-    let phone = business.whatsapp_number.replace(/\+/g, '');
-    if (phone.startsWith('0')) {
-      phone = '233' + phone.substring(1); // Default to GH format if starts with 0
-    }
-
-    const message = encodeURIComponent(
-      `Hi ${business.owner_name}, I saw your product *${product.name}* (GH₵${product.price}) on the ACES Website Marketplace. Is it still available?`
+    const phone = formatPhone(business.whatsapp_number);
+    const msg = encodeURIComponent(
+      `Hi! I saw *${product.name}* (GH₵${product.price}) on the ACES Marketplace. Is it available?`
     );
-    
-    window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+    window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
   };
 
-  if (isLoading) {
+  const handleWhatsAppGeneral = () => {
+    if (!business?.whatsapp_number) return;
+    const phone = formatPhone(business.whatsapp_number);
+    const msg = encodeURIComponent(`Hi ${business.owner_name}! I found your store on the ACES Marketplace.`);
+    window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+  };
+
+  // Product lightbox images
+  const selectedImages = selectedProduct
+    ? [selectedProduct.image, ...(selectedProduct.additional_images?.map(i => i.image) || [])]
+    : [];
+
+  if (isLoading) return <><Header /><StorefrontSkeleton /><Footer /></>;
+
+  if (notFound) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
+      <>
+        <Header />
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center flex-col gap-4 pt-28">
+          <PackageSearch className="text-gray-300" size={64} />
+          <h1 className="text-2xl font-bold text-gray-900">Store Not Found</h1>
+          <p className="text-gray-500">This business might have been removed or the link is incorrect.</p>
+          <Link href="/marketplace" className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-blue-600 transition-colors">
+            <ArrowLeft size={16} /> Back to Marketplace
+          </Link>
+        </div>
+        <Footer />
+      </>
     );
   }
 
-  if (!business) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center flex-col gap-4">
-        <h1 className="text-2xl font-bold text-gray-900">Store Not Found</h1>
-        <Link href="/marketplace" className="text-blue-600 hover:underline flex items-center gap-2">
-          <ArrowLeft size={16} /> Back to Marketplace
-        </Link>
-      </div>
-    );
-  }
+  if (!business) return null;
+
+  const availableProducts = business.products.filter(p => p.is_available);
+  const unavailableProducts = business.products.filter(p => !p.is_available);
+  const allProducts = [...availableProducts, ...unavailableProducts];
 
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-gray-50 pt-28 pb-20">
-        
-        {/* Business Header Banner */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
-          <Link href="/marketplace" className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors mb-6 font-medium text-sm">
+      <div className="min-h-screen bg-gray-50 pt-24 pb-20">
+
+        {/* Business Header */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-10">
+          <Link href="/marketplace"
+            className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors mb-6 font-medium text-sm">
             <ArrowLeft size={16} /> Back to Marketplace
           </Link>
-          
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 flex flex-col md:flex-row gap-8 items-start md:items-center relative overflow-hidden"
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+            className="relative bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden"
           >
-            {/* Background Banner */}
-            {business.banner ? (
-              <div 
-                className="absolute inset-0 z-0 opacity-20 object-cover w-full h-full"
-                style={{ backgroundImage: `url(${business.banner})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
-              ></div>
-            ) : (
-              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-50 to-teal-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 opacity-60 z-0"></div>
-            )}
-            
-            <div className="absolute inset-0 bg-gradient-to-r from-white via-white/95 to-white/80 z-0"></div>
-
-            <div 
-              className="w-48 h-48 md:w-64 md:h-64 rounded-3xl bg-white border-4 border-white overflow-hidden flex items-center justify-center shrink-0 shadow-lg z-10 cursor-pointer hover:scale-105 transition-transform duration-300"
-              onClick={() => business.logo && setIsImageModalOpen(true)}
-            >
-              {business.logo ? (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img src={business.logo} alt={business.name} className="w-full h-full object-contain bg-gray-50" />
+            {/* Banner */}
+            <div className="h-32 md:h-48 relative">
+              {business.banner ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={business.banner} alt="Store banner" className="w-full h-full object-cover" />
               ) : (
-                <Store className="text-gray-300" size={80} />
+                <div className="w-full h-full bg-gradient-to-br from-blue-500 via-blue-600 to-cyan-500" />
               )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
             </div>
-            
-            <div className="flex-grow z-10">
-              <div className="flex flex-wrap items-center gap-3 mb-2">
-                <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">{business.name}</h1>
-              </div>
-              
-              <p className="text-gray-600 mb-4 max-w-2xl text-lg leading-relaxed">
-                {business.description}
-              </p>
 
-              {business.payment_method && (
-                <div className="mb-6 p-3 bg-blue-50 border border-blue-100 rounded-xl inline-block">
-                  <p className="text-sm font-semibold text-blue-900">Payment Methods</p>
-                  <p className="text-sm text-blue-800">{business.payment_method}</p>
+            {/* Business Info */}
+            <div className="px-6 md:px-10 pb-8">
+              {/* Logo overlapping banner */}
+              <div className="flex items-end gap-6 -mt-16 mb-5 relative z-10">
+                <div className="w-28 h-28 md:w-36 md:h-36 rounded-2xl border-4 border-white shadow-xl bg-white overflow-hidden shrink-0">
+                  {business.logo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={business.logo} alt={business.name} className="w-full h-full object-contain" />
+                  ) : (
+                    <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                      <Store className="text-gray-400" size={48} />
+                    </div>
+                  )}
                 </div>
-              )}
-              
-              <div className="flex flex-wrap items-center gap-4">
-                <a 
-                  href={`https://wa.me/${business.whatsapp_number.replace(/\+/g, '')}`} 
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-white px-5 py-2.5 rounded-xl font-semibold transition-colors shadow-sm"
-                >
-                  <MessageCircle size={18} /> Chat with {business.owner_name}
-                </a>
-                
-                {business.instagram_handle && (
-                  <a 
-                    href={`https://instagram.com/${business.instagram_handle.replace('@', '')}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 px-5 py-2.5 rounded-xl font-semibold transition-colors"
-                  >
-                    <Instagram size={18} className="text-pink-600" /> Instagram
-                  </a>
-                )}
+              </div>
+
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-5">
+                <div className="flex-grow">
+                  <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-2">{business.name}</h1>
+                  <p className="text-gray-600 text-base leading-relaxed max-w-2xl">{business.description}</p>
+                  {business.payment_method && (
+                    <div className="mt-4 inline-flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-xl px-4 py-2.5">
+                      <Phone size={15} className="text-blue-600 mt-0.5 shrink-0" />
+                      <div>
+                        <p className="text-xs font-bold text-blue-900 mb-0.5">Payment Method</p>
+                        <p className="text-sm text-blue-800">{business.payment_method}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* CTA Buttons */}
+                <div className="flex flex-col sm:flex-row md:flex-col gap-3 shrink-0">
+                  <button onClick={handleWhatsAppGeneral}
+                    className="inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-white px-6 py-3 rounded-xl font-bold transition-colors shadow-sm text-sm">
+                    <MessageCircle size={18} /> Chat with Vendor
+                  </button>
+                  {business.instagram_handle && (
+                    <a
+                      href={`https://instagram.com/${business.instagram_handle.replace('@', '')}`}
+                      target="_blank" rel="noreferrer"
+                      className="inline-flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 px-6 py-3 rounded-xl font-bold transition-colors text-sm">
+                      <Instagram size={16} className="text-pink-600" />
+                      {business.instagram_handle}
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
           </motion.div>
@@ -222,95 +372,36 @@ export default function BusinessStorefront() {
 
         {/* Products Section */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3 mb-8">
-            <h2 className="text-2xl font-bold text-gray-900">Our Products</h2>
-            <div className="h-px bg-gray-200 flex-grow ml-4"></div>
+          <div className="flex items-center gap-4 mb-7">
+            <h2 className="text-xl font-extrabold text-gray-900">
+              Products
+              <span className="ml-2 text-sm font-semibold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+                {business.products.length}
+              </span>
+            </h2>
+            <div className="h-px bg-gray-200 flex-grow" />
           </div>
 
-          {business.products && business.products.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {business.products.map((product, idx) => (
-                <motion.div
+          {allProducts.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+              {allProducts.map((product) => (
+                <StorefrontProductCard
                   key={product.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.1 }}
-                  className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col"
-                >
-                  <ImageSlider 
-                    images={[product.image, ...(product.additional_images?.map(img => img.image) || [])]} 
-                    name={product.name} 
-                    isAvailable={product.is_available} 
-                  />
-                  
-                  <div className="p-5 flex flex-col flex-grow">
-                    <div className="flex justify-between items-start mb-2 gap-2">
-                      <h3 className="font-bold text-gray-900 text-lg leading-tight line-clamp-2">{product.name}</h3>
-                      <span className="text-blue-600 font-extrabold whitespace-nowrap bg-blue-50 px-2 py-1 rounded-md text-sm">
-                        GH₵{product.price}
-                      </span>
-                    </div>
-                    
-                    <p className="text-gray-500 text-sm mb-6 line-clamp-2 flex-grow">
-                      {product.description}
-                    </p>
-                    
-                    <button
-                      onClick={() => handleWhatsAppBuy(product)}
-                      disabled={!product.is_available}
-                      className={`w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors mt-auto ${
-                        product.is_available 
-                          ? 'bg-gray-900 text-white hover:bg-[#25D366] hover:shadow-md' 
-                          : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      }`}
-                    >
-                      <MessageCircle size={18} /> 
-                      {product.is_available ? 'Buy via WhatsApp' : 'Unavailable'}
-                    </button>
-                  </div>
-                </motion.div>
+                  product={product}
+                  onBuy={handleWhatsAppBuy}
+                />
               ))}
             </div>
           ) : (
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center py-20 bg-white rounded-3xl border border-gray-100 shadow-sm"
-            >
-              <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                <PackageSearch className="text-gray-300" size={32} />
-              </div>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              className="text-center py-24 bg-white rounded-3xl border border-gray-100 shadow-sm">
+              <PackageSearch className="mx-auto text-gray-300 mb-4" size={56} />
               <h3 className="text-xl font-bold text-gray-900 mb-2">No products yet</h3>
-              <p className="text-gray-500">This business hasn&apos;t listed any products yet. Check back later!</p>
+              <p className="text-gray-500">This store hasn&apos;t listed any products yet. Check back soon!</p>
             </motion.div>
           )}
         </div>
       </div>
-
-      {/* Image Modal Overlay */}
-      {isImageModalOpen && business?.logo && (
-        <div 
-          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm"
-          onClick={() => setIsImageModalOpen(false)}
-        >
-          <div className="relative max-w-5xl max-h-[90vh] w-full h-full flex items-center justify-center">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img 
-              src={business.logo} 
-              alt={business.name} 
-              className="max-w-full max-h-full object-contain rounded-lg"
-              onClick={(e) => e.stopPropagation()} // Prevent closing when clicking the image itself
-            />
-            <button 
-              onClick={() => setIsImageModalOpen(false)}
-              className="absolute top-4 right-4 text-white bg-black/50 hover:bg-black/80 rounded-full p-2 transition-colors"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
-          </div>
-        </div>
-      )}
-
       <Footer />
     </>
   );
