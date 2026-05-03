@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import Image from 'next/image';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
 import { Search, Store, ShoppingBag, ChevronRight, Filter } from 'lucide-react';
