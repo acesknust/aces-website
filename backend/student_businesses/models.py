@@ -128,3 +128,22 @@ class Product(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.business.name}"
+
+
+class ProductImage(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='additional_images')
+    image = models.ImageField(upload_to='student_businesses/products/gallery/')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def save(self, *args, **kwargs):
+        if self.image and not getattr(self.image, '_committed', True):
+            optimized = optimize_image(self.image, max_width=800, max_height=800, quality=85)
+            if optimized:
+                self.image = optimized
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Gallery image for {self.product.name}"

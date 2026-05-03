@@ -87,9 +87,14 @@ class ProductListCreate(generics.ListCreateAPIView):
         return Product.objects.filter(business__owner=self.request.user)
 
     def perform_create(self, serializer):
+        from .models import ProductImage
         business_id = self.request.data.get('business')
         business = get_object_or_404(Business, id=business_id, owner=self.request.user)
-        serializer.save(business=business)
+        product = serializer.save(business=business)
+        
+        additional_images = self.request.FILES.getlist('additional_images')
+        for img in additional_images:
+            ProductImage.objects.create(product=product, image=img)
 
 
 class ProductDetail(generics.RetrieveUpdateDestroyAPIView):

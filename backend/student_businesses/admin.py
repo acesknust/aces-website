@@ -1,6 +1,10 @@
 from django.contrib import admin
-from .models import Business, Product
+from .models import Business, Product, ProductImage
 
+
+class ProductImageInline(admin.TabularInline):
+    model = ProductImage
+    extra = 1
 
 class ProductInline(admin.TabularInline):
     """Read-only inline view of products within a business."""
@@ -11,6 +15,13 @@ class ProductInline(admin.TabularInline):
 
     def has_add_permission(self, request, obj=None):
         return False
+
+@admin.register(Product)
+class ProductAdmin(admin.ModelAdmin):
+    list_display = ('name', 'business', 'price', 'is_available')
+    list_filter = ('is_available', 'category')
+    search_fields = ('name', 'business__name')
+    inlines = [ProductImageInline]
 
 
 @admin.register(Business)

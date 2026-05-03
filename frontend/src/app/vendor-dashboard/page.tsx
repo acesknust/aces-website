@@ -89,6 +89,7 @@ export default function VendorDashboard() {
   const [prodCategory, setProdCategory] = useState(CATEGORIES[0]);
   const [prodPrice, setProdPrice] = useState('');
   const [prodImage, setProdImage] = useState<File | null>(null);
+  const [additionalImages, setAdditionalImages] = useState<File[]>([]);
   const [prodSubmitting, setProdSubmitting] = useState(false);
 
   const showToast = useCallback((message: string, type: 'success' | 'error') => {
@@ -210,6 +211,7 @@ export default function VendorDashboard() {
     formData.append('description', prodDesc.trim());
     formData.append('price', prodPrice);
     formData.append('image', prodImage);
+    additionalImages.forEach((img) => formData.append('additional_images', img));
     formData.append('is_available', 'true');
 
     try {
@@ -221,9 +223,12 @@ export default function VendorDashboard() {
       setProdDesc('');
       setProdPrice('');
       setProdImage(null);
-      // Reset file input
+      setAdditionalImages([]);
+      // Reset file inputs
       const fileInput = document.getElementById('prod-image-input') as HTMLInputElement;
       if (fileInput) fileInput.value = '';
+      const extraInput = document.getElementById('prod-extra-images') as HTMLInputElement;
+      if (extraInput) extraInput.value = '';
       fetchMyBusiness();
     } catch (err: any) {
       const detail = err.response?.data?.detail || err.response?.data?.image?.[0] || 'Failed to add product.';
@@ -634,16 +639,34 @@ export default function VendorDashboard() {
                         className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Product Image *</label>
-                      <input
-                        id="prod-image-input"
-                        required
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => setProdImage(e.target.files?.[0] || null)}
-                        className="w-full px-4 py-2 rounded-xl border border-gray-200 text-sm bg-white"
-                      />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Main Product Image *</label>
+                        <input
+                          id="prod-image-input"
+                          required
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => setProdImage(e.target.files?.[0] || null)}
+                          className="w-full px-4 py-2 rounded-xl border border-gray-200 text-sm bg-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Additional Gallery Images (Optional)</label>
+                        <input
+                          id="prod-extra-images"
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={(e) => {
+                            if (e.target.files) {
+                              setAdditionalImages(Array.from(e.target.files));
+                            }
+                          }}
+                          className="w-full px-4 py-2 rounded-xl border border-gray-200 text-sm bg-white"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Select multiple files at once.</p>
+                      </div>
                     </div>
                     <button
                       type="submit"

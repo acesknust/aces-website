@@ -6,7 +6,12 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
-import { Store, Instagram, MessageCircle, ArrowLeft, PackageSearch } from 'lucide-react';
+import { Store, Instagram, MessageCircle, ArrowLeft, PackageSearch, ChevronLeft, ChevronRight } from 'lucide-react';
+
+interface ProductImage {
+  id: number;
+  image: string;
+}
 
 interface Product {
   id: number;
@@ -15,6 +20,46 @@ interface Product {
   price: string;
   image: string;
   is_available: boolean;
+  additional_images?: ProductImage[];
+}
+
+const ImageSlider = ({ images, name, isAvailable }: { images: string[], name: string, isAvailable: boolean }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  return (
+    <div className="relative h-60 bg-gray-100 overflow-hidden group/slider">
+      <img src={images[currentIndex]} alt={name} className="w-full h-full object-cover transition-transform duration-500 group-hover/slider:scale-105" />
+      
+      {!isAvailable && (
+        <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center z-10">
+          <span className="px-4 py-2 bg-gray-900 text-white font-bold rounded-lg transform -rotate-12">OUT OF STOCK</span>
+        </div>
+      )}
+
+      {images.length > 1 && (
+        <>
+          <button 
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1)) }}
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-1.5 rounded-full opacity-0 group-hover/slider:opacity-100 transition-opacity z-20"
+          >
+            <ChevronLeft size={16} />
+          </button>
+          <button 
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1)) }}
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-1.5 rounded-full opacity-0 group-hover/slider:opacity-100 transition-opacity z-20"
+          >
+            <ChevronRight size={16} />
+          </button>
+          
+          <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5 z-20">
+            {images.map((_, i) => (
+              <div key={i} className={`h-1.5 rounded-full transition-all ${i === currentIndex ? 'w-4 bg-white' : 'w-1.5 bg-white/50'}`} />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
 }
 
 interface Business {
@@ -192,19 +237,11 @@ export default function BusinessStorefront() {
                   transition={{ delay: idx * 0.1 }}
                   className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col"
                 >
-                  <div className="relative h-60 bg-gray-100 overflow-hidden">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img 
-                      src={product.image} 
-                      alt={product.name} 
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
-                    />
-                    {!product.is_available && (
-                      <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center">
-                        <span className="px-4 py-2 bg-gray-900 text-white font-bold rounded-lg transform -rotate-12">OUT OF STOCK</span>
-                      </div>
-                    )}
-                  </div>
+                  <ImageSlider 
+                    images={[product.image, ...(product.additional_images?.map(img => img.image) || [])]} 
+                    name={product.name} 
+                    isAvailable={product.is_available} 
+                  />
                   
                   <div className="p-5 flex flex-col flex-grow">
                     <div className="flex justify-between items-start mb-2 gap-2">

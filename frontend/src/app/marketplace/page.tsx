@@ -5,7 +5,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
-import { Search, Store, ShoppingBag, ChevronRight, Filter } from 'lucide-react';
+import { Search, Store, ShoppingBag, ChevronRight, Filter, ChevronLeft } from 'lucide-react';
+
+interface ProductImage {
+  id: number;
+  image: string;
+}
 
 interface Product {
   id: number;
@@ -16,6 +21,44 @@ interface Product {
   category: string;
   business_name: string;
   business_slug: string;
+  additional_images?: ProductImage[];
+}
+
+const ImageSlider = ({ images, name, category }: { images: string[], name: string, category: string }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  return (
+    <div className="relative h-48 bg-gray-100 overflow-hidden group/slider shrink-0">
+      <img src={images[currentIndex]} alt={name} className="w-full h-full object-cover transition-transform duration-500 group-hover/slider:scale-105" />
+      
+      <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold text-gray-900 shadow-sm z-30">
+        {category.split(' ')[0]}
+      </div>
+
+      {images.length > 1 && (
+        <>
+          <button 
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1)) }}
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-1 rounded-full opacity-0 group-hover/slider:opacity-100 transition-opacity z-20"
+          >
+            <ChevronLeft size={14} />
+          </button>
+          <button 
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1)) }}
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-1 rounded-full opacity-0 group-hover/slider:opacity-100 transition-opacity z-20"
+          >
+            <ChevronRight size={14} />
+          </button>
+          
+          <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1 z-20">
+            {images.map((_, i) => (
+              <div key={i} className={`h-1 rounded-full transition-all ${i === currentIndex ? 'w-3 bg-white' : 'w-1 bg-white/50'}`} />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
 }
 
 const CATEGORIES = [
@@ -159,17 +202,11 @@ export default function MarketplacePage() {
                     transition={{ duration: 0.3, delay: (idx % 8) * 0.05 }}
                     className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col"
                   >
-                    <div className="relative h-48 bg-gray-100 overflow-hidden shrink-0">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img 
-                        src={prod.image} 
-                        alt={prod.name} 
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
-                      />
-                      <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold text-gray-900 shadow-sm">
-                        {prod.category.split(' ')[0]}
-                      </div>
-                    </div>
+                    <ImageSlider 
+                      images={[prod.image, ...(prod.additional_images?.map(img => img.image) || [])]} 
+                      name={prod.name} 
+                      category={prod.category} 
+                    />
                     
                     <div className="p-5 flex flex-col flex-grow">
                       <div className="flex justify-between items-start mb-1 gap-2">

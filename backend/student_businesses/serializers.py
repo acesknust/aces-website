@@ -1,5 +1,20 @@
 from rest_framework import serializers
-from .models import Business, Product
+from .models import Business, Product, ProductImage
+
+
+class ProductImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductImage
+        fields = ['id', 'image']
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        request = self.context.get('request')
+        if instance.image and request:
+            data['image'] = request.build_absolute_uri(instance.image.url)
+        elif instance.image:
+            data['image'] = instance.image.url
+        return data
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -7,6 +22,7 @@ class ProductSerializer(serializers.ModelSerializer):
     business_slug = serializers.CharField(source='business.slug', read_only=True)
     owner_name = serializers.CharField(source='business.owner.username', read_only=True)
     whatsapp_number = serializers.CharField(source='business.whatsapp_number', read_only=True)
+    additional_images = ProductImageSerializer(many=True, read_only=True)
 
     class Meta:
         model = Product
