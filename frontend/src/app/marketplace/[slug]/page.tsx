@@ -23,7 +23,6 @@ interface Business {
   name: string;
   slug: string;
   description: string;
-  category: string;
   logo: string | null;
   banner: string | null;
   payment_method: string;
@@ -134,9 +133,6 @@ export default function BusinessStorefront() {
             <div className="flex-grow z-10">
               <div className="flex flex-wrap items-center gap-3 mb-2">
                 <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">{business.name}</h1>
-                <span className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-bold rounded-full border border-blue-100">
-                  {business.category}
-                </span>
               </div>
               
               <p className="text-gray-600 mb-4 max-w-2xl text-lg leading-relaxed">

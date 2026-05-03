@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import axiosInstance from '../api/axios';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
-import { Store, Plus, CheckCircle, Clock } from 'lucide-react';
+import Link from 'next/link';
+import { Store, Plus, CheckCircle, Clock, ExternalLink, Package, AlertCircle } from 'lucide-react';
 
 const CATEGORIES = [
   'Food & Beverages',
@@ -13,15 +15,64 @@ const CATEGORIES = [
   'Technology & Electronics',
   'Services (Design, Tutoring, etc)',
   'Beauty & Cosmetics',
-  'Other'
+  'Other',
 ];
+
+interface ProductType {
+  id: number;
+  name: string;
+  description: string;
+  price: string;
+  image: string;
+  category: string;
+  is_available: boolean;
+}
+
+interface BusinessType {
+  id: number;
+  name: string;
+  slug: string;
+  description: string;
+  logo: string | null;
+  banner: string | null;
+  payment_method: string;
+  whatsapp_number: string;
+  instagram_handle: string | null;
+  is_approved: boolean;
+  products: ProductType[];
+}
+
+// Inline toast component
+function Toast({ message, type, onClose }: { message: string; type: 'success' | 'error'; onClose: () => void }) {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 4000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className={`fixed top-24 right-4 z-50 px-6 py-4 rounded-xl shadow-lg font-medium text-sm flex items-center gap-2 max-w-sm ${
+        type === 'success'
+          ? 'bg-green-50 text-green-800 border border-green-200'
+          : 'bg-red-50 text-red-800 border border-red-200'
+      }`}
+    >
+      {type === 'success' ? <CheckCircle size={18} /> : <AlertCircle size={18} />}
+      {message}
+    </motion.div>
+  );
+}
 
 export default function VendorDashboard() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
-  const [business, setBusiness] = useState<any>(null);
+  const [business, setBusiness] = useState<BusinessType | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
-  // Forms state
+  // Business creation form
   const [busName, setBusName] = useState('');
   const [busDesc, setBusDesc] = useState('');
   const [busWhatsapp, setBusWhatsapp] = useState('');
@@ -29,191 +80,268 @@ export default function VendorDashboard() {
   const [busPayment, setBusPayment] = useState('');
   const [busLogo, setBusLogo] = useState<File | null>(null);
   const [busBanner, setBusBanner] = useState<File | null>(null);
+  const [busSubmitting, setBusSubmitting] = useState(false);
 
+  // Product creation form
   const [prodName, setProdName] = useState('');
   const [prodDesc, setProdDesc] = useState('');
   const [prodCategory, setProdCategory] = useState(CATEGORIES[0]);
   const [prodPrice, setProdPrice] = useState('');
   const [prodImage, setProdImage] = useState<File | null>(null);
+  const [prodSubmitting, setProdSubmitting] = useState(false);
+
+  const showToast = useCallback((message: string, type: 'success' | 'error') => {
+    setToast({ message, type });
+  }, []);
+
+  const fetchMyBusiness = useCallback(async () => {
+    try {
+      const res = await axiosInstance.get('/student-businesses/my-businesses/');
+      if (res.data.length > 0) {
+        setBusiness(res.data[0]);
+      }
+    } catch (err: any) {
+      if (err.response?.status === 401) {
+        // Token expired and refresh failed — redirected by interceptor
+        return;
+      }
+      console.error('Failed to fetch business:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
+    const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
     if (!token) {
       router.push('/login');
       return;
     }
     fetchMyBusiness();
-  }, [router]);
-
-  const fetchMyBusiness = async () => {
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      const token = localStorage.getItem('access_token');
-      const res = await fetch(`${apiUrl}/api/student-businesses/my-businesses/`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.length > 0) {
-          setBusiness(data[0]); // Just pick the first one for simplicity
-        }
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [router, fetchMyBusiness]);
 
   const handleCreateBusiness = async (e: React.FormEvent) => {
     e.preventDefault();
-    const token = localStorage.getItem('access_token');
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-    
+    setBusSubmitting(true);
+
     const formData = new FormData();
-    formData.append('name', busName);
-    formData.append('description', busDesc);
-    formData.append('whatsapp_number', busWhatsapp);
-    if (busPayment) formData.append('payment_method', busPayment);
-    if (busInsta) formData.append('instagram_handle', busInsta);
+    formData.append('name', busName.trim());
+    formData.append('description', busDesc.trim());
+    formData.append('whatsapp_number', busWhatsapp.trim());
+    if (busPayment.trim()) formData.append('payment_method', busPayment.trim());
+    if (busInsta.trim()) formData.append('instagram_handle', busInsta.trim());
     if (busLogo) formData.append('logo', busLogo);
     if (busBanner) formData.append('banner', busBanner);
 
     try {
-      const res = await fetch(`${apiUrl}/api/student-businesses/`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData
+      await axiosInstance.post('/student-businesses/', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
-      if (res.ok) {
-        alert('Business created! It is now pending approval from executives.');
-        fetchMyBusiness();
-      } else {
-        alert('Failed to create business.');
-      }
-    } catch (err) {
-      console.error(err);
+      showToast('Business created! It is now pending approval from executives.', 'success');
+      fetchMyBusiness();
+    } catch (err: any) {
+      const detail = err.response?.data?.detail || err.response?.data?.name?.[0] || 'Failed to create business.';
+      showToast(detail, 'error');
+    } finally {
+      setBusSubmitting(false);
     }
   };
 
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!business) return;
-    
-    const token = localStorage.getItem('access_token');
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-    
+
+    if (!prodImage) {
+      showToast('Please select a product image.', 'error');
+      return;
+    }
+
+    setProdSubmitting(true);
+
     const formData = new FormData();
-    formData.append('business', business.id);
-    formData.append('name', prodName);
+    formData.append('business', String(business.id));
+    formData.append('name', prodName.trim());
     formData.append('category', prodCategory);
-    formData.append('description', prodDesc);
+    formData.append('description', prodDesc.trim());
     formData.append('price', prodPrice);
-    if (prodImage) formData.append('image', prodImage);
+    formData.append('image', prodImage);
 
     try {
-      const res = await fetch(`${apiUrl}/api/student-businesses/products/`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData
+      await axiosInstance.post('/student-businesses/products/', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
-      if (res.ok) {
-        alert('Product added successfully!');
-        setProdName('');
-        setProdDesc('');
-        setProdPrice('');
-        setProdImage(null);
-        fetchMyBusiness(); // Refresh to show new product
-      } else {
-        alert('Failed to add product. Please make sure you attached an image.');
-      }
-    } catch (err) {
-      console.error(err);
+      showToast('Product added successfully!', 'success');
+      setProdName('');
+      setProdDesc('');
+      setProdPrice('');
+      setProdImage(null);
+      // Reset file input
+      const fileInput = document.getElementById('prod-image-input') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
+      fetchMyBusiness();
+    } catch (err: any) {
+      const detail = err.response?.data?.detail || err.response?.data?.image?.[0] || 'Failed to add product.';
+      showToast(detail, 'error');
+    } finally {
+      setProdSubmitting(false);
     }
   };
 
   if (isLoading) {
-    return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
+    return (
+      <>
+        <Header />
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      </>
+    );
   }
 
   return (
     <>
       <Header />
+
+      {/* Toast Notification */}
+      {toast && (
+        <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
+      )}
+
       <div className="min-h-screen bg-gray-50 pt-28 pb-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          
+
           <div className="mb-8">
             <h1 className="text-3xl font-extrabold text-gray-900">Vendor Dashboard</h1>
             <p className="text-gray-600 mt-2">Manage your student business and products.</p>
           </div>
 
           {!business ? (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+            /* ── BUSINESS REGISTRATION FORM ────────────────────────── */
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100"
+            >
               <div className="text-center mb-8">
                 <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Store size={32} />
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900">Register Your Business</h2>
-                <p className="text-gray-500 mt-2 max-w-md mx-auto">Fill out these details to list your business on the ACES Marketplace. Executives will review it shortly.</p>
+                <p className="text-gray-500 mt-2 max-w-md mx-auto">
+                  Fill out these details to list your business on the ACES Marketplace. Executives will review it shortly.
+                </p>
               </div>
 
               <form onSubmit={handleCreateBusiness} className="space-y-6 max-w-2xl mx-auto">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Business Name</label>
-                  <input required type="text" value={busName} onChange={e => setBusName(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none" />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Business Name *</label>
+                  <input
+                    required
+                    type="text"
+                    value={busName}
+                    onChange={(e) => setBusName(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                    placeholder="e.g., Campus Bites"
+                  />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                  <textarea required rows={3} value={busDesc} onChange={e => setBusDesc(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description *</label>
+                  <textarea
+                    required
+                    rows={3}
+                    value={busDesc}
+                    onChange={(e) => setBusDesc(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                    placeholder="Tell customers what your business is about..."
+                  />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp Number *</label>
+                    <input
+                      required
+                      type="text"
+                      placeholder="23354..."
+                      value={busWhatsapp}
+                      onChange={(e) => setBusWhatsapp(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Include country code (e.g., 233...)</p>
+                  </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method / Info</label>
-                    <input type="text" placeholder="e.g., MoMo: 054... (Kwame)" value={busPayment} onChange={e => setBusPayment(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp Number</label>
-                    <input required type="text" placeholder="23354..." value={busWhatsapp} onChange={e => setBusWhatsapp(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none" />
+                    <input
+                      type="text"
+                      placeholder="e.g., MoMo: 054... (Kwame)"
+                      value={busPayment}
+                      onChange={(e) => setBusPayment(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Instagram Handle (Optional)</label>
-                    <input type="text" placeholder="@aces_knust" value={busInsta} onChange={e => setBusInsta(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none" />
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Instagram Handle</label>
+                    <input
+                      type="text"
+                      placeholder="@aces_knust"
+                      value={busInsta}
+                      onChange={(e) => setBusInsta(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Business Logo</label>
-                    <input type="file" accept="image/*" onChange={e => setBusLogo(e.target.files?.[0] || null)} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm" />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setBusLogo(e.target.files?.[0] || null)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm"
+                    />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Store Banner (Optional)</label>
-                  <input type="file" accept="image/*" onChange={e => setBusBanner(e.target.files?.[0] || null)} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm" />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Store Banner</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setBusBanner(e.target.files?.[0] || null)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Recommended: 1200x400 or wider for best results.</p>
                 </div>
-                <button type="submit" className="w-full py-4 bg-gray-900 text-white rounded-xl font-bold hover:bg-blue-600 transition-colors">
-                  Submit for Approval
+                <button
+                  type="submit"
+                  disabled={busSubmitting}
+                  className="w-full py-4 bg-gray-900 text-white rounded-xl font-bold hover:bg-blue-600 transition-colors disabled:bg-gray-400"
+                >
+                  {busSubmitting ? 'Submitting...' : 'Submit for Approval'}
                 </button>
               </form>
             </motion.div>
           ) : (
+            /* ── EXISTING BUSINESS DASHBOARD ────────────────────────── */
             <div className="space-y-8">
+
               {/* Business Status Card */}
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 flex flex-col md:flex-row items-center gap-6">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 flex flex-col md:flex-row items-center gap-6"
+              >
                 <div className="w-24 h-24 bg-gray-100 rounded-2xl flex items-center justify-center overflow-hidden shrink-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  {business.logo ? <img src={business.logo} alt={business.name} className="w-full h-full object-cover" /> : <Store className="text-gray-400" size={32} />}
+                  {business.logo ? (
+                    <img src={business.logo} alt={business.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <Store className="text-gray-400" size={32} />
+                  )}
                 </div>
                 <div className="flex-grow text-center md:text-left">
                   <h2 className="text-2xl font-bold text-gray-900">{business.name}</h2>
-                  <p className="text-gray-500">{business.category}</p>
+                  <p className="text-gray-500 text-sm mt-1">{business.description.substring(0, 100)}{business.description.length > 100 ? '...' : ''}</p>
                 </div>
-                <div className="shrink-0">
+                <div className="flex flex-col items-center gap-2 shrink-0">
                   {business.is_approved ? (
                     <div className="flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-xl font-semibold">
                       <CheckCircle size={20} /> Approved & Live
@@ -223,26 +351,42 @@ export default function VendorDashboard() {
                       <Clock size={20} /> Pending Approval
                     </div>
                   )}
+                  {business.is_approved && (
+                    <Link
+                      href={`/marketplace/${business.slug}`}
+                      className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 font-medium"
+                    >
+                      <ExternalLink size={14} /> View Storefront
+                    </Link>
+                  )}
                 </div>
               </motion.div>
 
               {/* Products Section */}
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
-                <h3 className="text-xl font-bold text-gray-900 mb-6 border-b pb-4">Your Products ({business.products?.length || 0})</h3>
-                
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100"
+              >
+                <h3 className="text-xl font-bold text-gray-900 mb-6 border-b pb-4 flex items-center gap-2">
+                  <Package size={20} />
+                  Your Products ({business.products?.length || 0})
+                </h3>
+
                 {/* Product List */}
                 {business.products?.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-                    {business.products.map((p: any) => (
+                    {business.products.map((p) => (
                       <div key={p.id} className="flex gap-4 border border-gray-100 rounded-2xl p-4 bg-gray-50">
                         <div className="w-20 h-20 bg-gray-200 rounded-xl overflow-hidden shrink-0">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
                         </div>
-                        <div>
+                        <div className="min-w-0">
                           <h4 className="font-bold text-gray-900 line-clamp-1">{p.name}</h4>
                           <p className="text-blue-600 font-semibold text-sm">GH₵{p.price}</p>
-                          <p className="text-gray-500 text-xs mt-1 line-clamp-2">{p.description}</p>
+                          <span className="text-gray-400 text-xs">{p.category}</span>
                         </div>
                       </div>
                     ))}
@@ -255,41 +399,79 @@ export default function VendorDashboard() {
 
                 {/* Add Product Form */}
                 <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
-                  <h4 className="font-bold text-gray-900 flex items-center gap-2 mb-4"><Plus size={18} /> Add New Product</h4>
+                  <h4 className="font-bold text-gray-900 flex items-center gap-2 mb-4">
+                    <Plus size={18} /> Add New Product
+                  </h4>
                   <form onSubmit={handleAddProduct} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
-                        <input required type="text" value={prodName} onChange={e => setProdName(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none" />
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
+                        <input
+                          required
+                          type="text"
+                          value={prodName}
+                          onChange={(e) => setProdName(e.target.value)}
+                          className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                        />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                        <select value={prodCategory} onChange={e => setProdCategory(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                          {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+                        <select
+                          value={prodCategory}
+                          onChange={(e) => setProdCategory(e.target.value)}
+                          className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                        >
+                          {CATEGORIES.map((c) => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Price (GH₵)</label>
-                        <input required type="number" step="0.01" value={prodPrice} onChange={e => setProdPrice(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none" />
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Price (GH₵) *</label>
+                        <input
+                          required
+                          type="number"
+                          step="0.01"
+                          min="0.01"
+                          value={prodPrice}
+                          onChange={(e) => setProdPrice(e.target.value)}
+                          className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                        />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                      <textarea required rows={2} value={prodDesc} onChange={e => setProdDesc(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Description *</label>
+                      <textarea
+                        required
+                        rows={2}
+                        value={prodDesc}
+                        onChange={(e) => setProdDesc(e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Product Image</label>
-                      <input required type="file" accept="image/*" onChange={e => setProdImage(e.target.files?.[0] || null)} className="w-full px-4 py-2 rounded-xl border border-gray-200 text-sm bg-white" />
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Product Image *</label>
+                      <input
+                        id="prod-image-input"
+                        required
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => setProdImage(e.target.files?.[0] || null)}
+                        className="w-full px-4 py-2 rounded-xl border border-gray-200 text-sm bg-white"
+                      />
                     </div>
-                    <button type="submit" className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors">
-                      Upload Product
+                    <button
+                      type="submit"
+                      disabled={prodSubmitting}
+                      className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors disabled:bg-gray-400"
+                    >
+                      {prodSubmitting ? 'Uploading...' : 'Upload Product'}
                     </button>
                   </form>
                 </div>
               </motion.div>
             </div>
           )}
-
         </div>
       </div>
       <Footer />
