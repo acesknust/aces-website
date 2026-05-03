@@ -63,15 +63,14 @@ function Lightbox({ src, alt, onClose }: { src: string; alt: string; onClose: ()
 }
 
 // ─── Product Image Gallery ────────────────────────────────────────────────────
-function ProductGallery({ images, name }: { images: string[]; name: string }) {
+const ImageSlider = ({ images, name }: { images: string[]; name: string }) => {
   const [idx, setIdx] = useState(0);
-  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const validImages = images.filter(Boolean);
 
   if (!validImages.length) {
     return (
-      <div className="relative aspect-square bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center">
-        <Store className="text-gray-300" size={64} />
+      <div className="relative aspect-square bg-blue-50 rounded-2xl flex items-center justify-center">
+        <Store className="text-blue-200" size={64} />
       </div>
     );
   }
@@ -82,34 +81,32 @@ function ProductGallery({ images, name }: { images: string[]; name: string }) {
   return (
     <>
       <div className="flex flex-col gap-3">
-        {/* Main image */}
-        <div className="relative aspect-square bg-gray-100 rounded-2xl overflow-hidden group/gallery cursor-zoom-in"
+        <div className="relative aspect-square bg-gray-50 rounded-2xl overflow-hidden group/gallery cursor-zoom-in border border-blue-50"
           onClick={() => setLightboxSrc(validImages[idx])}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={validImages[idx]} alt={name} className="w-full h-full object-contain bg-white" />
-          <div className="absolute inset-0 bg-black/0 group-hover/gallery:bg-black/10 transition-colors flex items-center justify-center">
-            <ZoomIn className="text-white opacity-0 group-hover/gallery:opacity-100 transition-opacity drop-shadow-lg" size={32} />
+          <div className="absolute inset-0 bg-blue-600/0 group-hover/gallery:bg-blue-600/5 transition-colors flex items-center justify-center">
+            <ZoomIn className="text-blue-600 opacity-0 group-hover/gallery:opacity-100 transition-opacity drop-shadow-lg" size={32} />
           </div>
           {validImages.length > 1 && (
             <>
               <button onClick={(e) => { e.stopPropagation(); prev(); }} aria-label="Previous"
-                className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-2 rounded-full opacity-0 group-hover/gallery:opacity-100 transition-all z-10">
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-white hover:bg-blue-50 text-blue-600 p-2 rounded-full opacity-0 group-hover/gallery:opacity-100 transition-all z-10 shadow-sm border border-blue-100">
                 <ChevronLeft size={18} />
               </button>
               <button onClick={(e) => { e.stopPropagation(); next(); }} aria-label="Next"
-                className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-2 rounded-full opacity-0 group-hover/gallery:opacity-100 transition-all z-10">
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-white hover:bg-blue-50 text-blue-600 p-2 rounded-full opacity-0 group-hover/gallery:opacity-100 transition-all z-10 shadow-sm border border-blue-100">
                 <ChevronRight size={18} />
               </button>
             </>
           )}
         </div>
 
-        {/* Thumbnails */}
         {validImages.length > 1 && (
           <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
             {validImages.map((src, i) => (
               <button key={i} onClick={() => setIdx(i)}
-                className={`shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-all ${i === idx ? 'border-blue-500 shadow-md' : 'border-transparent opacity-60 hover:opacity-100'}`}>
+                className={`shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-all ${i === idx ? 'border-blue-500 shadow-md' : 'border-blue-100 opacity-60 hover:opacity-100'}`}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={src} alt={`${name} ${i + 1}`} className="w-full h-full object-cover" />
               </button>
@@ -126,23 +123,25 @@ function ProductGallery({ images, name }: { images: string[]; name: string }) {
 // ─── Product Card (Storefront) ────────────────────────────────────────────────
 function StorefrontProductCard({ product, onBuy }: { product: Product; onBuy: (p: Product) => void }) {
   const allImages = [product.image, ...(product.additional_images?.map(i => i.image) || [])];
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 flex flex-col group"
+      className="bg-white rounded-2xl overflow-hidden shadow-sm border border-blue-50 hover:shadow-md transition-all duration-300 flex flex-col group"
     >
       {/* Inline carousel for storefront cards */}
-      <div className="relative h-52 bg-gray-100 overflow-hidden group/img">
+      <div className="relative h-52 bg-gray-50 overflow-hidden group/img cursor-zoom-in border-b border-blue-50"
+        onClick={() => allImages[0] && setLightboxSrc(allImages[0])}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={allImages[0]} alt={product.name} className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-500" />
         {!product.is_available && (
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center">
-            <span className="px-3 py-1.5 bg-gray-900 text-white font-bold rounded-lg text-xs transform -rotate-6 shadow-lg">Out of Stock</span>
+          <div className="absolute inset-0 bg-blue-900/30 backdrop-blur-[2px] flex items-center justify-center">
+            <span className="px-3 py-1.5 bg-white text-blue-900 font-bold rounded-lg text-xs transform -rotate-6 shadow-lg border border-blue-100">Out of Stock</span>
           </div>
         )}
         {allImages.length > 1 && (
-          <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-0.5 rounded-full backdrop-blur-sm">
+          <div className="absolute bottom-2 right-2 bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full">
             +{allImages.length - 1} more
           </div>
         )}
@@ -151,7 +150,7 @@ function StorefrontProductCard({ product, onBuy }: { product: Product; onBuy: (p
       <div className="p-4 flex flex-col flex-grow">
         <div className="flex items-start justify-between gap-2 mb-1">
           <h3 className="font-bold text-gray-900 text-base leading-snug line-clamp-2 flex-grow">{product.name}</h3>
-          <span className="text-blue-600 font-extrabold text-sm bg-blue-50 px-2 py-0.5 rounded-lg shrink-0 whitespace-nowrap">
+          <span className="text-blue-600 font-extrabold text-sm bg-blue-50 px-2 py-0.5 rounded-lg shrink-0 whitespace-nowrap border border-blue-100">
             GH₵{Number(product.price).toLocaleString()}
           </span>
         </div>
@@ -163,14 +162,16 @@ function StorefrontProductCard({ product, onBuy }: { product: Product; onBuy: (p
           disabled={!product.is_available}
           className={`mt-auto w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-sm transition-all ${
             product.is_available
-              ? 'bg-gray-900 text-white hover:bg-[#25D366] hover:shadow-md'
-              : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              ? 'bg-blue-600 text-white hover:bg-[#25D366] hover:shadow-md'
+              : 'bg-blue-50 text-blue-300 cursor-not-allowed border border-blue-100'
           }`}
         >
           <MessageCircle size={16} />
           {product.is_available ? 'Buy via WhatsApp' : 'Unavailable'}
         </button>
       </div>
+
+      {lightboxSrc && <Lightbox src={lightboxSrc} alt={product.name} onClose={() => setLightboxSrc(null)} />}
     </motion.div>
   );
 }
@@ -313,9 +314,9 @@ export default function BusinessStorefront() {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={business.banner} alt="Store banner" className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-blue-500 via-blue-600 to-cyan-500" />
+                <div className="w-full h-full bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700" />
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-blue-900/30 to-transparent" />
             </div>
 
             {/* Business Info */}
@@ -375,11 +376,11 @@ export default function BusinessStorefront() {
           <div className="flex items-center gap-4 mb-7">
             <h2 className="text-xl font-extrabold text-gray-900">
               Products
-              <span className="ml-2 text-sm font-semibold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+              <span className="ml-2 text-sm font-semibold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">
                 {business.products.length}
               </span>
             </h2>
-            <div className="h-px bg-gray-200 flex-grow" />
+            <div className="h-px bg-blue-100 flex-grow" />
           </div>
 
           {allProducts.length > 0 ? (

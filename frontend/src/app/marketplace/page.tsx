@@ -27,13 +27,13 @@ interface Product {
 }
 
 // ─── Image Carousel ─────────────────────────────────────────────────────────
-function ImageCarousel({ images, alt }: { images: string[]; alt: string }) {
+const ImageCarousel = ({ images, alt }: { images: string[]; alt: string }) => {
   const [idx, setIdx] = useState(0);
   const validImages = images.filter(Boolean);
   if (!validImages.length) {
     return (
-      <div className="relative h-52 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center shrink-0">
-        <Store className="text-gray-300" size={48} />
+      <div className="relative h-52 bg-blue-50 flex items-center justify-center shrink-0">
+        <Store className="text-blue-200" size={48} />
       </div>
     );
   }
@@ -48,17 +48,17 @@ function ImageCarousel({ images, alt }: { images: string[]; alt: string }) {
       {validImages.length > 1 && (
         <>
           <button onClick={prev} aria-label="Previous image"
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-1.5 rounded-full opacity-0 group-hover/img:opacity-100 transition-all z-10 backdrop-blur-sm">
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-blue-600 p-1.5 rounded-full opacity-0 group-hover/img:opacity-100 transition-all z-10 shadow-sm">
             <ChevronLeft size={14} />
           </button>
           <button onClick={next} aria-label="Next image"
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-1.5 rounded-full opacity-0 group-hover/img:opacity-100 transition-all z-10 backdrop-blur-sm">
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-blue-600 p-1.5 rounded-full opacity-0 group-hover/img:opacity-100 transition-all z-10 shadow-sm">
             <ChevronRight size={14} />
           </button>
           <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5 z-10">
             {validImages.map((_, i) => (
               <button key={i} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIdx(i); }}
-                className={`rounded-full transition-all ${i === idx ? 'w-4 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/60 hover:bg-white/80'}`} />
+                className={`rounded-full transition-all ${i === idx ? 'w-4 h-1.5 bg-blue-600' : 'w-1.5 h-1.5 bg-white/80 hover:bg-blue-300'}`} />
             ))}
           </div>
         </>
@@ -106,18 +106,18 @@ function ProductCard({ product }: { product: Product }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.25 }}
-      className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex flex-col group"
+      className="bg-white rounded-2xl overflow-hidden shadow-sm border border-blue-50 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col group"
     >
       <div className="relative">
         <ImageCarousel images={allImages} alt={product.name} />
         {/* Category badge */}
-        <div className="absolute top-2 left-2 z-10 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded-full text-xs font-semibold text-gray-700 shadow-sm border border-gray-100 flex items-center gap-1">
+        <div className="absolute top-2 left-2 z-10 bg-white/95 px-2 py-0.5 rounded-full text-xs font-semibold text-blue-700 shadow-sm border border-blue-100 flex items-center gap-1">
           <span>{catEmoji}</span>
           <span className="hidden sm:inline">{product.category.split(' ')[0]}</span>
         </div>
         {!product.is_available && (
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-10">
-            <span className="px-3 py-1.5 bg-gray-900 text-white font-bold rounded-lg text-sm transform -rotate-6 shadow-lg">Out of Stock</span>
+          <div className="absolute inset-0 bg-blue-900/30 backdrop-blur-[2px] flex items-center justify-center z-10">
+            <span className="px-3 py-1.5 bg-white text-blue-900 font-bold rounded-lg text-sm transform -rotate-6 shadow-lg border border-blue-100">Out of Stock</span>
           </div>
         )}
       </div>
@@ -125,7 +125,7 @@ function ProductCard({ product }: { product: Product }) {
       <div className="p-4 flex flex-col flex-grow">
         <div className="flex items-start justify-between gap-2 mb-1.5">
           <h3 className="font-bold text-gray-900 text-base leading-snug line-clamp-2 flex-grow">{product.name}</h3>
-          <span className="text-blue-600 font-extrabold whitespace-nowrap text-sm bg-blue-50 px-2 py-0.5 rounded-lg shrink-0">
+          <span className="text-blue-600 font-extrabold whitespace-nowrap text-sm bg-blue-50 px-2 py-0.5 rounded-lg shrink-0 border border-blue-100">
             GH₵{Number(product.price).toLocaleString()}
           </span>
         </div>
@@ -134,11 +134,11 @@ function ProductCard({ product }: { product: Product }) {
           <p className="text-gray-500 text-sm line-clamp-2 flex-grow mb-3">{product.description}</p>
         )}
 
-        <div className="mt-auto pt-3 border-t border-gray-100">
+        <div className="mt-auto pt-3 border-t border-blue-50">
           <Link href={`/marketplace/${product.business_slug}`}
             className="flex items-center justify-between group/link">
             <div className="flex items-center gap-1.5 overflow-hidden">
-              <Store size={14} className="text-gray-400 shrink-0" />
+              <Store size={14} className="text-blue-400 shrink-0" />
               <span className="text-xs font-semibold text-gray-600 truncate group-hover/link:text-blue-600 transition-colors">
                 {product.business_name}
               </span>
@@ -201,13 +201,13 @@ export default function MarketplacePage() {
       <div className="min-h-screen bg-gray-50">
 
         {/* Hero */}
-        <div className="bg-white border-b border-gray-100 pt-28 pb-10">
+        <div className="bg-white border-b border-blue-50 pt-28 pb-10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
               className="text-center mb-8"
             >
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 text-blue-700 font-semibold text-sm mb-4 border border-blue-100">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 text-blue-600 font-semibold text-sm mb-4 border border-blue-100">
                 <ShoppingBag size={15} /> Student Marketplace
               </div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight mb-3">
@@ -257,8 +257,8 @@ export default function MarketplacePage() {
                   onClick={() => setActiveCategory(label)}
                   className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all duration-200 border shrink-0 ${
                     activeCategory === label
-                      ? 'bg-gray-900 text-white border-gray-900 shadow-md'
-                      : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400 hover:text-gray-900'
+                      ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                      : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300 hover:text-blue-600'
                   }`}
                 >
                   <span>{emoji}</span> {label}
@@ -274,7 +274,7 @@ export default function MarketplacePage() {
             </p>
             {activeCategory !== 'All' && (
               <button onClick={() => setActiveCategory('All')}
-                className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 border border-gray-200 px-2.5 py-1 rounded-full hover:bg-gray-100 transition-colors">
+                className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 border border-blue-100 bg-blue-50 px-2.5 py-1 rounded-full hover:bg-blue-100 transition-colors">
                 <Tag size={12} /> {activeCategory} <X size={12} />
               </button>
             )}
@@ -308,7 +308,7 @@ export default function MarketplacePage() {
               <h3 className="text-xl font-bold text-gray-900 mb-2">No products found</h3>
               <p className="text-gray-500 mb-6">Try adjusting your search or category filter.</p>
               <button onClick={() => { setSearchQuery(''); setActiveCategory('All'); }}
-                className="px-6 py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-blue-600 transition-colors">
+                className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors">
                 Clear Filters
               </button>
             </motion.div>
