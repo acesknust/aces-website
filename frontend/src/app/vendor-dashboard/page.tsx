@@ -7,7 +7,7 @@ import axiosInstance from '../api/axios';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
 import Link from 'next/link';
-import { Store, Plus, CheckCircle, Clock, ExternalLink, Package, AlertCircle, Edit3, X, Eye, EyeOff, Trash2 } from 'lucide-react';
+import { Store, Plus, CheckCircle, Clock, ExternalLink, Package, AlertCircle, Edit3, X, Eye, EyeOff, Trash2, ImageIcon } from 'lucide-react';
 
 const CATEGORIES = [
   'Food & Beverages',
@@ -26,6 +26,7 @@ interface ProductType {
   image: string;
   category: string;
   is_available: boolean;
+  additional_images?: { id: number; image: string }[];
 }
 
 interface BusinessType {
@@ -387,7 +388,7 @@ export default function VendorDashboard() {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 flex flex-col md:flex-row items-center gap-6"
+                className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col sm:flex-row items-center gap-5"
               >
                 <div className="w-24 h-24 bg-gray-100 rounded-2xl flex items-center justify-center overflow-hidden shrink-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -541,40 +542,55 @@ export default function VendorDashboard() {
                 transition={{ delay: 0.1 }}
                 className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100"
               >
-                <h3 className="text-xl font-bold text-gray-900 mb-6 border-b pb-4 flex items-center gap-2">
-                  <Package size={20} />
-                  Your Products ({business.products?.length || 0})
-                </h3>
+                <div className="flex items-center justify-between mb-6 border-b pb-4">
+                  <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                    <Package size={20} />
+                    Your Products
+                    <span className="ml-1 bg-gray-100 text-gray-600 text-sm font-semibold px-2.5 py-0.5 rounded-full">
+                      {business.products?.length || 0}
+                    </span>
+                  </h3>
+                  {business.is_approved && (
+                    <Link href={`/marketplace/${business.slug}`} target="_blank"
+                      className="text-xs flex items-center gap-1 text-blue-600 hover:text-blue-800 font-semibold border border-blue-100 bg-blue-50 px-3 py-1.5 rounded-lg">
+                      <ExternalLink size={12} /> View Live Store
+                    </Link>
+                  )}
+                </div>
 
                 {/* Product List */}
                 {business.products?.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
                     {business.products.map((p) => (
-                      <div key={p.id} className="flex gap-4 border border-gray-100 rounded-2xl p-4 bg-gray-50">
-                        <div className="w-20 h-20 bg-gray-200 rounded-xl overflow-hidden shrink-0">
+                      <div key={p.id} className="flex gap-3 border border-gray-100 rounded-2xl p-4 bg-white hover:shadow-sm transition-shadow">
+                        <div className="relative w-20 h-20 bg-gray-100 rounded-xl overflow-hidden shrink-0">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
+                          {(p.additional_images?.length ?? 0) > 0 && (
+                            <div className="absolute bottom-1 right-1 bg-black/60 text-white text-[10px] px-1 py-0.5 rounded flex items-center gap-0.5">
+                              <ImageIcon size={9} /> {(p.additional_images?.length ?? 0) + 1}
+                            </div>
+                          )}
                         </div>
-                        <div className="min-w-0">
-                          <h4 className="font-bold text-gray-900 line-clamp-1">{p.name}</h4>
-                          <p className="text-blue-600 font-semibold text-sm mb-1">GH₵{p.price}</p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <span className="text-gray-400 text-xs">{p.category}</span>
-                            <button 
+                        <div className="min-w-0 flex-grow">
+                          <h4 className="font-bold text-gray-900 text-sm line-clamp-1 mb-0.5">{p.name}</h4>
+                          <p className="text-blue-600 font-extrabold text-sm mb-2">GH₵{Number(p.price).toLocaleString()}</p>
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <button
                               onClick={() => handleToggleProduct(p.id, p.is_available)}
-                              className={`text-xs px-2 py-1 rounded flex items-center gap-1 font-medium transition-colors ${
-                                p.is_available 
-                                  ? 'bg-green-50 text-green-700 hover:bg-green-100' 
-                                  : 'bg-red-50 text-red-700 hover:bg-red-100'
+                              className={`text-xs px-2.5 py-1 rounded-lg flex items-center gap-1 font-semibold transition-colors ${
+                                p.is_available
+                                  ? 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-100'
+                                  : 'bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-100'
                               }`}
                             >
-                              {p.is_available ? <><Eye size={12}/> Available</> : <><EyeOff size={12}/> Hidden</>}
+                              {p.is_available ? <><Eye size={11}/> Live</> : <><EyeOff size={11}/> Hidden</>}
                             </button>
                             <button
                               onClick={() => handleDeleteProduct(p.id)}
-                              className="text-xs px-2 py-1 rounded flex items-center gap-1 font-medium bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors"
+                              className="text-xs px-2.5 py-1 rounded-lg flex items-center gap-1 font-semibold bg-gray-100 text-gray-500 hover:bg-red-50 hover:text-red-600 transition-colors border border-gray-100"
                             >
-                              <Trash2 size={12} /> Delete
+                              <Trash2 size={11} /> Remove
                             </button>
                           </div>
                         </div>
