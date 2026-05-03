@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -123,8 +123,72 @@ const ImageSlider = ({ images, name }: { images: string[]; name: string }) => {
   );
 }
 
+// ─── Product Detail Modal ─────────────────────────────────────────────────────
+function ProductDetailModal({ product, onClose, onBuy }: { product: Product; onClose: () => void; onBuy: (p: Product) => void }) {
+  const allImages = [product.image, ...(product.additional_images?.map(i => i.image) || [])].filter(Boolean);
+
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handler);
+    return () => { document.body.style.overflow = ''; document.removeEventListener('keydown', handler); };
+  }, [onClose]);
+
+  return (
+    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        transition={{ duration: 0.2 }}
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto relative"
+      >
+        <button onClick={onClose} aria-label="Close"
+          className="absolute top-4 right-4 z-20 bg-white/90 hover:bg-gray-100 rounded-full p-2 shadow-sm border border-gray-200 transition-colors">
+          <X size={20} className="text-gray-600" />
+        </button>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
+          {/* Image gallery */}
+          <div className="p-5 md:p-6">
+            <ImageSlider images={allImages} name={product.name} />
+          </div>
+
+          {/* Product info */}
+          <div className="p-5 md:p-6 md:pl-0 flex flex-col">
+            <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full self-start border border-blue-100 mb-3">{product.category}</span>
+            <h2 className="text-xl md:text-2xl font-extrabold text-gray-900 mb-2">{product.name}</h2>
+            <p className="text-2xl font-extrabold text-blue-600 mb-4">GH₵{Number(product.price).toLocaleString()}</p>
+            {product.description && (
+              <p className="text-gray-600 text-sm leading-relaxed mb-6 flex-grow">{product.description}</p>
+            )}
+            <div className="flex flex-col gap-3 mt-auto">
+              <button
+                onClick={() => onBuy(product)}
+                disabled={!product.is_available}
+                className={`w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 text-sm transition-all ${
+                  product.is_available
+                    ? 'bg-[#25D366] text-white hover:bg-[#20bd5a] shadow-sm'
+                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                <MessageCircle size={16} />
+                {product.is_available ? 'Buy via WhatsApp' : 'Currently Unavailable'}
+              </button>
+            </div>
+            {allImages.length > 1 && (
+              <p className="text-xs text-gray-400 mt-3 text-center">{allImages.length} photos · Click image to zoom</p>
+            )}
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 // ─── Product Card (Storefront) ────────────────────────────────────────────────
-function StorefrontProductCard({ product, onBuy }: { product: Product; onBuy: (p: Product) => void }) {
+function StorefrontProductCard({ product, onBuy, onView }: { product: Product; onBuy: (p: Product) => void; onView: (p: Product) => void }) {
   const allImages = [product.image, ...(product.additional_images?.map(i => i.image) || [])].filter(Boolean);
   const [imgIdx, setImgIdx] = useState(0);
 
@@ -134,7 +198,8 @@ function StorefrontProductCard({ product, onBuy }: { product: Product; onBuy: (p
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-2xl overflow-hidden shadow-sm border border-blue-50 hover:shadow-md transition-all duration-300 flex flex-col group"
+      className="bg-white rounded-2xl overflow-hidden shadow-sm border border-blue-50 hover:shadow-md transition-all duration-300 flex flex-col group cursor-pointer"
+      onClick={() => onView(product)}
     >
       {/* Image carousel */}
       <div className="relative h-52 bg-gray-50 overflow-hidden group/img border-b border-blue-50">
@@ -176,7 +241,7 @@ function StorefrontProductCard({ product, onBuy }: { product: Product; onBuy: (p
           <p className="text-gray-500 text-sm line-clamp-2 mb-4 flex-grow">{product.description}</p>
         )}
         <button
-          onClick={() => onBuy(product)}
+          onClick={(e) => { e.stopPropagation(); onBuy(product); }}
           disabled={!product.is_available}
           className={`mt-auto w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-sm transition-all ${
             product.is_available
@@ -423,6 +488,7 @@ export default function BusinessStorefront() {
                   key={product.id}
                   product={product}
                   onBuy={handleWhatsAppBuy}
+                  onView={setSelectedProduct}
                 />
               ))}
             </div>
@@ -436,6 +502,16 @@ export default function BusinessStorefront() {
           )}
         </div>
       </div>
+
+      {/* Product Detail Modal */}
+      {selectedProduct && (
+        <ProductDetailModal
+          product={selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+          onBuy={handleWhatsAppBuy}
+        />
+      )}
+
       <Footer />
     </>
   );

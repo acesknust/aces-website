@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
 import {
   Search, Store, ShoppingBag, ChevronRight, ChevronLeft,
-  SlidersHorizontal, X, Tag, AlertCircle,
+  SlidersHorizontal, X, Tag, AlertCircle, ZoomIn, MessageCircle,
 } from 'lucide-react';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -95,7 +95,7 @@ const CATEGORIES = [
 ];
 
 // ─── Product Card ────────────────────────────────────────────────────────────
-function ProductCard({ product }: { product: Product }) {
+function ProductCard({ product, onView }: { product: Product; onView: (p: Product) => void }) {
   const allImages = [product.image, ...(product.additional_images?.map(i => i.image) || [])];
   const catEmoji = CATEGORIES.find(c => product.category.includes(c.label.split(' ')[0]))?.emoji || '📦';
 
@@ -106,7 +106,8 @@ function ProductCard({ product }: { product: Product }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.25 }}
-      className="bg-white rounded-2xl overflow-hidden shadow-sm border border-blue-50 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col group"
+      className="bg-white rounded-2xl overflow-hidden shadow-sm border border-blue-50 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col group cursor-pointer"
+      onClick={() => onView(product)}
     >
       <div className="relative">
         <ImageCarousel images={allImages} alt={product.name} />
@@ -153,10 +154,121 @@ function ProductCard({ product }: { product: Product }) {
   );
 }
 
+// ─── Product Detail Modal ─────────────────────────────────────────────────────
+function ProductDetailModal({ product, onClose }: { product: Product; onClose: () => void }) {
+  const allImages = [product.image, ...(product.additional_images?.map(i => i.image) || [])].filter(Boolean);
+  const [idx, setIdx] = useState(0);
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') { if (lightboxSrc) setLightboxSrc(null); else onClose(); } };
+    document.addEventListener('keydown', handler);
+    return () => { document.body.style.overflow = ''; document.removeEventListener('keydown', handler); };
+  }, [onClose, lightboxSrc]);
+
+  const prev = () => setIdx(i => (i === 0 ? allImages.length - 1 : i - 1));
+  const next = () => setIdx(i => (i === allImages.length - 1 ? 0 : i + 1));
+
+  return (
+    <>
+      <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{ duration: 0.2 }}
+          onClick={(e) => e.stopPropagation()}
+          className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto relative"
+        >
+          <button onClick={onClose} aria-label="Close"
+            className="absolute top-4 right-4 z-20 bg-white/90 hover:bg-gray-100 rounded-full p-2 shadow-sm border border-gray-200 transition-colors">
+            <X size={20} className="text-gray-600" />
+          </button>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
+            {/* Image gallery with thumbnails */}
+            <div className="p-5 md:p-6">
+              <div className="flex flex-col gap-3">
+                <div className="relative aspect-square bg-gray-50 rounded-2xl overflow-hidden group/gallery cursor-zoom-in border border-blue-50"
+                  onClick={() => setLightboxSrc(allImages[idx])}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={allImages[idx]} alt={product.name} className="w-full h-full object-contain bg-white" />
+                  <div className="absolute inset-0 bg-blue-600/0 group-hover/gallery:bg-blue-600/5 transition-colors flex items-center justify-center">
+                    <ZoomIn className="text-blue-600 opacity-0 group-hover/gallery:opacity-100 transition-opacity drop-shadow-lg" size={32} />
+                  </div>
+                  {allImages.length > 1 && (
+                    <>
+                      <button onClick={(e) => { e.stopPropagation(); prev(); }} aria-label="Previous"
+                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-white hover:bg-blue-50 text-blue-600 p-2 rounded-full opacity-0 group-hover/gallery:opacity-100 transition-all z-10 shadow-sm border border-blue-100">
+                        <ChevronLeft size={18} />
+                      </button>
+                      <button onClick={(e) => { e.stopPropagation(); next(); }} aria-label="Next"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-white hover:bg-blue-50 text-blue-600 p-2 rounded-full opacity-0 group-hover/gallery:opacity-100 transition-all z-10 shadow-sm border border-blue-100">
+                        <ChevronRight size={18} />
+                      </button>
+                    </>
+                  )}
+                </div>
+                {allImages.length > 1 && (
+                  <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                    {allImages.map((src, i) => (
+                      <button key={i} onClick={() => setIdx(i)}
+                        className={`shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-all ${i === idx ? 'border-blue-500 shadow-md' : 'border-blue-100 opacity-60 hover:opacity-100'}`}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={src} alt={`${product.name} ${i + 1}`} className="w-full h-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Product info */}
+            <div className="p-5 md:p-6 md:pl-0 flex flex-col">
+              <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full self-start border border-blue-100 mb-3">{product.category}</span>
+              <h2 className="text-xl md:text-2xl font-extrabold text-gray-900 mb-2">{product.name}</h2>
+              <p className="text-2xl font-extrabold text-blue-600 mb-4">GH₵{Number(product.price).toLocaleString()}</p>
+              {product.description && (
+                <p className="text-gray-600 text-sm leading-relaxed mb-6 flex-grow">{product.description}</p>
+              )}
+              <div className="flex flex-col gap-3 mt-auto">
+                <Link href={`/marketplace/${product.business_slug}`}
+                  className="w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-sm bg-blue-600 text-white hover:bg-blue-700 transition-colors">
+                  <Store size={16} /> Visit {product.business_name}
+                </Link>
+              </div>
+              {allImages.length > 1 && (
+                <p className="text-xs text-gray-400 mt-3 text-center">{allImages.length} photos · Click image to zoom</p>
+              )}
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Zoom Lightbox */}
+      {lightboxSrc && (
+        <div className="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm"
+          onClick={() => setLightboxSrc(null)}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={lightboxSrc} alt={product.name}
+            className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl"
+            onClick={(e) => e.stopPropagation()} />
+          <button onClick={() => setLightboxSrc(null)} aria-label="Close"
+            className="absolute top-4 right-4 text-white bg-white/10 hover:bg-white/20 rounded-full p-2.5 transition-colors backdrop-blur-sm">
+            <X size={22} />
+          </button>
+        </div>
+      )}
+    </>
+  );
+}
+
 // ─── Main Page ───────────────────────────────────────────────────────────────
 export default function MarketplacePage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [modalProduct, setModalProduct] = useState<Product | null>(null);
   const [fetchError, setFetchError] = useState(false);
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -298,7 +410,7 @@ export default function MarketplacePage() {
           ) : products.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
               <AnimatePresence mode="popLayout">
-                {products.map((prod) => <ProductCard key={prod.id} product={prod} />)}
+                {products.map((prod) => <ProductCard key={prod.id} product={prod} onView={setModalProduct} />)}
               </AnimatePresence>
             </div>
           ) : (
@@ -315,6 +427,15 @@ export default function MarketplacePage() {
           )}
         </div>
       </div>
+
+      {/* Product Detail Modal */}
+      {modalProduct && (
+        <ProductDetailModal
+          product={modalProduct}
+          onClose={() => setModalProduct(null)}
+        />
+      )}
+
       <Footer />
     </>
   );
