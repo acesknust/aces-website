@@ -99,6 +99,8 @@ export default function VendorDashboard() {
   const [prodImage, setProdImage] = useState<File | null>(null);
   const [additionalImages, setAdditionalImages] = useState<File[]>([]);
   const [prodSubmitting, setProdSubmitting] = useState(false);
+  const [isEditingProduct, setIsEditingProduct] = useState(false);
+  const [editingProductId, setEditingProductId] = useState<number | null>(null);
 
   const showToast = useCallback((message: string, type: 'success' | 'error') => {
     setToast({ message, type });
@@ -224,12 +226,37 @@ export default function VendorDashboard() {
     }
   };
 
-  const handleAddProduct = async (e: React.FormEvent) => {
+  const handleEditProductClick = (product: ProductType) => {
+    setProdName(product.name);
+    setProdCategory(product.category);
+    setProdDesc(product.description);
+    setProdPrice(product.price);
+    setProdImage(null);
+    setAdditionalImages([]);
+    setIsEditingProduct(true);
+    setEditingProductId(product.id);
+    setTimeout(() => {
+      document.getElementById('product-form-section')?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  };
+
+  const handleCancelProductEdit = () => {
+    setProdName('');
+    setProdCategory(CATEGORIES[0]);
+    setProdDesc('');
+    setProdPrice('');
+    setProdImage(null);
+    setAdditionalImages([]);
+    setIsEditingProduct(false);
+    setEditingProductId(null);
+  };
+
+  const handleCreateOrUpdateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!business) return;
 
-    if (!prodImage) {
-      showToast('Please select a product image.', 'error');
+    if (!isEditingProduct && !prodImage) {
+      showToast('Please select a main product image.', 'error');
       return;
     }
 
@@ -241,20 +268,26 @@ export default function VendorDashboard() {
     formData.append('category', prodCategory);
     formData.append('description', prodDesc.trim());
     formData.append('price', prodPrice);
-    formData.append('image', prodImage);
+    if (prodImage) {
+      formData.append('image', prodImage);
+    }
     additionalImages.forEach((img) => formData.append('additional_images', img));
     formData.append('is_available', 'true');
 
     try {
-      await axiosInstance.post('/student-businesses/products/', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      showToast('Product added successfully!', 'success');
-      setProdName('');
-      setProdDesc('');
-      setProdPrice('');
-      setProdImage(null);
-      setAdditionalImages([]);
+      if (isEditingProduct && editingProductId) {
+        await axiosInstance.patch(`/student-businesses/products/${editingProductId}/`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        showToast('Product updated successfully!', 'success');
+      } else {
+        await axiosInstance.post('/student-businesses/products/', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        showToast('Product added successfully!', 'success');
+      }
+      
+      handleCancelProductEdit();
       // Reset file inputs
       const fileInput = document.getElementById('prod-image-input') as HTMLInputElement;
       if (fileInput) fileInput.value = '';
@@ -262,7 +295,7 @@ export default function VendorDashboard() {
       if (extraInput) extraInput.value = '';
       fetchMyBusinesses();
     } catch (err: any) {
-      let detail = 'Failed to add product.';
+      let detail = isEditingProduct ? 'Failed to update product.' : 'Failed to add product.';
       if (err.response?.data) {
         if (err.response.data.detail) {
           detail = err.response.data.detail;
@@ -700,6 +733,12 @@ export default function VendorDashboard() {
                               {p.is_available ? <><Eye size={11}/> Live</> : <><EyeOff size={11}/> Hidden</>}
                             </button>
                             <button
+                              onClick={() => handleEditProductClick(p)}
+                              className="text-xs px-2.5 py-1 rounded-lg flex items-center gap-1 font-semibold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors border border-gray-100"
+                            >
+                              <Edit3 size={11} /> Edit
+                            </button>
+                            <button
                               onClick={() => handleDeleteProduct(p.id)}
                               className="text-xs px-2.5 py-1 rounded-lg flex items-center gap-1 font-semibold bg-gray-100 text-gray-500 hover:bg-red-50 hover:text-red-600 transition-colors border border-gray-100"
                             >
@@ -716,12 +755,12 @@ export default function VendorDashboard() {
                   </div>
                 )}
 
-                {/* Add Product Form */}
-                <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
+                {/* Add/Edit Product Form */}
+                <div id="product-form-section" className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
                   <h4 className="font-bold text-gray-900 flex items-center gap-2 mb-4">
-                    <Plus size={18} /> Add New Product
+                    {isEditingProduct ? <><Edit3 size={18} /> Edit Product</> : <><Plus size={18} /> Add New Product</>}
                   </h4>
-                  <form onSubmit={handleAddProduct} className="space-y-4">
+                  <form onSubmit={handleCreateOrUpdateProduct} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
@@ -770,10 +809,10 @@ export default function VendorDashboard() {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Main Product Image *</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Main Product Image {isEditingProduct ? '(Optional)' : '*'}</label>
                         <input
                           id="prod-image-input"
-                          required
+                          required={!isEditingProduct}
                           type="file"
                           accept="image/*"
                           onChange={(e) => setProdImage(e.target.files?.[0] || null)}
@@ -815,13 +854,24 @@ export default function VendorDashboard() {
                         )}
                       </div>
                     </div>
-                    <button
-                      type="submit"
-                      disabled={prodSubmitting}
-                      className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors disabled:bg-gray-400"
-                    >
-                      {prodSubmitting ? 'Uploading...' : 'Upload Product'}
-                    </button>
+                    <div className="flex gap-3 pt-2">
+                      <button
+                        type="submit"
+                        disabled={prodSubmitting}
+                        className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors disabled:bg-gray-400"
+                      >
+                        {prodSubmitting ? (isEditingProduct ? 'Updating...' : 'Uploading...') : (isEditingProduct ? 'Update Product' : 'Upload Product')}
+                      </button>
+                      {isEditingProduct && (
+                        <button
+                          type="button"
+                          onClick={handleCancelProductEdit}
+                          className="px-6 py-3 bg-white text-gray-700 border border-gray-200 rounded-xl font-bold hover:bg-gray-50 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      )}
+                    </div>
                   </form>
                 </div>
               </motion.div>
