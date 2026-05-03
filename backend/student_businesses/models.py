@@ -67,7 +67,9 @@ class Business(models.Model):
     payment_method = models.TextField(blank=True, help_text="e.g., MTN MoMo: 0541234567 (Kwame)")
     logo = models.ImageField(upload_to='student_businesses/logos/', blank=True, null=True)
     whatsapp_number = models.CharField(max_length=20, help_text="Include country code, e.g., 233541234567")
-    instagram_handle = models.CharField(max_length=100, blank=True, null=True, help_text="e.g., @aces_knust")
+    whatsapp_group_link = models.URLField(max_length=255, blank=True, null=True, help_text="Optional WhatsApp Group invite link")
+    instagram_handle = models.CharField(max_length=100, blank=True, null=True, help_text="e.g., aces_knust")
+    snapchat_handle = models.CharField(max_length=100, blank=True, null=True, help_text="e.g., aces_knust")
     is_approved = models.BooleanField(default=False, help_text="Executives must approve before it appears publicly")
     created_at = models.DateTimeField(auto_now_add=True)
 

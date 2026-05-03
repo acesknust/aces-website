@@ -18,10 +18,18 @@ class ProductInline(admin.TabularInline):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'business', 'price', 'is_available')
-    list_filter = ('is_available', 'category')
+    """Read-only view of products for admin reference."""
+    list_display = ('name', 'business', 'category', 'price', 'is_available', 'created_at')
+    list_filter = ('is_available', 'category', 'business')
     search_fields = ('name', 'business__name')
     inlines = [ProductImageInline]
+    readonly_fields = ('business', 'name', 'category', 'description', 'price', 'image', 'is_available', 'created_at')
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(Business)
@@ -40,7 +48,7 @@ class BusinessAdmin(admin.ModelAdmin):
     # Make ALL fields read-only so admins can view but not edit vendor data
     readonly_fields = (
         'owner', 'name', 'slug', 'description', 'banner', 'payment_method',
-        'logo', 'whatsapp_number', 'instagram_handle', 'created_at',
+        'logo', 'whatsapp_number', 'whatsapp_group_link', 'instagram_handle', 'snapchat_handle', 'created_at',
     )
 
     def has_add_permission(self, request):
@@ -56,7 +64,7 @@ class BusinessAdmin(admin.ModelAdmin):
         return [
             'is_approved',
             'name', 'owner', 'slug', 'description',
-            'whatsapp_number', 'instagram_handle', 'payment_method',
+            'whatsapp_number', 'whatsapp_group_link', 'instagram_handle', 'snapchat_handle', 'payment_method',
             'logo', 'banner', 'created_at',
         ]
 
@@ -71,16 +79,4 @@ class BusinessAdmin(admin.ModelAdmin):
     unapprove_businesses.short_description = "❌ Unapprove selected businesses"
 
 
-@admin.register(Product)
-class ProductAdmin(admin.ModelAdmin):
-    """Read-only view of products for admin reference."""
-    list_display = ('name', 'business', 'category', 'price', 'is_available', 'created_at')
-    list_filter = ('is_available', 'category', 'business')
-    search_fields = ('name', 'business__name')
-    readonly_fields = ('business', 'name', 'category', 'description', 'price', 'image', 'is_available', 'created_at')
 
-    def has_add_permission(self, request):
-        return False
-
-    def has_delete_permission(self, request, obj=None):
-        return False

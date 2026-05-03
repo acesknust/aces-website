@@ -8,7 +8,7 @@ import Header from '@/components/header';
 import Footer from '@/components/footer';
 import {
   Store, Instagram, MessageCircle, ArrowLeft, PackageSearch,
-  ChevronLeft, ChevronRight, Phone, MapPin, X, ZoomIn,
+  ChevronLeft, ChevronRight, Phone, MapPin, X, ZoomIn, Ghost, Users,
 } from 'lucide-react';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -34,7 +34,9 @@ interface Business {
   banner: string | null;
   payment_method: string;
   whatsapp_number: string;
+  whatsapp_group_link: string | null;
   instagram_handle: string | null;
+  snapchat_handle: string | null;
   owner_name: string;
   products: Product[];
 }
@@ -370,13 +372,30 @@ export default function BusinessStorefront() {
                     className="inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-white px-6 py-3 rounded-xl font-bold transition-colors shadow-sm text-sm">
                     <MessageCircle size={18} /> Chat with Vendor
                   </button>
+                  {business.whatsapp_group_link && (
+                    <a
+                      href={business.whatsapp_group_link}
+                      target="_blank" rel="noreferrer"
+                      className="inline-flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 px-6 py-3 rounded-xl font-bold transition-colors text-sm">
+                      <Users size={16} className="text-[#25D366]" /> Join WhatsApp Group
+                    </a>
+                  )}
                   {business.instagram_handle && (
                     <a
                       href={`https://instagram.com/${business.instagram_handle.replace('@', '')}`}
                       target="_blank" rel="noreferrer"
                       className="inline-flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 px-6 py-3 rounded-xl font-bold transition-colors text-sm">
                       <Instagram size={16} className="text-pink-600" />
-                      {business.instagram_handle}
+                      {business.instagram_handle.replace('@', '')}
+                    </a>
+                  )}
+                  {business.snapchat_handle && (
+                    <a
+                      href={`https://snapchat.com/add/${business.snapchat_handle.replace('@', '')}`}
+                      target="_blank" rel="noreferrer"
+                      className="inline-flex items-center justify-center gap-2 bg-[#FFFC00] text-gray-900 border border-yellow-300 hover:bg-[#e6e200] px-6 py-3 rounded-xl font-bold transition-colors text-sm">
+                      <Ghost size={16} className="text-gray-900" />
+                      {business.snapchat_handle.replace('@', '')}
                     </a>
                   )}
                 </div>

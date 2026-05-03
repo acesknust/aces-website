@@ -38,7 +38,9 @@ interface BusinessType {
   banner: string | null;
   payment_method: string;
   whatsapp_number: string;
+  whatsapp_group_link: string | null;
   instagram_handle: string | null;
+  snapchat_handle: string | null;
   is_approved: boolean;
   products: ProductType[];
 }
@@ -81,7 +83,9 @@ export default function VendorDashboard() {
   const [busName, setBusName] = useState('');
   const [busDesc, setBusDesc] = useState('');
   const [busWhatsapp, setBusWhatsapp] = useState('');
+  const [busWhatsappGroup, setBusWhatsappGroup] = useState('');
   const [busInsta, setBusInsta] = useState('');
+  const [busSnapchat, setBusSnapchat] = useState('');
   const [busPayment, setBusPayment] = useState('');
   const [busLogo, setBusLogo] = useState<File | null>(null);
   const [busBanner, setBusBanner] = useState<File | null>(null);
@@ -129,8 +133,10 @@ export default function VendorDashboard() {
     formData.append('name', busName.trim());
     formData.append('description', busDesc.trim());
     formData.append('whatsapp_number', busWhatsapp.trim());
+    if (busWhatsappGroup.trim()) formData.append('whatsapp_group_link', busWhatsappGroup.trim());
     if (busPayment.trim()) formData.append('payment_method', busPayment.trim());
     if (busInsta.trim()) formData.append('instagram_handle', busInsta.trim());
+    if (busSnapchat.trim()) formData.append('snapchat_handle', busSnapchat.trim());
     if (busLogo) formData.append('logo', busLogo);
     if (busBanner) formData.append('banner', busBanner);
 
@@ -172,9 +178,11 @@ export default function VendorDashboard() {
     setBusName(business.name);
     setBusDesc(business.description);
     setBusWhatsapp(business.whatsapp_number);
+    setBusWhatsappGroup(business.whatsapp_group_link || '');
     setBusPayment(business.payment_method || '');
     setBusInsta(business.instagram_handle || '');
-    setBusLogo(null);
+    setBusSnapchat(business.snapchat_handle || '');
+    setIsEditingBusiness(true);
     setBusBanner(null);
     setIsEditingBusiness(true);
   };
@@ -344,13 +352,13 @@ export default function VendorDashboard() {
                     placeholder="Tell customers what your business is about..."
                   />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp Number *</label>
                     <input
                       required
                       type="text"
-                      placeholder="23354..."
+                      placeholder="+233..."
                       value={busWhatsapp}
                       onChange={(e) => setBusWhatsapp(e.target.value)}
                       className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
@@ -358,27 +366,51 @@ export default function VendorDashboard() {
                     <p className="text-xs text-gray-500 mt-1">Include country code (e.g., 233...)</p>
                   </div>
                   <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp Group Link (Optional)</label>
+                    <input
+                      type="url"
+                      placeholder="https://chat.whatsapp.com/..."
+                      value={busWhatsappGroup}
+                      onChange={(e) => setBusWhatsappGroup(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method / Info</label>
                     <input
                       type="text"
-                      placeholder="e.g., MoMo: 054... (Kwame)"
+                      placeholder="e.g., MoMo: 055... (Kwame)"
                       value={busPayment}
                       onChange={(e) => setBusPayment(e.target.value)}
                       className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
                     />
                   </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Instagram Handle</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Instagram (Optional)</label>
                     <input
                       type="text"
-                      placeholder="@aces_knust"
+                      placeholder="e.g., aces_knust"
                       value={busInsta}
                       onChange={(e) => setBusInsta(e.target.value)}
                       className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
                     />
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Snapchat (Optional)</label>
+                    <input
+                      type="text"
+                      placeholder="e.g., aces_knust"
+                      value={busSnapchat}
+                      onChange={(e) => setBusSnapchat(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Business Logo</label>
                     <input
@@ -388,16 +420,15 @@ export default function VendorDashboard() {
                       className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm"
                     />
                   </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Store Banner</label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setBusBanner(e.target.files?.[0] || null)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Recommended: 1200x400 or wider for best results.</p>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Store Banner</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setBusBanner(e.target.files?.[0] || null)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm"
+                    />
+                  </div>
                 </div>
                 <button
                   type="submit"
@@ -406,15 +437,6 @@ export default function VendorDashboard() {
                 >
                   {busSubmitting ? 'Submitting...' : (isEditingBusiness ? 'Save Changes' : 'Submit for Approval')}
                 </button>
-                {isEditingBusiness && (
-                  <button
-                    type="button"
-                    onClick={() => setIsEditingBusiness(false)}
-                    className="w-full py-4 bg-white text-gray-900 border border-gray-200 rounded-xl font-bold hover:bg-gray-50 transition-colors mt-4"
-                  >
-                    Cancel Editing
-                  </button>
-                )}
               </form>
             </motion.div>
           ) : (
@@ -436,7 +458,7 @@ export default function VendorDashboard() {
                       <Store size={14} /> {biz.name}
                     </button>
                   ))}
-                  <button onClick={() => { setIsAddingNewBusiness(true); setBusName(''); setBusDesc(''); setBusWhatsapp(''); setBusPayment(''); setBusInsta(''); setBusLogo(null); setBusBanner(null); }}
+                  <button onClick={() => { setIsAddingNewBusiness(true); setBusName(''); setBusDesc(''); setBusWhatsapp(''); setBusWhatsappGroup(''); setBusPayment(''); setBusInsta(''); setBusSnapchat(''); setBusLogo(null); setBusBanner(null); }}
                     className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap border border-dashed border-blue-300 text-blue-600 hover:bg-blue-50 transition-colors shrink-0">
                     <Plus size={14} /> Add Business
                   </button>
@@ -485,7 +507,7 @@ export default function VendorDashboard() {
                   </button>
                   {businesses.length === 1 && (
                     <button
-                      onClick={() => { setIsAddingNewBusiness(true); setBusName(''); setBusDesc(''); setBusWhatsapp(''); setBusPayment(''); setBusInsta(''); setBusLogo(null); setBusBanner(null); }}
+                      onClick={() => { setIsAddingNewBusiness(true); setBusName(''); setBusDesc(''); setBusWhatsapp(''); setBusWhatsappGroup(''); setBusPayment(''); setBusInsta(''); setBusSnapchat(''); setBusLogo(null); setBusBanner(null); }}
                       className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 font-medium"
                     >
                       <Plus size={14} /> Add Another Business
@@ -534,7 +556,7 @@ export default function VendorDashboard() {
                         className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp Number *</label>
                         <input
@@ -546,6 +568,17 @@ export default function VendorDashboard() {
                         />
                       </div>
                       <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp Group Link (Optional)</label>
+                        <input
+                          type="url"
+                          value={busWhatsappGroup}
+                          onChange={(e) => setBusWhatsappGroup(e.target.value)}
+                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method / Info</label>
                         <input
                           type="text"
@@ -554,10 +587,8 @@ export default function VendorDashboard() {
                           className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
                         />
                       </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Instagram Handle</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Instagram (Optional)</label>
                         <input
                           type="text"
                           value={busInsta}
@@ -565,6 +596,17 @@ export default function VendorDashboard() {
                           className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
                         />
                       </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Snapchat (Optional)</label>
+                        <input
+                          type="text"
+                          value={busSnapchat}
+                          onChange={(e) => setBusSnapchat(e.target.value)}
+                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Update Logo</label>
                         <input
