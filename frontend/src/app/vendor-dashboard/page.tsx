@@ -382,7 +382,7 @@ export default function VendorDashboard() {
                 <button
                   type="submit"
                   disabled={busSubmitting}
-                  className="w-full py-4 bg-gray-900 text-white rounded-xl font-bold hover:bg-blue-600 transition-colors disabled:bg-gray-400"
+                  className="w-full py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors disabled:bg-gray-400"
                 >
                   {busSubmitting ? 'Submitting...' : (isEditingBusiness ? 'Save Changes' : 'Submit for Approval')}
                 </button>
@@ -570,7 +570,7 @@ export default function VendorDashboard() {
                       <button
                         type="submit"
                         disabled={busSubmitting}
-                        className="flex-1 py-4 bg-gray-900 text-white rounded-xl font-bold hover:bg-blue-600 transition-colors disabled:bg-gray-400"
+                        className="flex-1 py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors disabled:bg-gray-400"
                       >
                         {busSubmitting ? 'Saving...' : 'Save Changes'}
                       </button>

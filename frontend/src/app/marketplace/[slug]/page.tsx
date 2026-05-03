@@ -291,7 +291,7 @@ export default function BusinessStorefront() {
           <PackageSearch className="text-gray-300" size={64} />
           <h1 className="text-2xl font-bold text-gray-900">Store Not Found</h1>
           <p className="text-gray-500">This business might have been removed or the link is incorrect.</p>
-          <Link href="/marketplace" className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-blue-600 transition-colors">
+          <Link href="/marketplace" className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors">
             <ArrowLeft size={16} /> Back to Marketplace
           </Link>
         </div>

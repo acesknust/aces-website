@@ -211,7 +211,7 @@ export default function MarketplacePage() {
                 <ShoppingBag size={15} /> Student Marketplace
               </div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight mb-3">
-                ACES <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">Marketplace</span>
+                ACES <span className="text-blue-600">Marketplace</span>
               </h1>
               <p className="text-gray-500 text-lg max-w-xl mx-auto">
                 Discover products &amp; services from fellow KNUST engineering students.
