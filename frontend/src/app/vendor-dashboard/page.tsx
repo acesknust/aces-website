@@ -181,6 +181,19 @@ export default function VendorDashboard() {
     }
   };
 
+  const handleDeleteBusiness = async (businessSlug: string) => {
+    if (!confirm('Are you absolutely sure you want to delete this business? All its products will be lost forever. This action cannot be undone.')) return;
+    
+    try {
+      await axiosInstance.delete(`/student-businesses/${businessSlug}/`);
+      showToast('Business deleted successfully.', 'success');
+      setActiveBizIdx(0);
+      fetchMyBusinesses();
+    } catch (err) {
+      showToast('Failed to delete business.', 'error');
+    }
+  };
+
   const handleDeleteProduct = async (productId: number) => {
     if (!confirm('Are you sure you want to delete this product? This action cannot be undone.')) return;
     
@@ -458,6 +471,12 @@ export default function VendorDashboard() {
                       <Plus size={14} /> Add Another Business
                     </button>
                   )}
+                  <button
+                    onClick={() => handleDeleteBusiness(business.slug)}
+                    className="flex items-center gap-1 text-sm text-red-500 hover:text-red-700 font-medium mt-1"
+                  >
+                    <Trash2 size={14} /> Delete Business
+                  </button>
                 </div>
               </motion.div>
 
