@@ -65,6 +65,7 @@ function Lightbox({ src, alt, onClose }: { src: string; alt: string; onClose: ()
 // ─── Product Image Gallery ────────────────────────────────────────────────────
 const ImageSlider = ({ images, name }: { images: string[]; name: string }) => {
   const [idx, setIdx] = useState(0);
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const validImages = images.filter(Boolean);
 
   if (!validImages.length) {
