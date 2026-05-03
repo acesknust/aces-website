@@ -46,10 +46,6 @@ class BusinessList(generics.ListCreateAPIView):
         return [permissions.AllowAny()]
 
     def perform_create(self, serializer):
-        # One business per user rule
-        if Business.objects.filter(owner=self.request.user).exists():
-            from rest_framework.exceptions import ValidationError
-            raise ValidationError("You already have a registered business.")
         serializer.save(owner=self.request.user)
 
 

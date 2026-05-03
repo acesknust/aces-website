@@ -70,9 +70,12 @@ function Toast({ message, type, onClose }: { message: string; type: 'success' | 
 export default function VendorDashboard() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
-  const [business, setBusiness] = useState<BusinessType | null>(null);
+  const [businesses, setBusinesses] = useState<BusinessType[]>([]);
+  const [activeBizIdx, setActiveBizIdx] = useState(0);
+  const business = businesses[activeBizIdx] || null;
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [isEditingBusiness, setIsEditingBusiness] = useState(false);
+  const [isAddingNewBusiness, setIsAddingNewBusiness] = useState(false);
 
   // Business creation form
   const [busName, setBusName] = useState('');
@@ -97,18 +100,13 @@ export default function VendorDashboard() {
     setToast({ message, type });
   }, []);
 
-  const fetchMyBusiness = useCallback(async () => {
+  const fetchMyBusinesses = useCallback(async () => {
     try {
       const res = await axiosInstance.get('/student-businesses/my-businesses/');
-      if (res.data.length > 0) {
-        setBusiness(res.data[0]);
-      }
+      setBusinesses(res.data);
     } catch (err: any) {
-      if (err.response?.status === 401) {
-        // Token expired and refresh failed — redirected by interceptor
-        return;
-      }
-      console.error('Failed to fetch business:', err);
+      if (err.response?.status === 401) return;
+      console.error('Failed to fetch businesses:', err);
     } finally {
       setIsLoading(false);
     }
@@ -120,8 +118,8 @@ export default function VendorDashboard() {
       router.push('/login');
       return;
     }
-    fetchMyBusiness();
-  }, [router, fetchMyBusiness]);
+    fetchMyBusinesses();
+  }, [router, fetchMyBusinesses]);
 
   const handleCreateOrUpdateBusiness = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -148,8 +146,9 @@ export default function VendorDashboard() {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
         showToast('Business created! It is now pending approval from executives.', 'success');
+        setIsAddingNewBusiness(false);
       }
-      fetchMyBusiness();
+      fetchMyBusinesses();
     } catch (err: any) {
       const detail = err.response?.data?.detail || err.response?.data?.name?.[0] || 'Failed to save business details.';
       showToast(detail, 'error');
@@ -176,7 +175,7 @@ export default function VendorDashboard() {
         is_available: !currentStatus
       });
       showToast(`Product marked as ${!currentStatus ? 'Available' : 'Unavailable'}.`, 'success');
-      fetchMyBusiness();
+      fetchMyBusinesses();
     } catch (err) {
       showToast('Failed to update product status.', 'error');
     }
@@ -188,7 +187,7 @@ export default function VendorDashboard() {
     try {
       await axiosInstance.delete(`/student-businesses/products/${productId}/`);
       showToast('Product deleted successfully.', 'success');
-      fetchMyBusiness();
+      fetchMyBusinesses();
     } catch (err) {
       showToast('Failed to delete product.', 'error');
     }
@@ -230,7 +229,7 @@ export default function VendorDashboard() {
       if (fileInput) fileInput.value = '';
       const extraInput = document.getElementById('prod-extra-images') as HTMLInputElement;
       if (extraInput) extraInput.value = '';
-      fetchMyBusiness();
+      fetchMyBusinesses();
     } catch (err: any) {
       const detail = err.response?.data?.detail || err.response?.data?.image?.[0] || 'Failed to add product.';
       showToast(detail, 'error');
@@ -267,7 +266,7 @@ export default function VendorDashboard() {
             <p className="text-gray-600 mt-2">Manage your student business and products.</p>
           </div>
 
-          {!business ? (
+          {!business || isAddingNewBusiness ? (
             /* ── BUSINESS REGISTRATION FORM ────────────────────────── */
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -278,10 +277,15 @@ export default function VendorDashboard() {
                 <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Store size={32} />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900">Register Your Business</h2>
+                <h2 className="text-2xl font-bold text-gray-900">{isAddingNewBusiness ? 'Add Another Business' : 'Register Your Business'}</h2>
                 <p className="text-gray-500 mt-2 max-w-md mx-auto">
-                  Fill out these details to list your business on the ACES Marketplace. Executives will review it shortly.
+                  {isAddingNewBusiness ? 'Register an additional business under your account.' : 'Fill out these details to list your business on the ACES Marketplace. Executives will review it shortly.'}
                 </p>
+                {isAddingNewBusiness && (
+                  <button onClick={() => setIsAddingNewBusiness(false)} className="mt-3 text-sm text-blue-600 hover:text-blue-800 font-medium">
+                    ← Back to my businesses
+                  </button>
+                )}
               </div>
 
               <form onSubmit={handleCreateOrUpdateBusiness} className="space-y-6 max-w-2xl mx-auto">
@@ -384,7 +388,27 @@ export default function VendorDashboard() {
             /* ── EXISTING BUSINESS DASHBOARD ────────────────────────── */
             <div className="space-y-8">
 
-              {/* Business Status Card */}
+              {/* Business Selector (when user has multiple) */}
+              {businesses.length > 1 && (
+                <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                  {businesses.map((biz, i) => (
+                    <button key={biz.id}
+                      onClick={() => { setActiveBizIdx(i); setIsEditingBusiness(false); }}
+                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all border shrink-0 ${
+                        i === activeBizIdx
+                          ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                          : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300 hover:text-blue-600'
+                      }`}
+                    >
+                      <Store size={14} /> {biz.name}
+                    </button>
+                  ))}
+                  <button onClick={() => { setIsAddingNewBusiness(true); setBusName(''); setBusDesc(''); setBusWhatsapp(''); setBusPayment(''); setBusInsta(''); setBusLogo(null); setBusBanner(null); }}
+                    className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap border border-dashed border-blue-300 text-blue-600 hover:bg-blue-50 transition-colors shrink-0">
+                    <Plus size={14} /> Add Business
+                  </button>
+                </div>
+              )}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -426,6 +450,14 @@ export default function VendorDashboard() {
                   >
                     <Edit3 size={14} /> Edit Profile
                   </button>
+                  {businesses.length === 1 && (
+                    <button
+                      onClick={() => { setIsAddingNewBusiness(true); setBusName(''); setBusDesc(''); setBusWhatsapp(''); setBusPayment(''); setBusInsta(''); setBusLogo(null); setBusBanner(null); }}
+                      className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 font-medium"
+                    >
+                      <Plus size={14} /> Add Another Business
+                    </button>
+                  )}
                 </div>
               </motion.div>
 

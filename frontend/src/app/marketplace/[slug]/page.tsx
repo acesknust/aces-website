@@ -123,28 +123,43 @@ const ImageSlider = ({ images, name }: { images: string[]; name: string }) => {
 
 // ─── Product Card (Storefront) ────────────────────────────────────────────────
 function StorefrontProductCard({ product, onBuy }: { product: Product; onBuy: (p: Product) => void }) {
-  const allImages = [product.image, ...(product.additional_images?.map(i => i.image) || [])];
-  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const allImages = [product.image, ...(product.additional_images?.map(i => i.image) || [])].filter(Boolean);
+  const [imgIdx, setImgIdx] = useState(0);
+
+  const prevImg = (e: React.MouseEvent) => { e.stopPropagation(); setImgIdx(i => (i === 0 ? allImages.length - 1 : i - 1)); };
+  const nextImg = (e: React.MouseEvent) => { e.stopPropagation(); setImgIdx(i => (i === allImages.length - 1 ? 0 : i + 1)); };
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
       className="bg-white rounded-2xl overflow-hidden shadow-sm border border-blue-50 hover:shadow-md transition-all duration-300 flex flex-col group"
     >
-      {/* Inline carousel for storefront cards */}
-      <div className="relative h-52 bg-gray-50 overflow-hidden group/img cursor-zoom-in border-b border-blue-50"
-        onClick={() => allImages[0] && setLightboxSrc(allImages[0])}>
+      {/* Image carousel */}
+      <div className="relative h-52 bg-gray-50 overflow-hidden group/img border-b border-blue-50">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={allImages[0]} alt={product.name} className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-500" />
+        <img src={allImages[imgIdx] || ''} alt={product.name} className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-500" />
         {!product.is_available && (
-          <div className="absolute inset-0 bg-blue-900/30 backdrop-blur-[2px] flex items-center justify-center">
+          <div className="absolute inset-0 bg-blue-900/30 backdrop-blur-[2px] flex items-center justify-center z-10">
             <span className="px-3 py-1.5 bg-white text-blue-900 font-bold rounded-lg text-xs transform -rotate-6 shadow-lg border border-blue-100">Out of Stock</span>
           </div>
         )}
         {allImages.length > 1 && (
-          <div className="absolute bottom-2 right-2 bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full">
-            +{allImages.length - 1} more
-          </div>
+          <>
+            <button onClick={prevImg} aria-label="Previous image"
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-blue-600 p-1.5 rounded-full opacity-0 group-hover/img:opacity-100 transition-all z-20 shadow-sm">
+              <ChevronLeft size={14} />
+            </button>
+            <button onClick={nextImg} aria-label="Next image"
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-blue-600 p-1.5 rounded-full opacity-0 group-hover/img:opacity-100 transition-all z-20 shadow-sm">
+              <ChevronRight size={14} />
+            </button>
+            <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5 z-20">
+              {allImages.map((_, i) => (
+                <button key={i} onClick={(e) => { e.stopPropagation(); setImgIdx(i); }}
+                  className={`rounded-full transition-all ${i === imgIdx ? 'w-4 h-1.5 bg-blue-600' : 'w-1.5 h-1.5 bg-white/80 hover:bg-blue-300'}`} />
+              ))}
+            </div>
+          </>
         )}
       </div>
 
@@ -171,8 +186,6 @@ function StorefrontProductCard({ product, onBuy }: { product: Product; onBuy: (p
           {product.is_available ? 'Buy via WhatsApp' : 'Unavailable'}
         </button>
       </div>
-
-      {lightboxSrc && <Lightbox src={lightboxSrc} alt={product.name} onClose={() => setLightboxSrc(null)} />}
     </motion.div>
   );
 }
