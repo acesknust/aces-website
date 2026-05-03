@@ -1,7 +1,7 @@
 from django.db import models
 from django.conf import settings
 from io import BytesIO
-from PIL import Image as PILImage
+from PIL import Image as PILImage, ImageOps
 from django.core.files.base import ContentFile
 
 
@@ -14,11 +14,11 @@ class BusinessCategory(models.TextChoices):
     OTHER = 'Other', 'Other'
 
 
-def optimize_image(image_field, max_width=1200, max_height=1200, quality=85):
+def optimize_image(image_field, max_width=1200, max_height=1200, quality=85, crop=False):
     """
     Resize and optimize an uploaded image:
     - Converts to RGB (strips alpha for JPEG compat)
-    - Resizes to fit within max_width x max_height while preserving aspect ratio
+    - Resizes to fit within max_width x max_height while preserving aspect ratio (or crops if crop=True)
     - Compresses as WebP for optimal file size
     Returns a new ContentFile with the optimized image, or None if no processing needed.
     """
@@ -40,8 +40,10 @@ def optimize_image(image_field, max_width=1200, max_height=1200, quality=85):
     elif img.mode != 'RGB':
         img = img.convert('RGB')
 
-    # Resize if larger than max dimensions
-    if img.width > max_width or img.height > max_height:
+    # Resize or crop
+    if crop:
+        img = ImageOps.fit(img, (max_width, max_height), method=PILImage.LANCZOS, bleed=0.0, centering=(0.5, 0.5))
+    elif img.width > max_width or img.height > max_height:
         img.thumbnail((max_width, max_height), PILImage.LANCZOS)
 
     # Save as optimized WebP
@@ -86,15 +88,15 @@ class Business(models.Model):
                 counter += 1
             self.slug = slug
 
-        # Optimize logo (max 400x400 for thumbnails)
+        # Optimize logo (max 400x400 for thumbnails, exact square)
         if self.logo and not getattr(self.logo, '_committed', True):
-            optimized = optimize_image(self.logo, max_width=400, max_height=400, quality=85)
+            optimized = optimize_image(self.logo, max_width=400, max_height=400, quality=85, crop=True)
             if optimized:
                 self.logo = optimized
 
-        # Optimize banner (max 1400x600 for wide banners)
+        # Optimize banner (1400x600 for wide banners, exact 7:3 ratio)
         if self.banner and not getattr(self.banner, '_committed', True):
-            optimized = optimize_image(self.banner, max_width=1400, max_height=600, quality=80)
+            optimized = optimize_image(self.banner, max_width=1400, max_height=600, quality=80, crop=True)
             if optimized:
                 self.banner = optimized
 

@@ -150,7 +150,17 @@ export default function VendorDashboard() {
       }
       fetchMyBusinesses();
     } catch (err: any) {
-      const detail = err.response?.data?.detail || err.response?.data?.name?.[0] || 'Failed to save business details.';
+      let detail = 'Failed to save business details.';
+      if (err.response?.data) {
+        if (err.response.data.detail) {
+          detail = err.response.data.detail;
+        } else if (typeof err.response.data === 'object') {
+          const errorValues = Object.values(err.response.data).flat();
+          if (errorValues.length > 0 && typeof errorValues[0] === 'string') {
+            detail = errorValues[0];
+          }
+        }
+      }
       showToast(detail, 'error');
     } finally {
       setBusSubmitting(false);
@@ -244,7 +254,17 @@ export default function VendorDashboard() {
       if (extraInput) extraInput.value = '';
       fetchMyBusinesses();
     } catch (err: any) {
-      const detail = err.response?.data?.detail || err.response?.data?.image?.[0] || 'Failed to add product.';
+      let detail = 'Failed to add product.';
+      if (err.response?.data) {
+        if (err.response.data.detail) {
+          detail = err.response.data.detail;
+        } else if (typeof err.response.data === 'object') {
+          const errorValues = Object.values(err.response.data).flat();
+          if (errorValues.length > 0 && typeof errorValues[0] === 'string') {
+            detail = errorValues[0];
+          }
+        }
+      }
       showToast(detail, 'error');
     } finally {
       setProdSubmitting(false);
