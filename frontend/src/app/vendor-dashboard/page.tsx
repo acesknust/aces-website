@@ -727,12 +727,30 @@ export default function VendorDashboard() {
                           multiple
                           onChange={(e) => {
                             if (e.target.files) {
-                              setAdditionalImages(Array.from(e.target.files));
+                              setAdditionalImages(prev => [...prev, ...Array.from(e.target.files as FileList)]);
+                              e.target.value = ''; // Reset so the same file can be selected again
                             }
                           }}
                           className="w-full px-4 py-2 rounded-xl border border-gray-200 text-sm bg-white"
                         />
-                        <p className="text-xs text-gray-500 mt-1">Select multiple files at once.</p>
+                        <p className="text-xs text-gray-500 mt-1">Select multiple files or add them one by one.</p>
+                        
+                        {additionalImages.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mt-3">
+                            {additionalImages.map((file, idx) => (
+                              <div key={idx} className="relative w-14 h-14 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 group">
+                                <img src={URL.createObjectURL(file)} alt="preview" className="w-full h-full object-cover" />
+                                <button
+                                  type="button"
+                                  onClick={() => setAdditionalImages(prev => prev.filter((_, i) => i !== idx))}
+                                  className="absolute top-1 right-1 bg-white text-red-500 rounded-full p-1 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  <X size={10} />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                     <button
