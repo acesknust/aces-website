@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import Header from '@/components/header';
@@ -124,7 +123,8 @@ export default function BusinessStorefront() {
 
             <div className="w-32 h-32 md:w-40 md:h-40 rounded-3xl bg-gray-50 border-2 border-gray-100 overflow-hidden flex items-center justify-center shrink-0 shadow-md z-10">
               {business.logo ? (
-                <Image src={business.logo} alt={business.name} width={160} height={160} className="w-full h-full object-cover" />
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={business.logo} alt={business.name} className="w-full h-full object-cover" />
               ) : (
                 <Store className="text-gray-300" size={64} />
               )}
@@ -189,11 +189,11 @@ export default function BusinessStorefront() {
                   className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col"
                 >
                   <div className="relative h-60 bg-gray-100 overflow-hidden">
-                    <Image 
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img 
                       src={product.image} 
                       alt={product.name} 
-                      fill 
-                      className="object-cover group-hover:scale-105 transition-transform duration-500" 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                     />
                     {!product.is_available && (
                       <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center">

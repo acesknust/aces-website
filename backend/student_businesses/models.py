@@ -1,6 +1,9 @@
 from django.db import models
 from django.conf import settings
-from uuid import uuid4
+from io import BytesIO
+from PIL import Image as PILImage
+from django.core.files.base import ContentFile
+
 
 class BusinessCategory(models.TextChoices):
     FOOD = 'Food & Beverages', 'Food & Beverages'
@@ -9,6 +12,49 @@ class BusinessCategory(models.TextChoices):
     SERVICES = 'Services (Design, Tutoring, etc)', 'Services'
     BEAUTY = 'Beauty & Cosmetics', 'Beauty & Cosmetics'
     OTHER = 'Other', 'Other'
+
+
+def optimize_image(image_field, max_width=1200, max_height=1200, quality=85):
+    """
+    Resize and optimize an uploaded image:
+    - Converts to RGB (strips alpha for JPEG compat)
+    - Resizes to fit within max_width x max_height while preserving aspect ratio
+    - Compresses as WebP for optimal file size
+    Returns a new ContentFile with the optimized image, or None if no processing needed.
+    """
+    if not image_field:
+        return None
+
+    try:
+        img = PILImage.open(image_field)
+    except Exception:
+        return None  # If we can't open it, let Django handle the raw file
+
+    # Convert RGBA/P to RGB for broad compatibility
+    if img.mode in ('RGBA', 'P', 'LA'):
+        background = PILImage.new('RGB', img.size, (255, 255, 255))
+        if img.mode == 'P':
+            img = img.convert('RGBA')
+        background.paste(img, mask=img.split()[-1] if 'A' in img.mode else None)
+        img = background
+    elif img.mode != 'RGB':
+        img = img.convert('RGB')
+
+    # Resize if larger than max dimensions
+    if img.width > max_width or img.height > max_height:
+        img.thumbnail((max_width, max_height), PILImage.LANCZOS)
+
+    # Save as optimized WebP
+    buffer = BytesIO()
+    img.save(buffer, format='WEBP', quality=quality, optimize=True)
+    buffer.seek(0)
+
+    # Generate new filename with .webp extension
+    original_name = image_field.name.rsplit('.', 1)[0]
+    new_name = f"{original_name}.webp"
+
+    return ContentFile(buffer.read(), name=new_name)
+
 
 class Business(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='businesses')
@@ -29,6 +75,8 @@ class Business(models.Model):
 
     def save(self, *args, **kwargs):
         from django.utils.text import slugify
+
+        # Auto-generate unique slug
         if not self.slug:
             base_slug = slugify(self.name)
             slug = base_slug
@@ -37,10 +85,24 @@ class Business(models.Model):
                 slug = f"{base_slug}-{counter}"
                 counter += 1
             self.slug = slug
+
+        # Optimize logo (max 400x400 for thumbnails)
+        if self.logo and hasattr(self.logo, 'file'):
+            optimized = optimize_image(self.logo, max_width=400, max_height=400, quality=85)
+            if optimized:
+                self.logo = optimized
+
+        # Optimize banner (max 1400x600 for wide banners)
+        if self.banner and hasattr(self.banner, 'file'):
+            optimized = optimize_image(self.banner, max_width=1400, max_height=600, quality=80)
+            if optimized:
+                self.banner = optimized
+
         super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
+
 
 class Product(models.Model):
     business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='products')
@@ -54,6 +116,15 @@ class Product(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
+    def save(self, *args, **kwargs):
+        # Optimize product image (max 800x800 for product cards)
+        if self.image and hasattr(self.image, 'file'):
+            optimized = optimize_image(self.image, max_width=800, max_height=800, quality=85)
+            if optimized:
+                self.image = optimized
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.name} - {self.business.name}"

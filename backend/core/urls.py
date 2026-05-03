@@ -48,8 +48,13 @@ urlpatterns = [
     #     description="API for all things ...",
     #     version="1.0.0"
     # ), name='openapi-schema'),
-    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
 ]
 
+# Serve user-uploaded media files (when NOT using cloud storage)
+if hasattr(settings, 'MEDIA_ROOT') and settings.MEDIA_ROOT:
+    urlpatterns += [
+        re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+    ]
+
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=getattr(settings, 'MEDIA_ROOT', ''))
