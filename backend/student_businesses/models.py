@@ -87,13 +87,13 @@ class Business(models.Model):
             self.slug = slug
 
         # Optimize logo (max 400x400 for thumbnails)
-        if self.logo and hasattr(self.logo, 'file'):
+        if self.logo and not getattr(self.logo, '_committed', True):
             optimized = optimize_image(self.logo, max_width=400, max_height=400, quality=85)
             if optimized:
                 self.logo = optimized
 
         # Optimize banner (max 1400x600 for wide banners)
-        if self.banner and hasattr(self.banner, 'file'):
+        if self.banner and not getattr(self.banner, '_committed', True):
             optimized = optimize_image(self.banner, max_width=1400, max_height=600, quality=80)
             if optimized:
                 self.banner = optimized
@@ -119,7 +119,7 @@ class Product(models.Model):
 
     def save(self, *args, **kwargs):
         # Optimize product image (max 800x800 for product cards)
-        if self.image and hasattr(self.image, 'file'):
+        if self.image and not getattr(self.image, '_committed', True):
             optimized = optimize_image(self.image, max_width=800, max_height=800, quality=85)
             if optimized:
                 self.image = optimized

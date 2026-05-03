@@ -7,7 +7,7 @@ import axiosInstance from '../api/axios';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
 import Link from 'next/link';
-import { Store, Plus, CheckCircle, Clock, ExternalLink, Package, AlertCircle } from 'lucide-react';
+import { Store, Plus, CheckCircle, Clock, ExternalLink, Package, AlertCircle, Edit3, X, Eye, EyeOff } from 'lucide-react';
 
 const CATEGORIES = [
   'Food & Beverages',
@@ -71,6 +71,7 @@ export default function VendorDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [business, setBusiness] = useState<BusinessType | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [isEditingBusiness, setIsEditingBusiness] = useState(false);
 
   // Business creation form
   const [busName, setBusName] = useState('');
@@ -120,7 +121,7 @@ export default function VendorDashboard() {
     fetchMyBusiness();
   }, [router, fetchMyBusiness]);
 
-  const handleCreateBusiness = async (e: React.FormEvent) => {
+  const handleCreateOrUpdateBusiness = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusSubmitting(true);
 
@@ -134,16 +135,48 @@ export default function VendorDashboard() {
     if (busBanner) formData.append('banner', busBanner);
 
     try {
-      await axiosInstance.post('/student-businesses/', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      showToast('Business created! It is now pending approval from executives.', 'success');
+      if (business && isEditingBusiness) {
+        await axiosInstance.patch(`/student-businesses/${business.slug}/`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        showToast('Business profile updated successfully!', 'success');
+        setIsEditingBusiness(false);
+      } else {
+        await axiosInstance.post('/student-businesses/', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        showToast('Business created! It is now pending approval from executives.', 'success');
+      }
       fetchMyBusiness();
     } catch (err: any) {
-      const detail = err.response?.data?.detail || err.response?.data?.name?.[0] || 'Failed to create business.';
+      const detail = err.response?.data?.detail || err.response?.data?.name?.[0] || 'Failed to save business details.';
       showToast(detail, 'error');
     } finally {
       setBusSubmitting(false);
+    }
+  };
+
+  const handleEditClick = () => {
+    if (!business) return;
+    setBusName(business.name);
+    setBusDesc(business.description);
+    setBusWhatsapp(business.whatsapp_number);
+    setBusPayment(business.payment_method || '');
+    setBusInsta(business.instagram_handle || '');
+    setBusLogo(null);
+    setBusBanner(null);
+    setIsEditingBusiness(true);
+  };
+
+  const handleToggleProduct = async (productId: number, currentStatus: boolean) => {
+    try {
+      await axiosInstance.patch(`/student-businesses/products/${productId}/`, {
+        is_available: !currentStatus
+      });
+      showToast(`Product marked as ${!currentStatus ? 'Available' : 'Unavailable'}.`, 'success');
+      fetchMyBusiness();
+    } catch (err) {
+      showToast('Failed to update product status.', 'error');
     }
   };
 
@@ -165,6 +198,7 @@ export default function VendorDashboard() {
     formData.append('description', prodDesc.trim());
     formData.append('price', prodPrice);
     formData.append('image', prodImage);
+    formData.append('is_available', 'true');
 
     try {
       await axiosInstance.post('/student-businesses/products/', formData, {
@@ -232,7 +266,7 @@ export default function VendorDashboard() {
                 </p>
               </div>
 
-              <form onSubmit={handleCreateBusiness} className="space-y-6 max-w-2xl mx-auto">
+              <form onSubmit={handleCreateOrUpdateBusiness} className="space-y-6 max-w-2xl mx-auto">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Business Name *</label>
                   <input
@@ -315,8 +349,17 @@ export default function VendorDashboard() {
                   disabled={busSubmitting}
                   className="w-full py-4 bg-gray-900 text-white rounded-xl font-bold hover:bg-blue-600 transition-colors disabled:bg-gray-400"
                 >
-                  {busSubmitting ? 'Submitting...' : 'Submit for Approval'}
+                  {busSubmitting ? 'Submitting...' : (isEditingBusiness ? 'Save Changes' : 'Submit for Approval')}
                 </button>
+                {isEditingBusiness && (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingBusiness(false)}
+                    className="w-full py-4 bg-white text-gray-900 border border-gray-200 rounded-xl font-bold hover:bg-gray-50 transition-colors mt-4"
+                  >
+                    Cancel Editing
+                  </button>
+                )}
               </form>
             </motion.div>
           ) : (
@@ -359,8 +402,120 @@ export default function VendorDashboard() {
                       <ExternalLink size={14} /> View Storefront
                     </Link>
                   )}
+                  <button
+                    onClick={handleEditClick}
+                    className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 font-medium"
+                  >
+                    <Edit3 size={14} /> Edit Profile
+                  </button>
                 </div>
               </motion.div>
+
+              {/* Editing Form Overlay within Dashboard */}
+              {isEditingBusiness && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100"
+                >
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-xl font-bold text-gray-900">Edit Business Profile</h3>
+                    <button onClick={() => setIsEditingBusiness(false)} className="text-gray-400 hover:text-gray-600">
+                      <X size={24} />
+                    </button>
+                  </div>
+                  <form onSubmit={handleCreateOrUpdateBusiness} className="space-y-6 max-w-2xl mx-auto">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Business Name *</label>
+                      <input
+                        required
+                        type="text"
+                        value={busName}
+                        onChange={(e) => setBusName(e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Description *</label>
+                      <textarea
+                        required
+                        rows={3}
+                        value={busDesc}
+                        onChange={(e) => setBusDesc(e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp Number *</label>
+                        <input
+                          required
+                          type="text"
+                          value={busWhatsapp}
+                          onChange={(e) => setBusWhatsapp(e.target.value)}
+                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method / Info</label>
+                        <input
+                          type="text"
+                          value={busPayment}
+                          onChange={(e) => setBusPayment(e.target.value)}
+                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Instagram Handle</label>
+                        <input
+                          type="text"
+                          value={busInsta}
+                          onChange={(e) => setBusInsta(e.target.value)}
+                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Update Logo</label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => setBusLogo(e.target.files?.[0] || null)}
+                          className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Leave empty to keep current logo.</p>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Update Store Banner</label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => setBusBanner(e.target.files?.[0] || null)}
+                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Leave empty to keep current banner.</p>
+                    </div>
+                    <div className="flex gap-4">
+                      <button
+                        type="submit"
+                        disabled={busSubmitting}
+                        className="flex-1 py-4 bg-gray-900 text-white rounded-xl font-bold hover:bg-blue-600 transition-colors disabled:bg-gray-400"
+                      >
+                        {busSubmitting ? 'Saving...' : 'Save Changes'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingBusiness(false)}
+                        className="px-6 py-4 bg-white text-gray-900 border border-gray-200 rounded-xl font-bold hover:bg-gray-50 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </motion.div>
+              )}
 
               {/* Products Section */}
               <motion.div
@@ -385,8 +540,20 @@ export default function VendorDashboard() {
                         </div>
                         <div className="min-w-0">
                           <h4 className="font-bold text-gray-900 line-clamp-1">{p.name}</h4>
-                          <p className="text-blue-600 font-semibold text-sm">GH₵{p.price}</p>
-                          <span className="text-gray-400 text-xs">{p.category}</span>
+                          <p className="text-blue-600 font-semibold text-sm mb-1">GH₵{p.price}</p>
+                          <div className="flex items-center gap-3">
+                            <span className="text-gray-400 text-xs">{p.category}</span>
+                            <button 
+                              onClick={() => handleToggleProduct(p.id, p.is_available)}
+                              className={`text-xs px-2 py-1 rounded flex items-center gap-1 font-medium transition-colors ${
+                                p.is_available 
+                                  ? 'bg-green-50 text-green-700 hover:bg-green-100' 
+                                  : 'bg-red-50 text-red-700 hover:bg-red-100'
+                              }`}
+                            >
+                              {p.is_available ? <><Eye size={12}/> Available</> : <><EyeOff size={12}/> Hidden</>}
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}
