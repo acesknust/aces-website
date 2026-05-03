@@ -36,6 +36,7 @@ export default function BusinessStorefront() {
   const slug = params.slug as string;
   const [business, setBusiness] = useState<Business | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchBusiness = async () => {
@@ -121,12 +122,15 @@ export default function BusinessStorefront() {
             
             <div className="absolute inset-0 bg-gradient-to-r from-white via-white/95 to-white/80 z-0"></div>
 
-            <div className="w-32 h-32 md:w-40 md:h-40 rounded-3xl bg-gray-50 border-2 border-gray-100 overflow-hidden flex items-center justify-center shrink-0 shadow-md z-10">
+            <div 
+              className="w-48 h-48 md:w-64 md:h-64 rounded-3xl bg-white border-4 border-white overflow-hidden flex items-center justify-center shrink-0 shadow-lg z-10 cursor-pointer hover:scale-105 transition-transform duration-300"
+              onClick={() => business.logo && setIsImageModalOpen(true)}
+            >
               {business.logo ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
-                <img src={business.logo} alt={business.name} className="w-full h-full object-cover" />
+                <img src={business.logo} alt={business.name} className="w-full h-full object-contain bg-gray-50" />
               ) : (
-                <Store className="text-gray-300" size={64} />
+                <Store className="text-gray-300" size={80} />
               )}
             </div>
             
@@ -245,6 +249,31 @@ export default function BusinessStorefront() {
           )}
         </div>
       </div>
+
+      {/* Image Modal Overlay */}
+      {isImageModalOpen && business?.logo && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm"
+          onClick={() => setIsImageModalOpen(false)}
+        >
+          <div className="relative max-w-5xl max-h-[90vh] w-full h-full flex items-center justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img 
+              src={business.logo} 
+              alt={business.name} 
+              className="max-w-full max-h-full object-contain rounded-lg"
+              onClick={(e) => e.stopPropagation()} // Prevent closing when clicking the image itself
+            />
+            <button 
+              onClick={() => setIsImageModalOpen(false)}
+              className="absolute top-4 right-4 text-white bg-black/50 hover:bg-black/80 rounded-full p-2 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div>
+        </div>
+      )}
+
       <Footer />
     </>
   );
