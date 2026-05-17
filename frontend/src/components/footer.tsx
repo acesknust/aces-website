@@ -121,7 +121,6 @@ const Footer = () => {
               <div className="text-sm text-gray-300 flex flex-col gap-1.5">
                 <Link href="/marketplace" className="hover:text-white transition-colors">Browse Products</Link>
                 <Link href="/register" className="hover:text-white transition-colors">Register</Link>
-                <Link href="/login" className="hover:text-white transition-colors">Login</Link>
                 <Link href="/vendor-dashboard" className="hover:text-white transition-colors">Vendor Dashboard</Link>
               </div>
             </div>
