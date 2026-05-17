@@ -7,7 +7,8 @@ import axiosInstance from '../api/axios';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
 import Link from 'next/link';
-import { Store, Plus, CheckCircle, Clock, ExternalLink, Package, AlertCircle, Edit3, X, Eye, EyeOff, Trash2, ImageIcon } from 'lucide-react';
+import { Store, Plus, CheckCircle, Clock, ExternalLink, Package, AlertCircle, Edit3, X, Eye, EyeOff, Trash2, ImageIcon, Download, Copy, Share2, QrCode } from 'lucide-react';
+import { QRCodeCanvas } from 'qrcode.react';
 
 const CATEGORIES = [
   'Food & Beverages',
@@ -684,6 +685,115 @@ export default function VendorDashboard() {
                       </button>
                     </div>
                   </form>
+                </motion.div>
+              )}
+
+              {/* Share Your Store — QR Code Section (only for approved businesses) */}
+              {business.is_approved && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.05 }}
+                  className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100"
+                >
+                  <div className="flex items-center gap-2 mb-6 border-b pb-4">
+                    <QrCode size={20} className="text-blue-600" />
+                    <h3 className="text-xl font-bold text-gray-900">Share Your Store</h3>
+                  </div>
+
+                  <div className="flex flex-col md:flex-row items-center gap-8">
+                    {/* Branded QR Card */}
+                    <div id={`qr-card-${business.id}`} className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 rounded-3xl p-6 flex flex-col items-center gap-4 shadow-lg min-w-[260px]">
+                      <div className="bg-white rounded-2xl p-4 shadow-inner">
+                        <QRCodeCanvas
+                          value={`${typeof window !== 'undefined' ? window.location.origin : 'https://acesknust.com'}/marketplace/${business.slug}`}
+                          size={180}
+                          level="H"
+                          includeMargin={false}
+                          imageSettings={{
+                            src: '/images/aceslogo.png',
+                            height: 36,
+                            width: 36,
+                            excavate: true,
+                          }}
+                        />
+                      </div>
+                      <div className="text-center">
+                        <p className="text-white font-extrabold text-lg leading-tight">{business.name}</p>
+                        <p className="text-blue-200 text-xs mt-1">Scan to visit store</p>
+                      </div>
+                      <div className="flex items-center gap-1.5 bg-white/15 backdrop-blur-sm rounded-full px-3 py-1">
+                        <Store size={12} className="text-blue-200" />
+                        <span className="text-blue-100 text-[11px] font-medium">ACES Marketplace</span>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex flex-col gap-4 flex-grow w-full md:w-auto">
+                      <div>
+                        <p className="text-gray-500 text-sm mb-3">Share your unique store QR code with customers. Print it on flyers, share on social media, or stick it on your products!</p>
+                        <div className="bg-gray-50 rounded-xl px-4 py-3 flex items-center gap-2 border border-gray-100">
+                          <span className="text-sm text-gray-600 truncate flex-grow font-mono">
+                            {typeof window !== 'undefined' ? window.location.origin : 'https://acesknust.com'}/marketplace/{business.slug}
+                          </span>
+                          <button
+                            onClick={() => {
+                              const url = `${window.location.origin}/marketplace/${business.slug}`;
+                              navigator.clipboard.writeText(url);
+                              showToast('Store link copied!', 'success');
+                            }}
+                            className="shrink-0 bg-white border border-gray-200 hover:bg-gray-100 text-gray-700 p-2 rounded-lg transition-colors"
+                            title="Copy link"
+                          >
+                            <Copy size={16} />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {/* Download QR */}
+                        <button
+                          onClick={() => {
+                            const card = document.getElementById(`qr-card-${business.id}`);
+                            if (!card) return;
+                            import('html2canvas').then((mod) => {
+                              const html2canvas = mod.default;
+                              html2canvas(card, { scale: 3, backgroundColor: null, useCORS: true }).then((canvas) => {
+                                const link = document.createElement('a');
+                                link.download = `${business.slug}-qr-code.png`;
+                                link.href = canvas.toDataURL('image/png');
+                                link.click();
+                              });
+                            }).catch(() => {
+                              // Fallback: download just the QR canvas
+                              const qrCanvas = card.querySelector('canvas');
+                              if (qrCanvas) {
+                                const link = document.createElement('a');
+                                link.download = `${business.slug}-qr-code.png`;
+                                link.href = (qrCanvas as HTMLCanvasElement).toDataURL('image/png');
+                                link.click();
+                              }
+                            });
+                          }}
+                          className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl font-bold text-sm transition-colors shadow-sm"
+                        >
+                          <Download size={16} /> Download QR Card
+                        </button>
+
+                        {/* Share to WhatsApp */}
+                        <button
+                          onClick={() => {
+                            const url = `${window.location.origin}/marketplace/${business.slug}`;
+                            const text = encodeURIComponent(`Check out my store on ACES Marketplace! 🛍️\n\n${business.name}\n${url}`);
+                            window.open(`https://wa.me/?text=${text}`, '_blank');
+                          }}
+                          className="flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-white py-3 px-4 rounded-xl font-bold text-sm transition-colors shadow-sm"
+                        >
+                          <Share2 size={16} /> Share on WhatsApp
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </motion.div>
               )}
 
