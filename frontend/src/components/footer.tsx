@@ -101,26 +101,44 @@ const Footer = () => {
             </Link>
           </div>
 
-          {/* Middle: Get Started, Support, Newsletter */}
+          {/* Footer Link Columns */}
           <div className="flex flex-1 flex-col sm:flex-row justify-between w-full lg:w-3/4 gap-8">
+            {/* Explore */}
             <div>
-              <div className="font-bold mb-1">Get Started</div>
-              <div className="text-sm text-gray-300 flex flex-col gap-1">
-                <Link href="/executives" className="hover:text-white transition-colors">Executives</Link>
-                <Link href="/events" className="hover:text-white transition-colors">Events</Link>
+              <div className="font-bold mb-2">Explore</div>
+              <div className="text-sm text-gray-300 flex flex-col gap-1.5">
+                <Link href="/" className="hover:text-white transition-colors">Home</Link>
                 <Link href="/about" className="hover:text-white transition-colors">About Us</Link>
+                <Link href="/executives" className="hover:text-white transition-colors">Executives</Link>
+                <Link href="/department" className="hover:text-white transition-colors">Staff</Link>
+                <Link href="/gallery" className="hover:text-white transition-colors">Gallery</Link>
               </div>
             </div>
+
+            {/* Marketplace */}
             <div>
-              <div className="font-bold mb-1">Support</div>
-              <div className="text-sm text-gray-300 flex flex-col gap-1">
-                <Link href="/scholarships" className="hover:text-white transition-colors">Scholarships</Link>
-                <Link href="/shop" className="hover:text-white transition-colors">ACES Shop</Link>
-                <Link href="/courses" className="hover:text-white transition-colors">Courses</Link>
+              <div className="font-bold mb-2">Marketplace</div>
+              <div className="text-sm text-gray-300 flex flex-col gap-1.5">
+                <Link href="/marketplace" className="hover:text-white transition-colors">Browse Products</Link>
+                <Link href="/register" className="hover:text-white transition-colors">Register</Link>
+                <Link href="/login" className="hover:text-white transition-colors">Login</Link>
+                <Link href="/vendor-dashboard" className="hover:text-white transition-colors">Vendor Dashboard</Link>
               </div>
             </div>
+
+            {/* Resources */}
+            <div>
+              <div className="font-bold mb-2">Resources</div>
+              <div className="text-sm text-gray-300 flex flex-col gap-1.5">
+                <Link href="/scholarships" className="hover:text-white transition-colors">Scholarships</Link>
+                <Link href="/courses" className="hover:text-white transition-colors">Courses</Link>
+                <Link href="/shop" className="hover:text-white transition-colors">ACES Shop</Link>
+              </div>
+            </div>
+
+            {/* Newsletter */}
             <div className="min-w-[220px]">
-              <div className="font-bold mb-1">Newsletter</div>
+              <div className="font-bold mb-2">Newsletter</div>
               <div className="text-sm text-gray-300 mb-2">Get exclusive news concerning ACES by signing up to our Newsletter</div>
               <form onSubmit={handleNewsletterSubmit} className="flex flex-col gap-2">
                 <input
