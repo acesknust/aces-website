@@ -146,6 +146,7 @@ class GlobalProductList(generics.ListAPIView):
     """
     Public endpoint: list all available products from approved businesses.
     Supports ?search= and ?category= query parameters.
+    Products are shuffled daily using a date-based seed for fairness.
     """
     serializer_class = ProductSerializer
     permission_classes = [permissions.AllowAny]
@@ -169,3 +170,18 @@ class GlobalProductList(generics.ListAPIView):
             )
 
         return qs
+
+    def list(self, request, *args, **kwargs):
+        """Shuffle products with a daily seed so the order is fair and consistent per day."""
+        import random
+        from datetime import date
+
+        queryset = self.filter_queryset(self.get_queryset())
+        products = list(queryset)
+
+        # Use today's date as seed — same order all day, new shuffle tomorrow
+        daily_seed = date.today().toordinal()
+        random.Random(daily_seed).shuffle(products)
+
+        serializer = self.get_serializer(products, many=True)
+        return Response(serializer.data)
