@@ -59,9 +59,17 @@ const Header = () => {
     {
       label: 'Marketplace',
       href: '/marketplace',
-      isActive: pathname?.startsWith('/marketplace')
+      isActive: pathname?.startsWith('/marketplace') || pathname?.startsWith('/vendor') || pathname === '/login' || pathname === '/register',
+      subMenu: [
+        { label: 'Browse Products', href: '/marketplace' },
+        { label: 'Register', href: '/register' },
+        { label: 'Login', href: '/login' },
+        { label: 'Vendor Dashboard', href: '/vendor-dashboard' },
+      ],
     }
   ]
+
+  const [mobileSubOpen, setMobileSubOpen] = useState(false);
 
   const toggleMenu = () => {
     setMenuOpen(!isMenuOpen);
@@ -110,18 +118,47 @@ const Header = () => {
         </div>
 
         {/* Desktop Navigation */}
-        <nav className="hidden lg:flex space-x-4 mr-10 text-sm text-blue-600">
+        <nav className="hidden lg:flex items-center space-x-4 mr-10 text-sm text-blue-600">
           {menu.map((item, index) => (
-            <Link href={item.href} key={index} className={`relative hover:text-blue-950 transition duration-300 ${item.isActive ? 'text-blue-950' : ''}`}>
-              {item.label}
-              {pathname === item.href && (
-                <motion.div
-                  layoutId="underline"
-                  className="w-full absolute left-0 right-0 h-0.5 rounded-full bg-blue-950 -bottom-2"
-                  transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
-                />
-              )}
-            </Link>
+            item.subMenu ? (
+              <div key={index} className="relative group">
+                <Link href={item.href} className={`relative hover:text-blue-950 transition duration-300 flex items-center gap-0.5 ${item.isActive ? 'text-blue-950' : ''}`}>
+                  {item.label}
+                  <svg className="w-3 h-3 mt-0.5 opacity-50 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                  {item.isActive && (
+                    <motion.div
+                      layoutId="underline"
+                      className="w-full absolute left-0 right-0 h-0.5 rounded-full bg-blue-950 -bottom-2"
+                      transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
+                </Link>
+                {/* Dropdown */}
+                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                  <div className="bg-white rounded-xl shadow-lg border border-gray-100 py-2 min-w-[180px]">
+                    {item.subMenu.map((sub, si) => (
+                      <Link key={si} href={sub.href}
+                        className={`block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-700 transition-colors ${
+                          pathname === sub.href ? 'text-blue-700 bg-blue-50 font-semibold' : 'text-gray-600'
+                        }`}>
+                        {sub.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <Link href={item.href} key={index} className={`relative hover:text-blue-950 transition duration-300 ${item.isActive ? 'text-blue-950' : ''}`}>
+                {item.label}
+                {pathname === item.href && (
+                  <motion.div
+                    layoutId="underline"
+                    className="w-full absolute left-0 right-0 h-0.5 rounded-full bg-blue-950 -bottom-2"
+                    transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
+              </Link>
+            )
           ))}
           <Link href="/shop/cart" className="relative hover:text-blue-950 transition duration-300">
             <BiShoppingBag size={24} />
@@ -135,13 +172,37 @@ const Header = () => {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="lg:hidden absolute top-16 left-0 right-0 bg-white p-4 flex flex-col items-left">
+          <div className="lg:hidden absolute top-16 left-0 right-0 bg-white p-4 flex flex-col shadow-lg border-t border-gray-100">
             {menu.map((item, index) => (
-              <Link href={item.href} key={index} className={`relative text-blue-600 py-2 transition duration-300 ${item.isActive ? 'text-blue-950' : ''}`}>
-                {item.label}
-              </Link>
+              item.subMenu ? (
+                <div key={index}>
+                  <button
+                    onClick={() => setMobileSubOpen(!mobileSubOpen)}
+                    className={`w-full flex items-center justify-between text-blue-600 py-2 transition duration-300 ${item.isActive ? 'text-blue-950 font-semibold' : ''}`}
+                  >
+                    {item.label}
+                    <svg className={`w-4 h-4 transition-transform ${mobileSubOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                  </button>
+                  {mobileSubOpen && (
+                    <div className="pl-4 pb-1 flex flex-col border-l-2 border-blue-100 ml-2">
+                      {item.subMenu.map((sub, si) => (
+                        <Link key={si} href={sub.href}
+                          onClick={() => setMenuOpen(false)}
+                          className={`py-1.5 text-sm transition-colors ${pathname === sub.href ? 'text-blue-700 font-semibold' : 'text-gray-500 hover:text-blue-600'}`}>
+                          {sub.label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Link href={item.href} key={index}
+                  onClick={() => setMenuOpen(false)}
+                  className={`relative text-blue-600 py-2 transition duration-300 ${item.isActive ? 'text-blue-950' : ''}`}>
+                  {item.label}
+                </Link>
+              )
             ))}
-
           </div>
         )}
       </div>
