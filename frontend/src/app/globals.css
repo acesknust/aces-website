@@ -26,7 +26,6 @@
   color: rgb(var(--foreground-rgb));
 } */
 
-
 .slick-slide > div {
   margin: 0 10px;
 }
@@ -35,5 +34,54 @@
   width: 100%;
 }
 
+/* Shining animation for loading placeholder */
+@keyframes shine {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
 
+.animate-shine {
+  animation: shine 1.5s infinite;
+}
 
+/* Shimmer animation for Executives loading cards */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 1.5s infinite;
+}
+
+/* Custom Scrollbar Utilities */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 20px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: #94a3b8;
+}
