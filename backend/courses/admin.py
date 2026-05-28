@@ -1,6 +1,28 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.utils.html import format_html
 from .models import AcademicYear, Semester, Course, CourseResource
+
+
+class WarningAdminMixin:
+    """Mixin that adds warning messages when editing or deleting records."""
+
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        if request.method == 'GET':
+            messages.warning(
+                request,
+                '⚠️ You are about to edit this record. Please double-check all changes before saving — '
+                'this will immediately update the live website.'
+            )
+        return super().change_view(request, object_id, form_url, extra_context)
+
+    def delete_view(self, request, object_id, extra_context=None):
+        if request.method == 'GET':
+            messages.error(
+                request,
+                '🚨 WARNING: Deleting this record is permanent and cannot be undone. '
+                'All related data will also be removed. Please confirm you want to proceed.'
+            )
+        return super().delete_view(request, object_id, extra_context)
 
 
 # =============================================================================
@@ -56,7 +78,7 @@ class SemesterInline(admin.TabularInline):
 # =============================================================================
 
 @admin.register(AcademicYear)
-class AcademicYearAdmin(admin.ModelAdmin):
+class AcademicYearAdmin(WarningAdminMixin, admin.ModelAdmin):
     list_display = ['year', 'year_name', 'is_active', 'total_semesters']
     list_filter = ['is_active']
     inlines = [SemesterInline]
@@ -70,7 +92,7 @@ class AcademicYearAdmin(admin.ModelAdmin):
 # =============================================================================
 
 @admin.register(Semester)
-class SemesterAdmin(admin.ModelAdmin):
+class SemesterAdmin(WarningAdminMixin, admin.ModelAdmin):
     list_display = ['__str__', 'academic_year', 'semester_number', 'total_courses']
     list_filter = ['academic_year']
     inlines = [CourseInline]
@@ -84,7 +106,7 @@ class SemesterAdmin(admin.ModelAdmin):
 # =============================================================================
 
 @admin.register(Course)
-class CourseAdmin(admin.ModelAdmin):
+class CourseAdmin(WarningAdminMixin, admin.ModelAdmin):
     list_display = [
         'name', 'code', 'semester', 'credits',
         'resource_count_display', 'has_legacy_url'
@@ -130,7 +152,7 @@ class CourseAdmin(admin.ModelAdmin):
 # =============================================================================
 
 @admin.register(CourseResource)
-class CourseResourceAdmin(admin.ModelAdmin):
+class CourseResourceAdmin(WarningAdminMixin, admin.ModelAdmin):
     list_display = [
         'title', 'course_display', 'resource_type',
         'file_type_badge', 'file_size_display',
