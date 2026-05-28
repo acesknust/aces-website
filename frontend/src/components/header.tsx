@@ -76,6 +76,19 @@ const Header = () => {
   };
 
   return (
+    <>
+    <style jsx global>{`
+      @keyframes gradient-spin {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+      .marketplace-glow {
+        background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899, #f59e0b, #3b82f6);
+        background-size: 300% 300%;
+        animation: gradient-spin 3s ease infinite;
+      }
+    `}</style>
     <header className="bg-white text-blue-950 py-2 fixed top-0 left-0 w-full z-50 ">
       <div className="container mx-auto flex justify-between items-center">
         <div className="p-2 lg:ml-4 sm:-ml-10 ">
@@ -122,16 +135,17 @@ const Header = () => {
           {menu.map((item, index) => (
             item.subMenu ? (
               <div key={index} className="relative group">
-                <Link href={item.href} className={`relative hover:text-blue-950 transition duration-300 flex items-center gap-0.5 ${item.isActive ? 'text-blue-950' : ''}`}>
-                  {item.label}
-                  <svg className="w-3 h-3 mt-0.5 opacity-50 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                  {item.isActive && (
-                    <motion.div
-                      layoutId="underline"
-                      className="w-full absolute left-0 right-0 h-0.5 rounded-full bg-blue-950 -bottom-2"
-                      transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
-                    />
-                  )}
+                <Link href={item.href} className="relative flex items-center gap-1">
+                  {/* Animated gradient border pill */}
+                  <span className="relative inline-flex items-center gap-0.5">
+                    <span className="absolute -inset-[2px] rounded-full marketplace-glow opacity-80 group-hover:opacity-100 transition-opacity" />
+                    <span className={`relative bg-white px-3 py-1 rounded-full font-semibold text-sm transition-colors ${
+                      item.isActive ? 'text-blue-950' : 'text-blue-600 group-hover:text-blue-950'
+                    }`}>
+                      {item.label}
+                    </span>
+                    <svg className="w-3 h-3 mt-0.5 opacity-50 group-hover:opacity-100 transition-opacity text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                  </span>
                 </Link>
                 {/* Dropdown */}
                 <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
@@ -178,10 +192,15 @@ const Header = () => {
                 <div key={index}>
                   <button
                     onClick={() => setMobileSubOpen(!mobileSubOpen)}
-                    className={`w-full flex items-center justify-between text-blue-600 py-2 transition duration-300 ${item.isActive ? 'text-blue-950 font-semibold' : ''}`}
+                    className="w-full flex items-center justify-between py-2 transition duration-300"
                   >
-                    {item.label}
-                    <svg className={`w-4 h-4 transition-transform ${mobileSubOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                    <span className="relative inline-flex items-center">
+                      <span className="absolute -inset-[2px] rounded-full marketplace-glow opacity-80" />
+                      <span className={`relative bg-white px-3 py-1 rounded-full font-semibold text-sm ${item.isActive ? 'text-blue-950' : 'text-blue-600'}`}>
+                        {item.label}
+                      </span>
+                    </span>
+                    <svg className={`w-4 h-4 text-blue-600 transition-transform ${mobileSubOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                   </button>
                   {mobileSubOpen && (
                     <div className="pl-4 pb-1 flex flex-col border-l-2 border-blue-100 ml-2">
@@ -207,6 +226,7 @@ const Header = () => {
         )}
       </div>
     </header>
+    </>
   );
 };
 
