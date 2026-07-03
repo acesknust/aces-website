@@ -112,6 +112,7 @@ const Footer = () => {
                 <Link href="/executives" className="hover:text-white transition-colors">Executives</Link>
                 <Link href="/department" className="hover:text-white transition-colors">Staff</Link>
                 <Link href="/gallery" className="hover:text-white transition-colors">Gallery</Link>
+                <Link href="/events" className="hover:text-white transition-colors">Events</Link>
               </div>
             </div>
 
@@ -121,6 +122,7 @@ const Footer = () => {
               <div className="text-sm text-gray-300 flex flex-col gap-1.5">
                 <Link href="/marketplace" className="hover:text-white transition-colors">Browse Products</Link>
                 <Link href="/register" className="hover:text-white transition-colors">Register</Link>
+                <Link href="/login" className="hover:text-white transition-colors">Login</Link>
                 <Link href="/vendor-dashboard" className="hover:text-white transition-colors">Vendor Dashboard</Link>
               </div>
             </div>
