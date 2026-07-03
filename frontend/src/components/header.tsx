@@ -94,7 +94,7 @@ const Header = () => {
         100% { background-position: 0% 50%; }
       }
       .codefest-banner {
-        background: linear-gradient(90deg, #1e3a8a, #6d28d9, #7c3aed, #1e3a8a);
+        background: linear-gradient(90deg, #2563eb, #7c3aed, #ec4899, #06b6d4, #2563eb);
         background-size: 200% 200%;
         animation: banner-shimmer 4s ease infinite;
       }
