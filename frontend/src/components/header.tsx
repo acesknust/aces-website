@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { BiMenu, BiX, BiShoppingBag } from 'react-icons/bi';
 import Image from 'next/image';
@@ -70,6 +70,17 @@ const Header = () => {
   ]
 
   const [mobileSubOpen, setMobileSubOpen] = useState(false);
+  const [bannerDismissed, setBannerDismissed] = useState(true); // start hidden to avoid flash
+
+  useEffect(() => {
+    const dismissed = localStorage.getItem('codefest-banner-dismissed');
+    if (!dismissed) setBannerDismissed(false);
+  }, []);
+
+  const dismissBanner = () => {
+    setBannerDismissed(true);
+    localStorage.setItem('codefest-banner-dismissed', 'true');
+  };
 
   const toggleMenu = () => {
     setMenuOpen(!isMenuOpen);
@@ -88,8 +99,46 @@ const Header = () => {
         background-size: 300% 300%;
         animation: gradient-spin 3s ease infinite;
       }
+      @keyframes banner-shimmer {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+      .codefest-banner {
+        background: linear-gradient(90deg, #1e3a8a, #6d28d9, #7c3aed, #1e3a8a);
+        background-size: 200% 200%;
+        animation: banner-shimmer 4s ease infinite;
+      }
     `}</style>
-    <header className="bg-white text-blue-950 py-2 fixed top-0 left-0 w-full z-50 ">
+
+    {/* CODEFEST Announcement Banner */}
+    {!bannerDismissed && (
+      <div className="codefest-banner fixed top-0 left-0 w-full z-[60] text-white">
+        <div className="container mx-auto px-4 py-2.5 flex items-center justify-center gap-3 text-sm relative">
+          <span className="hidden sm:inline">🔥</span>
+          <span className="font-medium text-center">
+            <span className="font-bold">CODEFEST</span> is here! Register for the coding challenges
+          </span>
+          <a
+            href="https://forms.gle/p5789Kabjyah6wq59"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-bold text-xs px-4 py-1.5 rounded-full transition-colors whitespace-nowrap shadow-sm"
+          >
+            Register Now →
+          </a>
+          <button
+            onClick={dismissBanner}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/70 hover:text-white transition-colors p-1"
+            aria-label="Dismiss banner"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+      </div>
+    )}
+
+    <header className={`bg-white text-blue-950 py-2 fixed left-0 w-full z-50 transition-all duration-300 ${!bannerDismissed ? 'top-[44px]' : 'top-0'}`}>
       <div className="container mx-auto flex justify-between items-center">
         <div className="p-2 lg:ml-4 sm:-ml-10 ">
           <Link href="/">
