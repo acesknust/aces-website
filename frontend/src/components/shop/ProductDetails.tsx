@@ -39,18 +39,42 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
 
     // Determine initial image (main image)
     const [selectedImage, setSelectedImage] = useState(product.image);
-    // Initialize selectedColor to the main color so the button is highlighted by default
-    const [selectedColor, setSelectedColor] = useState<string | undefined>(mainImageColor);
+    // Initialize selectedColor to the main color
+    const [selectedColor, setSelectedColor] = useState<string>(mainImageColor);
     const [selectedSize, setSelectedSize] = useState<string | undefined>(undefined);
 
     // Collect all available images including main
     const allImages = [
         { id: -1, image: product.image, color: mainImageColor },
         ...(product.images || [])
-    ];
+    ].filter(img => img.image);
 
-    // Check if product has color variants
-    const hasVariants = product.images && product.images.some(img => img.color);
+    // Get all unique colors, normalized for casing
+    const uniqueColorsMap = new Map<string, { name: string; firstImage: string }>();
+    
+    // Add main color
+    if (product.image) {
+        uniqueColorsMap.set(mainImageColor.toLowerCase(), { name: mainImageColor, firstImage: product.image });
+    }
+    
+    // Add variant colors
+    (product.images || []).forEach(img => {
+        if (img.image && img.color) {
+            const normalized = img.color.toLowerCase();
+            if (!uniqueColorsMap.has(normalized)) {
+                uniqueColorsMap.set(normalized, { name: img.color, firstImage: img.image });
+            }
+        }
+    });
+
+    const uniqueColors = Array.from(uniqueColorsMap.values());
+    const hasMultipleStyles = uniqueColors.length > 1;
+
+    // Filter images to only show the ones matching the selected color
+    const filteredImages = allImages.filter(img => {
+        const imgColor = img.color || mainImageColor;
+        return imgColor.toLowerCase() === selectedColor.toLowerCase();
+    });
 
     const handleImageClick = (img: string, color?: string) => {
         setSelectedImage(img);
@@ -93,9 +117,9 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
                 </div>
 
                 {/* Thumbnails */}
-                {allImages.length > 1 && (
+                {filteredImages.length > 1 && (
                     <div className="flex gap-4 overflow-x-auto pb-4 px-2 scrollbar-hide snap-x">
-                        {allImages.map((img) => (
+                        {filteredImages.map((img) => (
                             <button
                                 key={img.id}
                                 onClick={() => handleImageClick(img.image, img.color)}
@@ -144,34 +168,23 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
 
                 <div className="mt-8 space-y-8">
                     {/* Variants / Color Selection */}
-                    {hasVariants && (
+                    {hasMultipleStyles && (
                         <div>
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-sm font-medium text-gray-900">Select Style</h3>
                                 {selectedColor && <span className="text-sm text-blue-600 font-medium">{selectedColor}</span>}
                             </div>
                             <div className="flex flex-wrap gap-3">
-                                {/* Main Image Button */}
-                                <button
-                                    onClick={() => handleColorSelect(mainImageColor, product.image)}
-                                    className={`group relative flex items-center justify-center px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 border-2 overflow-hidden ${selectedColor === mainImageColor
-                                        ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-sm'
-                                        : 'border-gray-200 bg-white text-gray-700 hover:border-blue-300 hover:bg-blue-50/50'
-                                        }`}
-                                >
-                                    <span className="relative z-10">{mainImageColor}</span>
-                                </button>
-
-                                {product.images?.filter(img => img.color).map((variant) => (
+                                {uniqueColors.map((colorObj) => (
                                     <button
-                                        key={variant.id}
-                                        onClick={() => handleColorSelect(variant.color!, variant.image)}
-                                        className={`group relative flex items-center justify-center px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 border-2 overflow-hidden ${selectedColor === variant.color
+                                        key={colorObj.name}
+                                        onClick={() => handleColorSelect(colorObj.name, colorObj.firstImage)}
+                                        className={`group relative flex items-center justify-center px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 border-2 overflow-hidden ${selectedColor.toLowerCase() === colorObj.name.toLowerCase()
                                             ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-sm'
                                             : 'border-gray-200 bg-white text-gray-700 hover:border-blue-300 hover:bg-blue-50/50'
                                             }`}
                                     >
-                                        <span className="relative z-10">{variant.color}</span>
+                                        <span className="relative z-10">{colorObj.name}</span>
                                     </button>
                                 ))}
                             </div>
@@ -207,7 +220,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
                     )}
 
                     {/* Warning Message */}
-                    {((!selectedColor && hasVariants) || (product.has_sizes !== false && !selectedSize)) ? (
+                    {((!selectedColor && hasMultipleStyles) || (product.has_sizes !== false && !selectedSize)) ? (
                         <div className="rounded-xl bg-amber-50 p-4 border border-amber-100 flex items-start gap-3 animate-pulse">
                             <div className="p-1 rounded-full bg-amber-100 text-amber-600">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -215,7 +228,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
                                 </svg>
                             </div>
                             <p className="text-sm text-amber-800 font-medium pt-0.5">
-                                Please select {hasVariants && !selectedColor ? 'a style' : ''} {hasVariants && !selectedColor && (product.has_sizes !== false && !selectedSize) ? 'and' : ''} {(product.has_sizes !== false && !selectedSize) ? 'a size' : ''} to continue.
+                                Please select {hasMultipleStyles && !selectedColor ? 'a style' : ''} {hasMultipleStyles && !selectedColor && (product.has_sizes !== false && !selectedSize) ? 'and' : ''} {(product.has_sizes !== false && !selectedSize) ? 'a size' : ''} to continue.
                             </p>
                         </div>
                     ) : null}
@@ -236,7 +249,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
                             selectedColor={selectedColor}
                             selectedSize={selectedSize}
                             isOutOfStock={!product.is_active || product.stock <= 0}
-                            disabled={!product.is_active || product.stock <= 0 || (hasVariants && !selectedColor) || (product.has_sizes !== false && !selectedSize)}
+                            disabled={!product.is_active || product.stock <= 0 || (hasMultipleStyles && !selectedColor) || (product.has_sizes !== false && !selectedSize)}
                         />
                         <p className="mt-3 text-center text-xs text-gray-400">Secure payment via Paystack • 24/7 Support</p>
                     </div>
