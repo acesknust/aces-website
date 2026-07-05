@@ -134,6 +134,7 @@ const Footer = () => {
                 <Link href="/scholarships" className="hover:text-white transition-colors">Scholarships</Link>
                 <Link href="/courses" className="hover:text-white transition-colors">Courses</Link>
                 <Link href="/shop" className="hover:text-white transition-colors">ACES Shop</Link>
+                <Link href="/shop/track" className="hover:text-white transition-colors">Track Order</Link>
               </div>
             </div>
 

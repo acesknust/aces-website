@@ -142,6 +142,7 @@ export default function CartPage() {
                 items: items.map(item => ({ id: item.id, quantity: item.quantity, color: item.color, size: item.size })),
                 // Include coupon code if applied
                 coupon_code: appliedCoupon?.code || '',
+                payment_method: 'MOMO',
             };
 
             const response = await fetch(`${API_BASE_URL}/api/shop/orders/create/`, {
@@ -171,12 +172,16 @@ export default function CartPage() {
 
             const data = await response.json();
 
-            if (data.authorization_url) {
-                // Keep lock active — user is being redirected to Paystack
+            if (data.payment_method === 'MOMO' && data.order_id) {
+                // MoMo flow: redirect to payment instructions page
+                clearCart();
+                router.push(`/shop/pay/${data.order_id}?email=${encodeURIComponent(formData.email)}&total=${data.total_amount}`);
+            } else if (data.authorization_url) {
+                // Paystack flow (kept for future use)
                 window.location.href = data.authorization_url;
             } else {
                 checkoutLockRef.current = false;
-                setCheckoutError('Payment initialization failed. Please try again.');
+                setCheckoutError('Order could not be processed. Please try again.');
             }
 
         } catch (error) {
@@ -480,7 +485,7 @@ export default function CartPage() {
                                             </>
                                         ) : (
                                             <>
-                                                Pay with Paystack <span aria-hidden="true">&rarr;</span>
+                                                Place Order <span aria-hidden="true">&rarr;</span>
                                             </>
                                         )}
                                     </button>

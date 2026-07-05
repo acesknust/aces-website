@@ -75,8 +75,8 @@ class DeliveryStatusFilter(admin.SimpleListFilter):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ['id', '_customer_info', '_total_amount', '_status_badge', '_completed_status_btn', '_delivery_status_btn', 'created_at']
-    list_filter = ['status', DeliveryStatusFilter, 'created_at', 'items__product__name']
+    list_display = ['id', '_customer_info', '_total_amount', '_status_badge', 'payment_method', '_completed_status_btn', '_delivery_status_btn', 'created_at']
+    list_filter = ['status', 'payment_method', DeliveryStatusFilter, 'created_at', 'items__product__name']
     
     # ... (rest of class) ...
 
@@ -263,7 +263,7 @@ class OrderAdmin(admin.ModelAdmin):
             messages.success(request, f"Order #{order.id} marked as Delivered.")
         order.save()
         return redirect('admin:shop_order_changelist')
-    search_fields = ['id', 'full_name', 'email', 'phone', 'paystack_reference']
+    search_fields = ['id', 'full_name', 'email', 'phone', 'paystack_reference', 'momo_sender_name']
     date_hierarchy = 'created_at'
     list_per_page = 20
     inlines = [OrderItemInline]
@@ -277,9 +277,8 @@ class OrderAdmin(admin.ModelAdmin):
         ("Customer Details", {
             "fields": ("full_name", "email", "phone", "address")
         }),
-        ("Payment Verification", {
-            "fields": ("paystack_reference", "verification_code"),
-            "classes": ("collapse",)
+        ("Payment Details", {
+            "fields": ("payment_method", "momo_sender_name", "momo_amount_paid", "paystack_reference", "verification_code"),
         }),
     )
 

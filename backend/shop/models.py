@@ -61,6 +61,11 @@ class ProductSize(models.Model):
         return f"{self.product.name} - {self.name}"
 
 class Order(models.Model):
+    PAYMENT_METHOD_CHOICES = (
+        ('MOMO', 'Mobile Money'),
+        ('PAYSTACK', 'Paystack'),
+    )
+
     STATUS_CHOICES = (
         ('PENDING', 'Pending'),
         ('PAID', 'Paid'),
@@ -78,6 +83,18 @@ class Order(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING', db_index=True)
     
     paystack_reference = models.CharField(max_length=100, unique=True, blank=True, null=True)
+    payment_method = models.CharField(
+        max_length=10, choices=PAYMENT_METHOD_CHOICES, default='MOMO',
+        help_text="Payment method used for this order"
+    )
+    momo_sender_name = models.CharField(
+        max_length=200, blank=True, null=True,
+        help_text="Name on customer's MoMo account (submitted after payment)"
+    )
+    momo_amount_paid = models.DecimalField(
+        max_digits=10, decimal_places=2, blank=True, null=True,
+        help_text="Amount customer claims to have paid via MoMo"
+    )
     verification_code = models.CharField(max_length=100, unique=True, blank=True, null=True) # For QR Code
     
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)

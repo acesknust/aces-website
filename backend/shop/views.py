@@ -226,6 +226,29 @@ class CreateOrderView(APIView):
                         for product, quantity, price, color, size in order_items_data
                     ])
 
+            # --- MoMo Payment Path ---
+            payment_method = data.get('payment_method', 'MOMO')
+            order.payment_method = payment_method
+            order.save(update_fields=['payment_method'])
+
+            if payment_method == 'MOMO':
+                # Send admin notification in background
+                threading.Thread(
+                    target=send_admin_email, args=(order,), daemon=True
+                ).start()
+
+                return Response({
+                    'order_id': order.id,
+                    'total_amount': str(order.total_amount),
+                    'status': 'PENDING',
+                    'payment_method': 'MOMO',
+                    'momo_details': {
+                        'number': '0598899106',
+                        'name': 'Hanz Ofosuhene Sintim',
+                    },
+                    'message': 'Order placed! Please send payment via MoMo.'
+                }, status=status.HTTP_201_CREATED)
+
             # 4. Initialize Paystack Transaction
             paystack_url = "https://api.paystack.co/transaction/initialize"
             headers = {
@@ -765,3 +788,74 @@ class ValidateCouponView(APIView):
             "remaining_uses": coupon.get_remaining_uses(),
             "message": f"{coupon.discount_percent}% discount applied!"
         }, status=status.HTTP_200_OK)
+
+
+class ConfirmMoMoPaymentView(APIView):
+    """Customer submits MoMo payment details after sending money."""
+    
+    def post(self, request):
+        order_id = request.data.get('order_id')
+        email = request.data.get('email')
+        momo_sender_name = request.data.get('momo_sender_name', '').strip()
+        momo_amount_paid = request.data.get('momo_amount_paid')
+
+        if not all([order_id, email, momo_sender_name, momo_amount_paid]):
+            return Response(
+                {'error': 'All fields are required: order_id, email, momo_sender_name, momo_amount_paid'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            order = Order.objects.get(id=order_id, email=email, payment_method='MOMO')
+        except Order.DoesNotExist:
+            return Response(
+                {'error': 'Order not found. Please check your order ID and email.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if order.status != 'PENDING':
+            return Response(
+                {'error': f'This order has already been processed (status: {order.status}).'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            order.momo_sender_name = momo_sender_name
+            order.momo_amount_paid = Decimal(str(momo_amount_paid))
+            order.save(update_fields=['momo_sender_name', 'momo_amount_paid'])
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to save payment details: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        return Response({
+            'message': 'Payment details submitted! Your order is being verified.',
+            'order_id': order.id,
+            'status': order.status,
+        }, status=status.HTTP_200_OK)
+
+
+class OrderTrackingView(APIView):
+    """Look up order status by order ID and email."""
+    
+    def get(self, request):
+        order_id = request.query_params.get('order_id')
+        email = request.query_params.get('email')
+
+        if not order_id or not email:
+            return Response(
+                {'error': 'Both order_id and email are required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            order = Order.objects.prefetch_related('items__product').get(id=order_id, email=email)
+        except Order.DoesNotExist:
+            return Response(
+                {'error': 'Order not found. Please check your order ID and email.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = OrderSerializer(order)
+        return Response(serializer.data, status=status.HTTP_200_OK)
