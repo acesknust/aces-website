@@ -5,7 +5,7 @@ import ProductDetails from '@/components/shop/ProductDetails';
 
 async function getProduct(slug: string) {
     try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://aces-shop-backend-w8ro7.ondigitalocean.app';
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://aces-backend-pgtot.ondigitalocean.app';
         const res = await fetch(`${apiUrl}/api/shop/products/${slug}/`, { cache: 'no-store' });
         if (!res.ok) {
             return null;

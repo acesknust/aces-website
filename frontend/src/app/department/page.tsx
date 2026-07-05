@@ -70,7 +70,7 @@ export default function Page() {
         if (!apiUrl) {
           apiUrl = process.env.NODE_ENV === 'development'
             ? 'http://127.0.0.1:8000'
-            : 'https://aces-shop-backend-w8ro7.ondigitalocean.app';
+            : 'https://aces-backend-pgtot.ondigitalocean.app';
         }
         const response = await fetch(`${apiUrl}/api/staff/`);
         if (!response.ok) throw new Error('Failed to fetch staff');

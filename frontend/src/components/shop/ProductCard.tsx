@@ -23,7 +23,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     const getImageUrl = (img?: string) => {
         if (!img) return 'https://via.placeholder.com/400x400?text=No+Image';
         if (img.startsWith('http')) return img;
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://aces-shop-backend-w8ro7.ondigitalocean.app';
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://aces-backend-pgtot.ondigitalocean.app';
         return `${baseUrl}${img}`;
     };
 

@@ -11,7 +11,7 @@ async function getProducts() {
         if (process.env.NODE_ENV === 'development') {
             apiUrl = 'http://127.0.0.1:8000';
         } else {
-            apiUrl = 'https://aces-shop-backend-w8ro7.ondigitalocean.app';
+            apiUrl = 'https://aces-backend-pgtot.ondigitalocean.app';
         }
     }
     const res = await fetch(`${apiUrl}/api/shop/products/`, {

@@ -23,7 +23,7 @@ const getApiUrl = () => {
     }
 
     // Default production URL
-    return 'https://aces-shop-backend-w8ro7.ondigitalocean.app';
+    return 'https://aces-backend-pgtot.ondigitalocean.app';
 };
 
 const API_BASE_URL = getApiUrl();

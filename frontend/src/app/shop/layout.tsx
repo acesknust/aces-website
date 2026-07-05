@@ -12,7 +12,7 @@ async function getShopStatus(): Promise<ShopStatus> {
         process.env.NEXT_PUBLIC_API_URL ||
         (process.env.NODE_ENV === 'development'
             ? 'http://127.0.0.1:8000'
-            : 'https://aces-shop-backend-w8ro7.ondigitalocean.app');
+            : 'https://aces-backend-pgtot.ondigitalocean.app');
 
     try {
         const res = await fetch(`${apiUrl}/api/shop/status/`, {

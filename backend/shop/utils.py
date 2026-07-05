@@ -151,7 +151,7 @@ def send_admin_email(order, admin_email=None):
     try:
         # Use the DigitalOcean App URL if available in CSRF_TRUSTED_ORIGINS, or fallback to CORS allowed
         # First check if we have the specific backend URL known
-        base_url = "https://aces-shop-backend-w8ro7.ondigitalocean.app"
+        base_url = "https://aces-backend-pgtot.ondigitalocean.app"
     except:
         base_url = "http://127.0.0.1:8000"
         

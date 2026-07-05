@@ -42,6 +42,18 @@ const nextConfig = {
       },
       {
         protocol: "https",
+        hostname: "aces-backend-pgtot.ondigitalocean.app",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "*.ondigitalocean.app",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
         hostname: "*.digitaloceanspaces.com",
         port: "",
         pathname: "/**",
