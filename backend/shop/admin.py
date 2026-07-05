@@ -161,6 +161,7 @@ class OrderAdmin(admin.ModelAdmin):
         custom_urls = [
             path('toggle-complete/<int:order_id>/', self.admin_site.admin_view(self.toggle_complete), name='order-toggle-complete'),
             path('toggle-delivery/<int:order_id>/', self.admin_site.admin_view(self.toggle_delivery), name='order-toggle-delivery'),
+            path('verify-payment/<int:order_id>/', self.admin_site.admin_view(self.admin_verify_payment), name='order-verify-payment'),
         ]
         return custom_urls + urls
 
@@ -263,11 +264,113 @@ class OrderAdmin(admin.ModelAdmin):
             messages.success(request, f"Order #{order.id} marked as Delivered.")
         order.save()
         return redirect('admin:shop_order_changelist')
+
+    def admin_verify_payment(self, request, order_id):
+        from django.shortcuts import get_object_or_404, redirect
+        from django.contrib import messages
+        from django.db import transaction
+        import uuid
+        import threading
+        from .utils import send_customer_email
+        from .models import Product
+
+        order = get_object_or_404(Order, pk=order_id)
+
+        if order.status != 'PENDING':
+            messages.error(request, f"⚠️ Order #{order.id} is already processed (Status: {order.status}).")
+            return redirect('admin:shop_order_changelist')
+
+        try:
+            with transaction.atomic():
+                locked_order = Order.objects.select_for_update().get(id=order.id)
+                if locked_order.status != 'PENDING':
+                    messages.error(request, f"⚠️ Order #{locked_order.id} status changed during processing.")
+                    return redirect('admin:shop_order_changelist')
+
+                # Decrement stock
+                for item in locked_order.items.select_related('product').all():
+                    product = Product.objects.select_for_update().get(id=item.product.id)
+                    if product.stock >= item.quantity:
+                        product.stock -= item.quantity
+                    else:
+                        product.stock = 0
+                    product.save()
+
+                locked_order.status = 'PAID'
+                locked_order.verification_code = str(uuid.uuid4())
+                locked_order.save()
+
+                # Send email
+                def run_safe_email(email_func, ord_obj):
+                    try:
+                        email_func(ord_obj)
+                    except Exception as email_err:
+                        import logging
+                        logging.getLogger(__name__).error(f"Failed to send email for order #{ord_obj.id}: {email_err}")
+
+                threading.Thread(target=run_safe_email, args=(send_customer_email, locked_order), daemon=True).start()
+
+                messages.success(request, f"💰 Order #{locked_order.id} marked as PAID. Stock updated and confirmation email sent!")
+        except Exception as e:
+            messages.error(request, f"Error verifying payment: {str(e)}")
+
+        return redirect('admin:shop_order_changelist')
+
+    @admin.action(description="💰 Verify Payment (Mark as PAID)")
+    def mark_as_paid(self, request, queryset):
+        from django.contrib import messages
+        from django.db import transaction
+        import uuid
+        import threading
+        from .utils import send_customer_email
+        from .models import Product
+        
+        pending_orders = queryset.filter(status='PENDING')
+        updated_count = 0
+        
+        for order in pending_orders:
+            try:
+                with transaction.atomic():
+                    locked_order = Order.objects.select_for_update().get(id=order.id)
+                    if locked_order.status != 'PENDING':
+                        continue
+                        
+                    # Decrement stock
+                    for item in locked_order.items.select_related('product').all():
+                        product = Product.objects.select_for_update().get(id=item.product.id)
+                        if product.stock >= item.quantity:
+                            product.stock -= item.quantity
+                        else:
+                            product.stock = 0
+                        product.save()
+                    
+                    locked_order.status = 'PAID'
+                    locked_order.verification_code = str(uuid.uuid4())
+                    locked_order.save()
+                    
+                    # Send email
+                    def run_safe_email(email_func, ord_obj):
+                        try:
+                            email_func(ord_obj)
+                        except Exception as email_err:
+                            import logging
+                            logging.getLogger(__name__).error(f"Failed to send email for order #{ord_obj.id}: {email_err}")
+
+                    threading.Thread(target=run_safe_email, args=(send_customer_email, locked_order), daemon=True).start()
+                    updated_count += 1
+            except Exception as e:
+                messages.error(request, f"Error verifying order #{order.id}: {str(e)}")
+                
+        if updated_count > 0:
+            messages.success(request, f"💰 Successfully verified payment and marked {updated_count} order(s) as PAID.")
+        else:
+            messages.warning(request, "No pending orders were marked as paid.")
+
     search_fields = ['id', 'full_name', 'email', 'phone', 'paystack_reference', 'momo_sender_name']
     date_hierarchy = 'created_at'
     list_per_page = 20
     inlines = [OrderItemInline]
-    actions = ["mark_as_fulfilled", "export_production_manifest", "mark_as_failed"]
+    actions = ["mark_as_paid", "mark_as_fulfilled", "export_production_manifest", "mark_as_failed"]
     
     # Premium Fieldsets Layout
     fieldsets = (
@@ -362,18 +465,22 @@ class OrderAdmin(admin.ModelAdmin):
     mark_as_fulfilled.short_description = "✅ Mark Selected as Fulfilled/Completed"
 
     def _status_badge(self, obj):
+        if obj.status == 'PENDING':
+            from django.urls import reverse
+            url = reverse('admin:order-verify-payment', args=[obj.id])
+            return format_html(
+                '<a href="{}" class="button" style="background-color: #d97706; color: white; padding: 4px 10px; border-radius: 4px; font-weight: bold; text-decoration: none; font-size: 11px; display: inline-block;">Verify Payment</a>',
+                url
+            )
+            
         colors = {
-            "PAID": "green",
-            "PENDING": "orange",
-            "FAILED": "red",
-            "FULFILLED": "blue", # Different color logic
+            "PAID": "#059669",
+            "FAILED": "#dc2626",
+            "FULFILLED": "#2563eb",
         }
-        # If it's fulfilled, prioritize that status visual or keep it separate? User asked for column.
-        # Let's keep status badge as PAYMENT status primarily, but order model status field is shared.
-        # If status is FULFILLED, show Blue.
         color = colors.get(obj.status.upper(), "grey")
         return format_html(
-            '<span style="background-color: {}; color: white; padding: 3px 10px; border-radius: 15px; font-weight: bold; font-size: 12px;">{}</span>',
+            '<span style="background-color: {}; color: white; padding: 4px 12px; border-radius: 15px; font-weight: bold; font-size: 11px;">{}</span>',
             color,
             obj.status.upper()
         )
