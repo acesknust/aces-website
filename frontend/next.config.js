@@ -58,6 +58,12 @@ const nextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "*.r2.dev",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
   async rewrites() {
