@@ -10,7 +10,7 @@ import { useCart } from '@/context/CartContext';
 const Header = () => {
   const [isMenuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
-  const { items } = useCart();
+  const { items, setCartDrawerOpen } = useCart();
   const cartCount = items.reduce((acc, item) => acc + item.quantity, 0);
 
   const menu = [
@@ -140,15 +140,15 @@ const Header = () => {
 
         {/* Mobile Navigation Controls */}
         <div className="flex items-center lg:hidden">
-          {/* Mobile Cart Icon - Always Visible */}
-          <Link href="/shop/cart" className="relative p-2 mr-2 text-blue-950 hover:text-blue-700 transition-colors">
+          {/* Mobile Cart Icon - Opens CartDrawer */}
+          <button onClick={() => setCartDrawerOpen(true)} className="relative p-2 mr-2 text-blue-950 hover:text-blue-700 transition-colors focus:outline-none" aria-label="Open cart">
             <BiShoppingBag size={24} />
             {cartCount > 0 && (
               <span className="absolute top-0 right-0 bg-red-600 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center shadow-sm">
                 {cartCount}
               </span>
             )}
-          </Link>
+          </button>
 
           {/* Mobile Menu Toggle */}
           <button
@@ -203,14 +203,14 @@ const Header = () => {
               </Link>
             )
           ))}
-          <Link href="/shop/cart" className="relative hover:text-blue-950 transition duration-300">
+          <button onClick={() => setCartDrawerOpen(true)} className="relative hover:text-blue-950 transition duration-300 focus:outline-none" aria-label="Open cart">
             <BiShoppingBag size={24} />
             {cartCount > 0 && (
               <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                 {cartCount}
               </span>
             )}
-          </Link>
+          </button>
         </nav>
 
         {/* Mobile Menu */}

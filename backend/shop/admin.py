@@ -381,7 +381,7 @@ class OrderAdmin(admin.ModelAdmin):
             "fields": ("full_name", "email", "phone", "address")
         }),
         ("Payment Details", {
-            "fields": ("payment_method", "momo_sender_name", "momo_amount_paid", "paystack_reference", "verification_code"),
+            "fields": ("payment_method", "momo_sender_name", "momo_amount_paid", "_momo_receipt_preview", "paystack_reference", "verification_code"),
         }),
     )
 
@@ -396,7 +396,19 @@ class OrderAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(self, request, obj=None):
         # Everything is readonly EXCEPT completed_at (maybe? No, let's keep it readonly and use action)
-        return [f.name for f in self.model._meta.fields] + ['_status_badge', '_total_amount', '_customer_info']
+        return [f.name for f in self.model._meta.fields] + ['_status_badge', '_total_amount', '_customer_info', '_momo_receipt_preview']
+
+    def _momo_receipt_preview(self, obj):
+        if obj.momo_receipt:
+            return format_html(
+                '<a href="{0}" target="_blank">'
+                '<img src="{0}" style="max-height: 250px; max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb; padding: 4px; background: #fff;" />'
+                '<br><span style="font-size: 11px; color: #2563eb; text-decoration: underline; display: inline-block; margin-top: 6px; font-weight: bold;">🔍 Click to view full size</span>'
+                '</a>',
+                obj.momo_receipt.url
+            )
+        return "No receipt uploaded"
+    _momo_receipt_preview.short_description = "MoMo Receipt Screenshot"
 
     def _completed_status_btn(self, obj):
         from django.urls import reverse

@@ -822,7 +822,15 @@ class ConfirmMoMoPaymentView(APIView):
         try:
             order.momo_sender_name = momo_sender_name
             order.momo_amount_paid = Decimal(str(momo_amount_paid))
-            order.save(update_fields=['momo_sender_name', 'momo_amount_paid'])
+            
+            momo_receipt = request.FILES.get('momo_receipt') or request.data.get('momo_receipt')
+            update_fields = ['momo_sender_name', 'momo_amount_paid']
+            
+            if momo_receipt and not isinstance(momo_receipt, str):
+                order.momo_receipt = momo_receipt
+                update_fields.append('momo_receipt')
+                
+            order.save(update_fields=update_fields)
         except Exception as e:
             return Response(
                 {'error': f'Failed to save payment details: {str(e)}'},

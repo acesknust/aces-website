@@ -23,6 +23,8 @@ interface CartContextType {
     lastAddedItem: CartItem | null;
     toastVisible: boolean;
     dismissToast: () => void;
+    isCartDrawerOpen: boolean;
+    setCartDrawerOpen: (open: boolean) => void;
 }
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
@@ -30,6 +32,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [items, setItems] = useState<CartItem[]>([]);
     const [lastAddedItem, setLastAddedItem] = useState<CartItem | null>(null);
     const [toastVisible, setToastVisible] = useState(false);
+    const [isCartDrawerOpen, setCartDrawerOpen] = useState(false);
 
     // Load cart from local storage on mount
     useEffect(() => {
@@ -67,6 +70,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
         setLastAddedItem(newItem);
         setToastVisible(true);
+        setCartDrawerOpen(true);
     };
 
     const dismissToast = () => {
@@ -93,7 +97,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
     return (
-        <CartContext.Provider value={{ items, addItem, removeItem, updateQuantity, clearCart, total, lastAddedItem, toastVisible, dismissToast }}>
+        <CartContext.Provider value={{ items, addItem, removeItem, updateQuantity, clearCart, total, lastAddedItem, toastVisible, dismissToast, isCartDrawerOpen, setCartDrawerOpen }}>
             {children}
         </CartContext.Provider>
     );
@@ -110,6 +114,8 @@ const defaultCartContext: CartContextType = {
     lastAddedItem: null,
     toastVisible: false,
     dismissToast: () => { },
+    isCartDrawerOpen: false,
+    setCartDrawerOpen: () => { },
 };
 
 export const useCart = () => {

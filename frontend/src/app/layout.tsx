@@ -5,6 +5,7 @@ import './style.css'
 
 import { CartProvider } from '@/context/CartContext';
 import CartToast from '@/components/shop/CartToast';
+import CartDrawer from '@/components/shop/CartDrawer';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -29,6 +30,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <CartProvider>
           <CartToast />
+          <CartDrawer />
           {children}
         </CartProvider>
       </body>

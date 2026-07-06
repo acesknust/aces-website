@@ -29,6 +29,7 @@ function MoMoPaymentContent() {
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [copied, setCopied] = useState(false);
+    const [momoReceiptFile, setMomoReceiptFile] = useState<File | null>(null);
 
     const momoNumber = '0598899106';
     const momoName = 'Hanz Ofosuhene Sintim';
@@ -44,16 +45,19 @@ function MoMoPaymentContent() {
         setError('');
         setSubmitting(true);
 
+        const formData = new FormData();
+        formData.append('order_id', String(orderId));
+        formData.append('email', email);
+        formData.append('momo_sender_name', momoSenderName);
+        formData.append('momo_amount_paid', momoAmountPaid);
+        if (momoReceiptFile) {
+            formData.append('momo_receipt', momoReceiptFile);
+        }
+
         try {
             const response = await fetch(`${API_BASE_URL}/api/shop/orders/confirm-momo/`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    order_id: orderId,
-                    email: email,
-                    momo_sender_name: momoSenderName,
-                    momo_amount_paid: momoAmountPaid,
-                }),
+                body: formData,
             });
 
             const data = await response.json();
@@ -191,6 +195,23 @@ function MoMoPaymentContent() {
                                         onChange={(e) => setMomoAmountPaid(e.target.value)}
                                         className="block w-full rounded-lg border-0 py-3 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-200 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm bg-gray-50 focus:bg-white transition-all"
                                         placeholder="0.00"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label htmlFor="momo_receipt" className="block text-sm font-semibold text-gray-700 mb-1">
+                                        Upload Payment Screenshot / Receipt (Optional)
+                                    </label>
+                                    <input
+                                        type="file"
+                                        id="momo_receipt"
+                                        accept="image/*"
+                                        onChange={(e) => {
+                                            if (e.target.files && e.target.files[0]) {
+                                                setMomoReceiptFile(e.target.files[0]);
+                                            }
+                                        }}
+                                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-all border border-gray-200 rounded-lg p-2 bg-gray-50 cursor-pointer"
                                     />
                                 </div>
 

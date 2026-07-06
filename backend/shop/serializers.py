@@ -41,6 +41,6 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = [
             'id', 'full_name', 'email', 'phone', 'address', 'total_amount', 
-            'status', 'payment_method', 'momo_sender_name', 'momo_amount_paid', 
+            'status', 'payment_method', 'momo_sender_name', 'momo_amount_paid', 'momo_receipt',
             'items', 'created_at'
         ]

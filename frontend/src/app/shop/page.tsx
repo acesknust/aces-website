@@ -35,7 +35,7 @@ export default async function ShopPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-blue-50/50 to-white pt-24">
+        <div className="min-h-screen bg-gradient-to-b from-blue-50/50 to-white pt-28 sm:pt-32">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-16">
                     <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl md:text-6xl">

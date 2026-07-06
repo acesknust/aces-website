@@ -95,6 +95,10 @@ class Order(models.Model):
         max_digits=10, decimal_places=2, blank=True, null=True,
         help_text="Amount customer claims to have paid via MoMo"
     )
+    momo_receipt = models.ImageField(
+        upload_to='receipts/momo/', blank=True, null=True,
+        help_text="Uploaded screenshot of the MoMo transaction receipt"
+    )
     verification_code = models.CharField(max_length=100, unique=True, blank=True, null=True) # For QR Code
     
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)

@@ -25,7 +25,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-blue-50/50 to-white pt-24 pb-16">
+        <div className="min-h-screen bg-gradient-to-b from-blue-50/50 to-white pt-28 sm:pt-32 pb-16">
             <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
                 {/* Back Button */}
                 <Link
