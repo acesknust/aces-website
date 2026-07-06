@@ -364,7 +364,10 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
                                                     priority={i === 0}
                                                 />
                                                 {/* Label overlay (top-left to avoid Swiper pagination dot conflict) */}
-                                                <div className="absolute top-3 left-3 bg-gray-900/85 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-full z-20 shadow-sm">
+                                                <div 
+                                                    style={{ backgroundColor: 'rgba(17, 24, 39, 0.85)', color: '#ffffff' }}
+                                                    className="absolute top-3 left-3 backdrop-blur-sm text-xs font-semibold px-3 py-1.5 rounded-full z-20 shadow-sm"
+                                                >
                                                     {getThumbnailLabel(i, filteredImages.length)}
                                                 </div>
                                             </div>
@@ -449,7 +452,10 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
                                         />
                                     </div>
                                     {/* Label pill */}
-                                    <span className="absolute bottom-1 left-1/2 -translate-x-1/2 bg-black/60 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full z-10 whitespace-nowrap">
+                                    <span 
+                                        style={{ backgroundColor: 'rgba(17, 24, 39, 0.85)', color: '#ffffff' }}
+                                        className="absolute bottom-1 left-1/2 -translate-x-1/2 text-[10px] font-semibold px-2 py-0.5 rounded-full z-10 whitespace-nowrap"
+                                    >
                                         {getThumbnailLabel(i, filteredImages.length)}
                                     </span>
                                 </button>
