@@ -17,11 +17,16 @@ const getApiUrl = () => {
 const API_BASE_URL = getApiUrl();
 
 const compressImage = (file: File, maxWidth = 1200, quality = 0.85): Promise<Blob> => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
+        if (typeof window === 'undefined' || typeof FileReader === 'undefined') {
+            resolve(file);
+            return;
+        }
+
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = (event) => {
-            const img = new window.Image();
+            const img = new Image();
             img.src = event.target?.result as string;
             img.onload = () => {
                 const canvas = document.createElement('canvas');
@@ -45,11 +50,7 @@ const compressImage = (file: File, maxWidth = 1200, quality = 0.85): Promise<Blo
 
                 canvas.toBlob(
                     (blob) => {
-                        if (blob) {
-                            resolve(blob);
-                        } else {
-                            resolve(file);
-                        }
+                        resolve(blob || file);
                     },
                     'image/jpeg',
                     quality
