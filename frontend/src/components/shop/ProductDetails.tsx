@@ -131,13 +131,13 @@ const Lightbox: React.FC<{
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center"
+            className="fixed inset-0 z-[200] bg-white flex items-center justify-center"
             onClick={onClose}
         >
             {/* Close button */}
             <button
                 onClick={onClose}
-                className="absolute top-4 right-4 z-10 bg-white/10 hover:bg-white/20 rounded-full p-3 text-white transition-colors"
+                className="absolute top-4 right-4 z-10 bg-gray-100 hover:bg-gray-200 rounded-full p-3 text-gray-800 transition-colors shadow-sm"
                 aria-label="Close fullscreen view"
             >
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -147,7 +147,7 @@ const Lightbox: React.FC<{
 
             {/* Image counter */}
             {images.length > 1 && (
-                <div className="absolute top-4 left-4 z-10 bg-white/10 rounded-full px-4 py-2 text-white text-sm font-medium">
+                <div className="absolute top-4 left-4 z-10 bg-gray-100 rounded-full px-4 py-2 text-gray-800 text-sm font-medium shadow-sm">
                     {currentIndex + 1} / {images.length}
                 </div>
             )}
@@ -179,7 +179,7 @@ const Lightbox: React.FC<{
                 </AnimatePresence>
 
                 {/* Label */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-md rounded-full px-4 py-1.5 text-white text-sm font-medium">
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-gray-100 backdrop-blur-md rounded-full px-4 py-1.5 text-gray-800 text-sm font-semibold shadow-sm">
                     {images[currentIndex].label}
                 </div>
             </div>
@@ -190,7 +190,7 @@ const Lightbox: React.FC<{
                     {currentIndex > 0 && (
                         <button
                             onClick={(e) => { e.stopPropagation(); setCurrentIndex(i => i - 1); }}
-                            className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 rounded-full p-3 text-white transition-colors"
+                            className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 bg-gray-100/80 hover:bg-gray-200/90 rounded-full p-3 text-gray-800 transition-colors shadow-md"
                             aria-label="Previous image"
                         >
                             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -201,7 +201,7 @@ const Lightbox: React.FC<{
                     {currentIndex < images.length - 1 && (
                         <button
                             onClick={(e) => { e.stopPropagation(); setCurrentIndex(i => i + 1); }}
-                            className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 rounded-full p-3 text-white transition-colors"
+                            className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 bg-gray-100/80 hover:bg-gray-200/90 rounded-full p-3 text-gray-800 transition-colors shadow-md"
                             aria-label="Next image"
                         >
                             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -363,8 +363,8 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
                                                     className="object-contain object-center p-6 mix-blend-multiply"
                                                     priority={i === 0}
                                                 />
-                                                {/* Label overlay */}
-                                                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm text-white text-xs font-medium px-3 py-1 rounded-full">
+                                                {/* Label overlay (top-left to avoid Swiper pagination dot conflict) */}
+                                                <div className="absolute top-3 left-3 bg-gray-900/85 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-full z-20 shadow-sm">
                                                     {getThumbnailLabel(i, filteredImages.length)}
                                                 </div>
                                             </div>
