@@ -8,7 +8,24 @@ import 'react-modern-drawer/dist/index.css';
 import { useCart } from '@/context/CartContext';
 
 const CartDrawer: React.FC = () => {
-    const { items, isCartDrawerOpen, setCartDrawerOpen, updateQuantity, removeItem, total } = useCart();
+    const { 
+        items, 
+        isCartDrawerOpen, 
+        setCartDrawerOpen, 
+        updateQuantity, 
+        removeItem, 
+        total,
+        appliedCoupon,
+        couponError,
+        couponLoading,
+        couponCode,
+        setCouponCode,
+        applyCoupon,
+        removeCoupon
+    } = useCart();
+
+    const discountAmount = appliedCoupon ? appliedCoupon.discount_amount : 0;
+    const finalTotal = total - discountAmount;
 
     const getImageUrl = (img?: string) => {
         if (!img) return 'https://via.placeholder.com/80x80?text=No+Image';
@@ -134,12 +151,69 @@ const CartDrawer: React.FC = () => {
                 {/* Footer Summary & Checkout */}
                 {items.length > 0 && (
                     <div className="px-6 py-6 bg-gray-50 border-t border-gray-100 space-y-4">
-                        <div className="flex items-center justify-between text-base font-bold text-gray-900">
-                            <span>Subtotal</span>
-                            <span className="text-xl font-extrabold text-blue-600">GHS {total.toFixed(2)}</span>
+                        
+                        {/* Coupon Code Section inside Cart Drawer */}
+                        <div className="p-3.5 bg-white rounded-xl border border-gray-250 shadow-sm text-xs">
+                            <label className="block font-semibold text-gray-700 mb-1.5">
+                                🎟️ Coupon Code
+                            </label>
+                            {appliedCoupon ? (
+                                <div className="flex items-center justify-between bg-blue-50 text-blue-700 px-2.5 py-1.5 rounded-lg border border-blue-100 font-medium">
+                                    <span className="truncate">
+                                        Applied: <strong className="font-bold">{appliedCoupon.code}</strong> (-{appliedCoupon.discount_percent}%)
+                                    </span>
+                                    <button
+                                        onClick={removeCoupon}
+                                        className="text-blue-500 hover:text-blue-700 ml-2 font-extrabold focus:outline-none shrink-0"
+                                        title="Remove Coupon"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Enter coupon code"
+                                        value={couponCode}
+                                        onChange={(e) => setCouponCode(e.target.value)}
+                                        className="flex-1 px-3 py-1.5 border border-gray-250 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs bg-gray-50 focus:bg-white uppercase font-medium placeholder:normal-case"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => applyCoupon(couponCode)}
+                                        disabled={couponLoading || !couponCode.trim()}
+                                        className="px-3 py-1.5 bg-gray-900 text-white rounded-lg font-bold hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shrink-0"
+                                    >
+                                        {couponLoading ? '...' : 'Apply'}
+                                    </button>
+                                </div>
+                            )}
+                            {couponError && (
+                                <p className="mt-1.5 text-[11px] text-red-650 font-semibold">{couponError}</p>
+                            )}
                         </div>
-                        <p className="text-xs text-gray-500 leading-normal">
-                            Shipping and coupon discounts will be calculated during checkout.
+
+                        {/* Totals Breakdown */}
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between text-sm text-gray-600">
+                                <span>Subtotal</span>
+                                <span className="font-semibold text-gray-900">GHS {total.toFixed(2)}</span>
+                            </div>
+                            {appliedCoupon && (
+                                <div className="flex items-center justify-between text-sm text-blue-600 font-medium">
+                                    <span>Discount ({appliedCoupon.code})</span>
+                                    <span>- GHS {discountAmount.toFixed(2)}</span>
+                                </div>
+                            )}
+                            <div className="flex items-center justify-between text-base font-bold text-gray-900 pt-2 border-t border-dashed border-gray-200">
+                                <span>Total Amount</span>
+                                <span className="text-xl font-extrabold text-blue-600">GHS {finalTotal.toFixed(2)}</span>
+                            </div>
+                        </div>
+
+                        <p className="text-[11px] text-gray-500 leading-normal">
+                            Shipping discounts and details will be completed during checkout.
                         </p>
 
                         <div className="space-y-3 pt-2">

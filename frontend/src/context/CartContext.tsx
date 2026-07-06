@@ -2,7 +2,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-// ... (imports)
 export interface CartItem {
     id: number;
     name: string;
@@ -12,6 +11,25 @@ export interface CartItem {
     color?: string; // Optional color
     size?: string;  // Optional size
 }
+
+export interface AppliedCoupon {
+    code: string;
+    discount_percent: number;
+    discount_amount: number;
+    owner_name: string;
+    owner_role: string;
+}
+
+const getApiUrl = () => {
+    if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+    if (typeof window !== 'undefined') {
+        const hostname = window.location.hostname;
+        if (hostname === 'localhost' || hostname === '127.0.0.1') return 'http://127.0.0.1:8000';
+    }
+    return 'https://aces-backend-pgtot.ondigitalocean.app';
+};
+
+const API_BASE_URL = getApiUrl();
 
 interface CartContextType {
     items: CartItem[];
@@ -25,7 +43,17 @@ interface CartContextType {
     dismissToast: () => void;
     isCartDrawerOpen: boolean;
     setCartDrawerOpen: (open: boolean) => void;
+    
+    // Coupon States & Actions
+    appliedCoupon: AppliedCoupon | null;
+    couponError: string;
+    couponLoading: boolean;
+    couponCode: string;
+    setCouponCode: (code: string) => void;
+    applyCoupon: (code: string) => Promise<boolean>;
+    removeCoupon: () => void;
 }
+
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -33,6 +61,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [lastAddedItem, setLastAddedItem] = useState<CartItem | null>(null);
     const [toastVisible, setToastVisible] = useState(false);
     const [isCartDrawerOpen, setCartDrawerOpen] = useState(false);
+
+    // Coupon states
+    const [couponCode, setCouponCode] = useState('');
+    const [couponLoading, setCouponLoading] = useState(false);
+    const [couponError, setCouponError] = useState('');
+    const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
 
     // Load cart from local storage on mount
     useEffect(() => {
@@ -90,14 +124,83 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         );
     };
 
+    const removeCoupon = () => {
+        setAppliedCoupon(null);
+        setCouponCode('');
+        setCouponError('');
+    };
+
     const clearCart = () => {
         setItems([]);
+        removeCoupon();
     };
 
     const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
+    const applyCoupon = async (code: string): Promise<boolean> => {
+        if (!code.trim()) {
+            setCouponError('Please enter a coupon code');
+            return false;
+        }
+        setCouponLoading(true);
+        setCouponError('');
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/shop/validate-coupon/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    code: code.trim().toUpperCase(),
+                    cart_total: total,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.valid) {
+                setAppliedCoupon({
+                    code: data.code,
+                    discount_percent: data.discount_percent,
+                    discount_amount: data.discount_amount,
+                    owner_name: data.owner_name,
+                    owner_role: data.owner_role,
+                });
+                return true;
+            } else {
+                setCouponError(data.message || 'Invalid coupon code');
+                setAppliedCoupon(null);
+                return false;
+            }
+        } catch (err) {
+            setCouponError('Failed to validate coupon code. Please try again.');
+            setAppliedCoupon(null);
+            return false;
+        } finally {
+            setCouponLoading(false);
+        }
+    };
+
     return (
-        <CartContext.Provider value={{ items, addItem, removeItem, updateQuantity, clearCart, total, lastAddedItem, toastVisible, dismissToast, isCartDrawerOpen, setCartDrawerOpen }}>
+        <CartContext.Provider value={{
+            items,
+            addItem,
+            removeItem,
+            updateQuantity,
+            clearCart,
+            total,
+            lastAddedItem,
+            toastVisible,
+            dismissToast,
+            isCartDrawerOpen,
+            setCartDrawerOpen,
+            appliedCoupon,
+            couponError,
+            couponLoading,
+            couponCode,
+            setCouponCode,
+            applyCoupon,
+            removeCoupon
+        }}>
             {children}
         </CartContext.Provider>
     );
@@ -116,6 +219,13 @@ const defaultCartContext: CartContextType = {
     dismissToast: () => { },
     isCartDrawerOpen: false,
     setCartDrawerOpen: () => { },
+    appliedCoupon: null,
+    couponError: '',
+    couponLoading: false,
+    couponCode: '',
+    setCouponCode: () => { },
+    applyCoupon: async () => false,
+    removeCoupon: () => { },
 };
 
 export const useCart = () => {

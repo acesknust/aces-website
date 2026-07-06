@@ -35,7 +35,20 @@ const steps = [
 ];
 
 export default function CartPage() {
-    const { items, removeItem, updateQuantity, total, clearCart } = useCart();
+    const { 
+        items, 
+        removeItem, 
+        updateQuantity, 
+        total, 
+        clearCart,
+        appliedCoupon,
+        couponError,
+        couponLoading,
+        couponCode,
+        setCouponCode,
+        applyCoupon,
+        removeCoupon
+    } = useCart();
     const [isCheckingOut, setIsCheckingOut] = useState(false);
     const [formData, setFormData] = useState({
         full_name: '',
@@ -47,72 +60,13 @@ export default function CartPage() {
     const [checkoutError, setCheckoutError] = useState('');
     const router = useRouter();
 
-    // Coupon State
-    const [couponCode, setCouponCode] = useState('');
-    const [couponLoading, setCouponLoading] = useState(false);
-    const [couponError, setCouponError] = useState('');
-    const [appliedCoupon, setAppliedCoupon] = useState<{
-        code: string;
-        discount_percent: number;
-        discount_amount: number;
-        owner_name: string;
-        owner_role: string;
-    } | null>(null);
-
     // Calculate final total with discount
     const discountAmount = appliedCoupon ? appliedCoupon.discount_amount : 0;
     const finalTotal = total - discountAmount;
 
     // Validate coupon code
     const validateCoupon = async () => {
-        if (!couponCode.trim()) {
-            setCouponError('Please enter a coupon code');
-            return;
-        }
-
-        setCouponLoading(true);
-        setCouponError('');
-
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/shop/validate-coupon/`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    code: couponCode.trim().toUpperCase(),
-                    cart_total: total
-                }),
-            });
-
-            const data = await response.json();
-
-            if (data.valid) {
-                setAppliedCoupon({
-                    code: data.code,
-                    discount_percent: data.discount_percent,
-                    discount_amount: data.discount_amount,
-                    owner_name: data.owner_name,
-                    owner_role: data.owner_role,
-                });
-                setCouponError('');
-            } else {
-                setCouponError(data.message || 'Invalid coupon code');
-                setAppliedCoupon(null);
-            }
-        } catch (error) {
-            console.error('Coupon validation error:', error);
-            const msg = error instanceof Error ? error.message : 'Unknown error';
-            setCouponError(`Failed to validate: ${msg}`);
-            setAppliedCoupon(null);
-        } finally {
-            setCouponLoading(false);
-        }
-    };
-
-    // Remove applied coupon
-    const removeCoupon = () => {
-        setAppliedCoupon(null);
-        setCouponCode('');
-        setCouponError('');
+        await applyCoupon(couponCode);
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
