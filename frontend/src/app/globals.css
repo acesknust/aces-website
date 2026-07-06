@@ -85,3 +85,26 @@
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
     background-color: #94a3b8;
 }
+
+/* ─── Shop Product Swiper Overrides ─── */
+.shop-swiper .swiper-pagination {
+    bottom: 12px !important;
+}
+.shop-swiper .swiper-pagination-bullet {
+    background: rgba(0, 0, 0, 0.3);
+    width: 8px;
+    height: 8px;
+    opacity: 1;
+    transition: all 0.2s ease;
+}
+.shop-swiper .swiper-pagination-bullet-active {
+    background: #2563eb;
+    width: 24px;
+    border-radius: 4px;
+}
+
+/* ─── Safe area for iOS bottom bar ─── */
+.safe-area-bottom {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+

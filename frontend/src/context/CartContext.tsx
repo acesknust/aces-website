@@ -20,11 +20,16 @@ interface CartContextType {
     updateQuantity: (id: number, quantity: number, color?: string, size?: string) => void;
     clearCart: () => void;
     total: number;
+    lastAddedItem: CartItem | null;
+    toastVisible: boolean;
+    dismissToast: () => void;
 }
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [items, setItems] = useState<CartItem[]>([]);
+    const [lastAddedItem, setLastAddedItem] = useState<CartItem | null>(null);
+    const [toastVisible, setToastVisible] = useState(false);
 
     // Load cart from local storage on mount
     useEffect(() => {
@@ -60,6 +65,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
             return [...prevItems, newItem];
         });
+        setLastAddedItem(newItem);
+        setToastVisible(true);
+    };
+
+    const dismissToast = () => {
+        setToastVisible(false);
     };
 
     const removeItem = (id: number, color?: string, size?: string) => {
@@ -82,7 +93,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
     return (
-        <CartContext.Provider value={{ items, addItem, removeItem, updateQuantity, clearCart, total }}>
+        <CartContext.Provider value={{ items, addItem, removeItem, updateQuantity, clearCart, total, lastAddedItem, toastVisible, dismissToast }}>
             {children}
         </CartContext.Provider>
     );
@@ -96,6 +107,9 @@ const defaultCartContext: CartContextType = {
     updateQuantity: () => { },
     clearCart: () => { },
     total: 0,
+    lastAddedItem: null,
+    toastVisible: false,
+    dismissToast: () => { },
 };
 
 export const useCart = () => {

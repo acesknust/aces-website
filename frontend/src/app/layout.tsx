@@ -4,6 +4,7 @@ import './globals.css'
 import './style.css'
 
 import { CartProvider } from '@/context/CartContext';
+import CartToast from '@/components/shop/CartToast';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -27,6 +28,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <CartProvider>
+          <CartToast />
           {children}
         </CartProvider>
       </body>

@@ -28,8 +28,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     };
 
     return (
-        <Link href={`/shop/${product.slug}`} className="group block overflow-hidden rounded-2xl bg-white shadow-md transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 ring-1 ring-gray-100 hover:ring-gray-200">
-            <div className="relative h-80 w-full overflow-hidden bg-gray-100/50">
+        <Link href={`/shop/${product.slug}`} className="group block overflow-hidden rounded-2xl bg-white shadow-md transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 ring-1 ring-gray-100 hover:ring-gray-200 active:scale-[0.98]">
+            <div className="relative h-56 sm:h-64 md:h-72 lg:h-80 w-full overflow-hidden bg-gray-100/50">
                 <Image
                     src={getImageUrl(product.image)}
                     alt={product.name}
@@ -39,11 +39,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                     loading="eager"
                     className="object-contain transition duration-500 group-hover:scale-110 p-6 mix-blend-multiply"
                 />
-                <div className="absolute top-4 left-4">
-                    <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
-                        New Arrival
-                    </span>
-                </div>
+
             </div>
 
             <div className="p-6">
