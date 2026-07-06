@@ -798,10 +798,11 @@ class ConfirmMoMoPaymentView(APIView):
         email = request.data.get('email')
         momo_sender_name = request.data.get('momo_sender_name', '').strip()
         momo_amount_paid = request.data.get('momo_amount_paid')
+        momo_receipt = request.FILES.get('momo_receipt') or request.data.get('momo_receipt')
 
-        if not all([order_id, email, momo_sender_name, momo_amount_paid]):
+        if not all([order_id, email, momo_sender_name, momo_amount_paid]) or not momo_receipt:
             return Response(
-                {'error': 'All fields are required: order_id, email, momo_sender_name, momo_amount_paid'},
+                {'error': 'All fields are required: order_id, email, momo_sender_name, momo_amount_paid, momo_receipt'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 

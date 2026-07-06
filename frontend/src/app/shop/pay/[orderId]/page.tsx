@@ -16,6 +16,51 @@ const getApiUrl = () => {
 
 const API_BASE_URL = getApiUrl();
 
+const compressImage = (file: File, maxWidth = 1200, quality = 0.85): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new window.Image();
+            img.src = event.target?.result as string;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxWidth) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    resolve(file);
+                    return;
+                }
+                ctx.drawImage(img, 0, 0, width, height);
+
+                canvas.toBlob(
+                    (blob) => {
+                        if (blob) {
+                            resolve(blob);
+                        } else {
+                            resolve(file);
+                        }
+                    },
+                    'image/jpeg',
+                    quality
+                );
+            };
+            img.onerror = () => resolve(file);
+        };
+        reader.onerror = () => resolve(file);
+    });
+};
+
 function MoMoPaymentContent() {
     const params = useParams();
     const searchParams = useSearchParams();
@@ -43,16 +88,27 @@ function MoMoPaymentContent() {
     const handleConfirmPayment = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+        
+        if (!momoReceiptFile) {
+            setError('Please upload a screenshot or receipt of your transaction.');
+            return;
+        }
+
         setSubmitting(true);
+
+        let fileToUpload: Blob = momoReceiptFile;
+        try {
+            fileToUpload = await compressImage(momoReceiptFile);
+        } catch (compError) {
+            console.error("Image compression failed, uploading original file", compError);
+        }
 
         const formData = new FormData();
         formData.append('order_id', String(orderId));
         formData.append('email', email);
         formData.append('momo_sender_name', momoSenderName);
         formData.append('momo_amount_paid', momoAmountPaid);
-        if (momoReceiptFile) {
-            formData.append('momo_receipt', momoReceiptFile);
-        }
+        formData.append('momo_receipt', fileToUpload, 'receipt.jpg');
 
         try {
             const response = await fetch(`${API_BASE_URL}/api/shop/orders/confirm-momo/`, {
@@ -200,12 +256,13 @@ function MoMoPaymentContent() {
 
                                 <div>
                                     <label htmlFor="momo_receipt" className="block text-sm font-semibold text-gray-700 mb-1">
-                                        Upload Payment Screenshot / Receipt (Optional)
+                                        Upload Payment Screenshot / Receipt (Required)
                                     </label>
                                     <input
                                         type="file"
                                         id="momo_receipt"
                                         accept="image/*"
+                                        required
                                         onChange={(e) => {
                                             if (e.target.files && e.target.files[0]) {
                                                 setMomoReceiptFile(e.target.files[0]);
@@ -224,7 +281,7 @@ function MoMoPaymentContent() {
                                 <button
                                     type="submit"
                                     disabled={submitting}
-                                    className="w-full rounded-full bg-gradient-to-r from-green-500 to-emerald-600 px-4 py-4 text-base font-bold text-white shadow-lg hover:from-green-600 hover:to-emerald-700 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                    className="w-full rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-4 text-base font-bold text-white shadow-lg hover:from-blue-700 hover:to-indigo-700 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                 >
                                     {submitting ? (
                                         <>
