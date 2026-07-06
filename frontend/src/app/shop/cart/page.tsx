@@ -223,10 +223,12 @@ export default function CartPage() {
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-50/50 to-white pt-24 pb-16">
             <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
-                <div className="flex flex-col md:flex-row md:items-center justify-between mb-12">
-                    <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">Your Bag <span className="text-gray-400 font-normal text-2xl">({items.reduce((acc, item) => acc + item.quantity, 0)} items)</span></h1>
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 sm:mb-12">
+                    <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+                        Your Bag <span className="text-gray-400 font-normal text-2xl">({items.reduce((acc, item) => acc + item.quantity, 0)} items)</span>
+                    </h1>
 
-                    {/* Progress Steps */}
+                    {/* Desktop Progress Steps */}
                     <nav aria-label="Progress" className="hidden md:flex mt-4 md:mt-0">
                         <ol role="list" className="flex items-center space-x-5">
                             {steps.map((step, stepIdx) => (
@@ -249,6 +251,31 @@ export default function CartPage() {
                             ))}
                         </ol>
                     </nav>
+
+                    {/* Mobile Progress Steps */}
+                    <div className="flex md:hidden flex-col items-center w-full mt-6 bg-gray-50/80 backdrop-blur-sm rounded-2xl p-4 border border-gray-150 shadow-sm">
+                        <div className="flex items-center justify-between w-full max-w-[240px] mb-2 relative">
+                            {/* Connector line */}
+                            <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-250 -translate-y-1/2 -z-10" />
+                            <div 
+                                className="absolute top-1/2 left-0 h-0.5 bg-blue-600 -translate-y-1/2 -z-10 transition-all duration-300"
+                                style={{ width: `${currentStep * 50}%` }}
+                            />
+                            {steps.map((step, stepIdx) => (
+                                <div key={step.id} className="flex flex-col items-center">
+                                    <span className={`flex h-8 w-8 items-center justify-center rounded-full border-2 text-xs font-bold transition-all duration-300 ${stepIdx <= currentStep
+                                        ? 'border-blue-600 bg-blue-600 text-white shadow-md shadow-blue-500/20 scale-105'
+                                        : 'border-gray-300 bg-white text-gray-400'
+                                        }`}>
+                                        {stepIdx < currentStep ? '✓' : stepIdx + 1}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="text-xs font-bold text-blue-600 tracking-wide uppercase mt-1">
+                            {steps[currentStep].name}
+                        </div>
+                    </div>
                 </div>
 
                 <div className="mt-12 lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-12 xl:gap-x-16">
@@ -336,7 +363,7 @@ export default function CartPage() {
                     {/* Order Summary & Checkout Form */}
                     <section
                         aria-labelledby="summary-heading"
-                        className="mt-16 rounded-2xl bg-white px-4 py-6 sm:p-6 lg:col-span-12 xl:col-span-5 lg:mt-0 lg:p-10 shadow-xl border border-gray-100"
+                        className="mt-16 rounded-2xl bg-white px-4 py-6 sm:p-6 lg:col-span-5 lg:mt-0 lg:p-10 shadow-xl border border-gray-100"
                     >
                         <h2 id="summary-heading" className="text-xl font-bold text-gray-900 border-b pb-4">
                             Order Summary
