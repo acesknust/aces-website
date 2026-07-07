@@ -243,7 +243,7 @@ class CreateOrderView(APIView):
                     'status': 'PENDING',
                     'payment_method': 'MOMO',
                     'momo_details': {
-                        'number': '0598899106',
+                        'number': '0205671946',
                         'name': 'Hanz Ofosuhene Sintim',
                     },
                     'message': 'Order placed! Please send payment via MoMo.'

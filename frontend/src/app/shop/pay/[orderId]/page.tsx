@@ -77,7 +77,7 @@ function MoMoPaymentContent() {
     const [copied, setCopied] = useState(false);
     const [momoReceiptFile, setMomoReceiptFile] = useState<File | null>(null);
 
-    const momoNumber = '0598899106';
+    const momoNumber = '0205671946';
     const momoName = 'Hanz Ofosuhene Sintim';
 
     const copyNumber = () => {
