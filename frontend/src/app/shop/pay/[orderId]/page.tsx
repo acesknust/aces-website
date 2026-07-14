@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { useCart } from '@/context/CartContext';
 
 const getApiUrl = () => {
     if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
@@ -77,13 +78,40 @@ function MoMoPaymentContent() {
     const [copied, setCopied] = useState(false);
     const [momoReceiptFile, setMomoReceiptFile] = useState<File | null>(null);
 
+    const { clearCart } = useCart();
+    const hasCleared = useRef(false);
+
+    useEffect(() => {
+        if (!hasCleared.current) {
+            clearCart();
+            hasCleared.current = true;
+        }
+    }, [clearCart]);
+
     const momoNumber = '0205671946';
     const momoName = 'Hanz Ofosuhene Sintim';
 
     const copyNumber = () => {
-        navigator.clipboard.writeText(momoNumber);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+        try {
+            navigator.clipboard.writeText(momoNumber);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch {
+            const textArea = document.createElement('textarea');
+            textArea.value = momoNumber;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-9999px';
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+            } catch (err) {
+                console.error('Failed to copy fallback', err);
+            }
+            document.body.removeChild(textArea);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        }
     };
 
     const handleConfirmPayment = async (e: React.FormEvent) => {

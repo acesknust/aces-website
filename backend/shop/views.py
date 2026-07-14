@@ -91,14 +91,52 @@ class CreateOrderView(APIView):
             if not cart_items:
                 return Response({"error": "Cart is empty"}, status=status.HTTP_400_BAD_REQUEST)
 
+            # 0. Validate User Details & Input Format
+            full_name = user_details.get('full_name', '').strip()
+            email = user_details.get('email', '').strip()
+            phone = user_details.get('phone', '').strip()
+            address = user_details.get('address', '').strip()
+
+            if not full_name:
+                return Response({"error": "Full name is required"}, status=status.HTTP_400_BAD_REQUEST)
+            if not email:
+                return Response({"error": "Email address is required"}, status=status.HTTP_400_BAD_REQUEST)
+            if '@' not in email or '.' not in email:
+                return Response({"error": "Invalid email address format"}, status=status.HTTP_400_BAD_REQUEST)
+            if not phone:
+                return Response({"error": "Phone number is required"}, status=status.HTTP_400_BAD_REQUEST)
+            if not address:
+                return Response({"error": "Delivery location/address is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Validate cart item values (positive integers)
+            for item in cart_items:
+                if not item or not isinstance(item, dict):
+                    return Response({"error": "Invalid item format"}, status=status.HTTP_400_BAD_REQUEST)
+                item_id = item.get('id')
+                if item_id is None:
+                    return Response({"error": "Item ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+                try:
+                    item_id = int(str(item_id))
+                    if item_id <= 0:
+                        raise ValueError
+                except (ValueError, TypeError):
+                    return Response({"error": f"Invalid product ID: {item_id}"}, status=status.HTTP_400_BAD_REQUEST)
+                
+                qty = item.get('quantity', 1)
+                try:
+                    qty = int(str(qty))
+                    if qty < 1:
+                        raise ValueError
+                except (ValueError, TypeError):
+                    return Response({"error": f"Quantity must be a positive integer for product ID {item_id}"}, status=status.HTTP_400_BAD_REQUEST)
+
             # 1. Calculate Total Price on Backend (Batch Fetch)
             total_amount = Decimal('0')
             order_items_data = []
 
             # Collect unique product IDs for a single DB query, but iterate
-            # over every cart entry (including duplicate product IDs with
-            # different color/size variants) so no items are silently dropped.
-            product_ids = list(set(item.get('id') for item in cart_items))
+            # over every cart entry so no items are silently dropped.
+            product_ids = list(set(int(item.get('id')) for item in cart_items))
 
             products = Product.objects.filter(id__in=product_ids, is_active=True)
             product_map = {p.id: p for p in products}
@@ -112,43 +150,40 @@ class CreateOrderView(APIView):
                 )
 
             for cart_item in cart_items:
-                product = product_map.get(cart_item.get('id'))
+                product = product_map.get(int(cart_item.get('id')))
                 if not product:
                     continue
-                quantity = cart_item.get('quantity', 1)
+                quantity = int(cart_item.get('quantity', 1))
+                # Check Stock
+                if product.stock < quantity:
+                    return Response(
+                        {"error": f"Product '{product.name}' only has {product.stock} in stock (requested {quantity})"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
                 color = cart_item.get('color')
                 size = cart_item.get('size')
                 price = product.price
                 total_amount += price * quantity
                 order_items_data.append((product, quantity, price, color, size))
 
-            # 2. Handle Coupon Code (if provided)
-            coupon = None
-            discount_amount = Decimal('0')
+            # 2. Handle Coupon Code & Create or Reuse Order + Items ATOMICALLY
             coupon_code = data.get('coupon_code', '').strip().upper()
 
-            if coupon_code:
-                try:
-                    coupon = Coupon.objects.get(code=coupon_code)
-                    if coupon.is_valid():
-                        discount_percent = Decimal(str(coupon.discount_percent))
-                        discount_amount = round(total_amount * (discount_percent / 100), 2)
-                        total_amount = round(total_amount - discount_amount, 2)
-                    else:
-                        coupon = None
-                except Coupon.DoesNotExist:
-                    pass
-
-            # 3. Create or Reuse Order + Items ATOMICALLY
-            # FIX (Feb 2026): Reuse existing PENDING order for same email
-            # to prevent duplicate orders when users click checkout multiple times.
-            #
-            # IMPORTANT: The select_for_update() lock and the order update MUST be
-            # in the SAME transaction.atomic() block. Otherwise, the row lock is
-            # released between the lookup and update, allowing a race condition.
-            email = user_details.get('email')
-
             with transaction.atomic():
+                coupon = None
+                discount_amount = Decimal('0')
+                if coupon_code:
+                    try:
+                        coupon = Coupon.objects.select_for_update().get(code=coupon_code)
+                        if coupon.is_valid():
+                            discount_percent = Decimal(str(coupon.discount_percent))
+                            discount_amount = (total_amount * (discount_percent / Decimal('100'))).quantize(Decimal('0.01'))
+                            total_amount = (total_amount - discount_amount).quantize(Decimal('0.01'))
+                        else:
+                            coupon = None
+                    except Coupon.DoesNotExist:
+                        pass
+
                 existing_order = Order.objects.select_for_update().filter(
                     email=email,
                     status='PENDING',
@@ -164,21 +199,18 @@ class CreateOrderView(APIView):
                     # If user switched coupons, fix the usage counts.
                     old_coupon = order.coupon
                     if old_coupon != coupon:
-                        # Decrement old coupon's count (it was incremented on first create)
-                        # Guard: PositiveIntegerField cannot go below 0
                         if old_coupon:
                             Coupon.objects.filter(
                                 id=old_coupon.id, times_used__gt=0
                             ).update(times_used=F('times_used') - 1)
-                        # Increment new coupon's count
                         if coupon:
                             Coupon.objects.filter(id=coupon.id).update(
                                 times_used=F('times_used') + 1
                             )
 
-                    order.full_name = user_details.get('full_name')
-                    order.phone = user_details.get('phone')
-                    order.address = user_details.get('address')
+                    order.full_name = full_name
+                    order.phone = phone
+                    order.address = address
                     order.total_amount = total_amount
                     order.coupon = coupon
                     order.discount_amount = discount_amount
@@ -206,10 +238,10 @@ class CreateOrderView(APIView):
                     # Create a fresh order
                     order = Order.objects.create(
                         user=request.user if request.user.is_authenticated else None,
-                        full_name=user_details.get('full_name'),
+                        full_name=full_name,
                         email=email,
-                        phone=user_details.get('phone'),
-                        address=user_details.get('address'),
+                        phone=phone,
+                        address=address,
                         total_amount=total_amount,
                         coupon=coupon,
                         discount_amount=discount_amount,
@@ -693,29 +725,21 @@ class PaystackWebhookView(APIView):
 class HealthCheckView(APIView):
     """Health check endpoint to diagnose database connectivity."""
     def get(self, request):
-        from django.db import connection
-
         try:
-            db_engine = settings.DATABASES['default']['ENGINE']
-            db_name = settings.DATABASES['default'].get('NAME', 'Unknown')
             product_count = Product.objects.count()
             order_count = Order.objects.count()
-            is_production = 'postgresql' in db_engine.lower() or 'postgres' in db_engine.lower()
 
             return Response({
                 "status": "healthy",
-                "database_engine": db_engine,
-                "database_name": str(db_name)[:50],
-                "is_production_db": is_production,
                 "product_count": product_count,
                 "order_count": order_count,
-                "warning": None if is_production else "DANGER: Using SQLite! Data will be lost on restart."
+                "timestamp": timezone.now().isoformat()
             }, status=status.HTTP_200_OK)
 
         except Exception as e:
             return Response({
                 "status": "unhealthy",
-                "error": str(e)
+                "error": "Health check check failed."
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -775,19 +799,19 @@ class ValidateCouponView(APIView):
             }, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            cart_total = float(cart_total)
+            cart_total = Decimal(str(cart_total))
         except (ValueError, TypeError):
-            cart_total = 0
+            cart_total = Decimal('0')
 
-        discount_amount = round(cart_total * (coupon.discount_percent / 100), 2)
-        new_total = round(cart_total - discount_amount, 2)
+        discount_amount = (cart_total * (Decimal(str(coupon.discount_percent)) / Decimal('100'))).quantize(Decimal('0.01'))
+        new_total = (cart_total - discount_amount).quantize(Decimal('0.01'))
 
         return Response({
             "valid": True,
             "code": coupon.code,
             "discount_percent": coupon.discount_percent,
-            "discount_amount": discount_amount,
-            "new_total": new_total,
+            "discount_amount": float(discount_amount),
+            "new_total": float(new_total),
             "owner_name": coupon.owner_name,
             "owner_role": coupon.owner_role,
             "remaining_uses": coupon.get_remaining_uses(),
@@ -810,6 +834,23 @@ class ConfirmMoMoPaymentView(APIView):
                 {'error': 'All fields are required: order_id, email, momo_sender_name, momo_amount_paid, momo_receipt'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+        # Validate file size & extension if it is an uploaded file object
+        if hasattr(momo_receipt, 'size'):
+            if momo_receipt.size > 10 * 1024 * 1024:
+                return Response(
+                    {'error': 'Receipt image is too large. Max size is 10MB.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            import os
+            ext = os.path.splitext(momo_receipt.name)[1].lower()
+            allowed_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic', '.heif']
+            if ext not in allowed_extensions:
+                return Response(
+                    {'error': f'Invalid file type. Allowed formats: {", ".join(allowed_extensions)}'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
         try:
             order = Order.objects.get(id=order_id, email=email, payment_method='MOMO')

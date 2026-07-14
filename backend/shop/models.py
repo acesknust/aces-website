@@ -1,6 +1,8 @@
 from django.db import models
 from django.conf import settings
 from django.utils.text import slugify
+from django.core.validators import MinValueValidator, MaxValueValidator
+from decimal import Decimal
 import uuid
 
 class Category(models.Model):
@@ -19,11 +21,11 @@ class Category(models.Model):
         verbose_name_plural = "Categories"
 
 class Product(models.Model):
-    category = models.ForeignKey(Category, related_name='products', on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, related_name='products', on_delete=models.PROTECT)
     name = models.CharField(max_length=200)
     slug = models.SlugField(unique=True, blank=True)
     description = models.TextField()
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
     image = models.ImageField(upload_to='products/', blank=True, null=True)
     image_color = models.CharField(max_length=50, blank=True, null=True, help_text="Color of the main image (e.g. Black)")
     stock = models.PositiveIntegerField(default=0)
@@ -134,7 +136,7 @@ class ProductImage(models.Model):
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
-    product = models.ForeignKey(Product, related_name='order_items', on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, related_name='order_items', on_delete=models.PROTECT)
     price = models.DecimalField(max_digits=10, decimal_places=2) # Snapshot of price at purchase
     quantity = models.PositiveIntegerField(default=1)
     selected_color = models.CharField(max_length=50, blank=True, null=True)
@@ -167,6 +169,7 @@ class Coupon(models.Model):
     )
     discount_percent = models.PositiveIntegerField(
         default=10,
+        validators=[MinValueValidator(1), MaxValueValidator(99)],
         help_text="Discount percentage (e.g., 10 for 10% off)"
     )
     max_uses = models.PositiveIntegerField(

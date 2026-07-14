@@ -62,7 +62,7 @@ export default function CartPage() {
 
     // Calculate final total with discount
     const discountAmount = appliedCoupon ? appliedCoupon.discount_amount : 0;
-    const finalTotal = total - discountAmount;
+    const finalTotal = Math.max(0, total - discountAmount);
 
     // Validate coupon code
     const validateCoupon = async () => {
@@ -128,7 +128,6 @@ export default function CartPage() {
 
             if (data.payment_method === 'MOMO' && data.order_id) {
                 // MoMo flow: redirect to payment instructions page
-                clearCart();
                 router.push(`/shop/pay/${data.order_id}?email=${encodeURIComponent(formData.email)}&total=${data.total_amount}`);
             } else if (data.authorization_url) {
                 // Paystack flow (kept for future use)
@@ -157,7 +156,7 @@ export default function CartPage() {
                     animate={{ opacity: 1, y: 0 }}
                     className="max-w-2xl mx-auto text-center flex flex-col items-center justify-center min-h-[50vh]"
                 >
-                    <div className="relative h-48 w-48 mb-6 rounded-full bg-blue-50 flex items-center justify-center animate-pulse-slow">
+                    <div className="relative h-48 w-48 mb-6 rounded-full bg-blue-50 flex items-center justify-center animate-pulse">
                         <svg className="h-24 w-24 text-blue-500/80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                         </svg>
@@ -207,10 +206,10 @@ export default function CartPage() {
                     </nav>
 
                     {/* Mobile Progress Steps */}
-                    <div className="flex md:hidden flex-col items-center w-full mt-6 bg-gray-50/80 backdrop-blur-sm rounded-2xl p-4 border border-gray-150 shadow-sm">
+                    <div className="flex md:hidden flex-col items-center w-full mt-6 bg-gray-50/80 backdrop-blur-sm rounded-2xl p-4 border border-gray-200 shadow-sm">
                         <div className="flex items-center justify-between w-full max-w-[240px] mb-2 relative">
                             {/* Connector line */}
-                            <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-250 -translate-y-1/2 -z-10" />
+                            <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-200 -translate-y-1/2 -z-10" />
                             <div 
                                 className="absolute top-1/2 left-0 h-0.5 bg-blue-600 -translate-y-1/2 -z-10 transition-all duration-300"
                                 style={{ width: `${currentStep * 50}%` }}
@@ -242,7 +241,7 @@ export default function CartPage() {
                                     <div className="flex-shrink-0">
                                         <div className="relative h-28 w-28 rounded-lg border border-gray-100 bg-gray-50 overflow-hidden shrink-0">
                                             <Image
-                                                src={item.image?.startsWith('http') ? item.image : `${API_BASE_URL}${item.image}` || 'https://via.placeholder.com/400x400?text=No+Image'}
+                                                src={item.image ? (item.image.startsWith('http') ? item.image : `${API_BASE_URL}${item.image}`) : 'https://via.placeholder.com/400x400?text=No+Image'}
                                                 alt={item.name}
                                                 fill
                                                 className="object-contain object-center p-2"
@@ -275,7 +274,7 @@ export default function CartPage() {
                                                         </p>
                                                     )}
                                                 </div>
-                                                <p className="mt-2 text-lg font-bold text-blue-600">GHS {item.price}</p>
+                                                <p className="mt-2 text-lg font-bold text-blue-600">GHS {Number(item.price).toFixed(2)}</p>
                                             </div>
 
                                             <div className="mt-4 sm:mt-0 sm:pr-9">

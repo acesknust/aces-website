@@ -36,6 +36,8 @@ function SuccessContent() {
     const router = useRouter();
     const slipRef = useRef<HTMLDivElement>(null);
 
+    const hasCleared = useRef(false);
+
     useEffect(() => {
         if (!reference) {
             setError('No payment reference found.');
@@ -48,17 +50,20 @@ function SuccessContent() {
                 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://aces-backend-pgtot.ondigitalocean.app';
                 const res = await fetch(`${apiUrl}/api/shop/verify-payment/?reference=${reference}`);
 
+                const text = await res.text();
                 let data;
                 try {
-                    data = await res.json();
+                    data = JSON.parse(text);
                 } catch (jsonError) {
-                    const text = await res.text().catch(() => 'No body');
-                    throw new Error(`Invalid JSON response (${res.status}): ${text.substring(0, 200)}`);
+                    throw new Error(`Invalid response (${res.status}): ${text.substring(0, 200)}`);
                 }
 
                 if (res.ok) {
                     setOrder(data.order);
-                    clearCart();
+                    if (!hasCleared.current) {
+                        clearCart();
+                        hasCleared.current = true;
+                    }
                 } else {
                     setError(data.error || `Verification failed: ${res.statusText}`);
                 }
@@ -235,7 +240,7 @@ function SuccessContent() {
                                                 {item.selected_size && <span>Size: {item.selected_size}</span>}
                                             </p>
                                         </div>
-                                        <span className="font-semibold text-gray-900">GHS {item.price}</span>
+                                        <span className="font-semibold text-gray-900">GHS {(Number(item.price) * item.quantity).toFixed(2)}</span>
                                     </div>
                                 ))}
                             </div>

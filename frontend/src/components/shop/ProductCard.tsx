@@ -2,7 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
-interface Product {
+export interface Product {
     id: number;
     name: string;
     slug: string;
@@ -36,7 +36,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                     fill
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     priority={false}
-                    loading="eager"
                     className="object-contain transition duration-500 group-hover:scale-110 p-6 mix-blend-multiply"
                 />
 

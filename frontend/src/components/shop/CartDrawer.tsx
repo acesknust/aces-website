@@ -25,7 +25,7 @@ const CartDrawer: React.FC = () => {
     } = useCart();
 
     const discountAmount = appliedCoupon ? appliedCoupon.discount_amount : 0;
-    const finalTotal = total - discountAmount;
+    const finalTotal = Math.max(0, total - discountAmount);
 
     const getImageUrl = (img?: string) => {
         if (!img) return 'https://via.placeholder.com/80x80?text=No+Image';
@@ -153,7 +153,7 @@ const CartDrawer: React.FC = () => {
                     <div className="px-6 py-6 bg-gray-50 border-t border-gray-100 space-y-4">
                         
                         {/* Coupon Code Section inside Cart Drawer */}
-                        <div className="p-3.5 bg-white rounded-xl border border-gray-250 shadow-sm text-xs">
+                        <div className="p-3.5 bg-white rounded-xl border border-gray-200 shadow-sm text-xs">
                             <label className="block font-semibold text-gray-700 mb-1.5">
                                 🎟️ Coupon Code
                             </label>
@@ -177,7 +177,7 @@ const CartDrawer: React.FC = () => {
                                         placeholder="Enter coupon code"
                                         value={couponCode}
                                         onChange={(e) => setCouponCode(e.target.value)}
-                                        className="flex-1 px-3 py-1.5 border border-gray-250 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs bg-gray-50 focus:bg-white uppercase font-medium placeholder:normal-case"
+                                        className="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs bg-gray-50 focus:bg-white uppercase font-medium placeholder:normal-case"
                                     />
                                     <button
                                         type="button"
@@ -190,7 +190,7 @@ const CartDrawer: React.FC = () => {
                                 </div>
                             )}
                             {couponError && (
-                                <p className="mt-1.5 text-[11px] text-red-650 font-semibold">{couponError}</p>
+                                <p className="mt-1.5 text-[11px] text-red-600 font-semibold">{couponError}</p>
                             )}
                         </div>
 

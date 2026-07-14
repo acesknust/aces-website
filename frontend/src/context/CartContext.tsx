@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 
 export interface CartItem {
     id: number;
@@ -68,6 +68,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [couponError, setCouponError] = useState('');
     const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
 
+    const hydrated = useRef(false);
+
     // Load cart from local storage on mount
     useEffect(() => {
         const savedCart = localStorage.getItem('cart');
@@ -78,14 +80,17 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 console.error("Failed to parse cart from local storage", e);
             }
         }
+        hydrated.current = true;
     }, []);
 
-    // Save cart to local storage whenever it changes
+    // Save cart to local storage whenever it changes (only after hydration is complete)
     useEffect(() => {
-        localStorage.setItem('cart', JSON.stringify(items));
+        if (hydrated.current) {
+            localStorage.setItem('cart', JSON.stringify(items));
+        }
     }, [items]);
 
-    const addItem = (newItem: CartItem) => {
+    const addItem = useCallback((newItem: CartItem) => {
         setItems((prevItems) => {
             // Find item with same ID AND same color AND same size
             const existingItemIndex = prevItems.findIndex((item) =>
@@ -105,39 +110,39 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLastAddedItem(newItem);
         setToastVisible(true);
         setCartDrawerOpen(true);
-    };
+    }, []);
 
-    const dismissToast = () => {
+    const dismissToast = useCallback(() => {
         setToastVisible(false);
-    };
+    }, []);
 
-    const removeItem = (id: number, color?: string, size?: string) => {
+    const removeItem = useCallback((id: number, color?: string, size?: string) => {
         setItems((prevItems) => prevItems.filter((item) => !(item.id === id && item.color === color && item.size === size)));
-    };
+    }, []);
 
-    const updateQuantity = (id: number, quantity: number, color?: string, size?: string) => {
+    const updateQuantity = useCallback((id: number, quantity: number, color?: string, size?: string) => {
         if (quantity < 1) return;
         setItems((prevItems) =>
             prevItems.map((item) =>
                 (item.id === id && item.color === color && item.size === size) ? { ...item, quantity } : item
             )
         );
-    };
+    }, []);
 
-    const removeCoupon = () => {
+    const removeCoupon = useCallback(() => {
         setAppliedCoupon(null);
         setCouponCode('');
         setCouponError('');
-    };
+    }, []);
 
-    const clearCart = () => {
+    const clearCart = useCallback(() => {
         setItems([]);
         removeCoupon();
-    };
+    }, [removeCoupon]);
 
     const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-    const applyCoupon = async (code: string): Promise<boolean> => {
+    const applyCoupon = useCallback(async (code: string): Promise<boolean> => {
         if (!code.trim()) {
             setCouponError('Please enter a coupon code');
             return false;
@@ -178,7 +183,16 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } finally {
             setCouponLoading(false);
         }
-    };
+    }, [total]);
+
+    // Re-validate coupon when total changes
+    const prevTotalRef = useRef(total);
+    useEffect(() => {
+        if (appliedCoupon && prevTotalRef.current !== total && total > 0) {
+            applyCoupon(appliedCoupon.code);
+        }
+        prevTotalRef.current = total;
+    }, [total, appliedCoupon, applyCoupon]);
 
     return (
         <CartContext.Provider value={{

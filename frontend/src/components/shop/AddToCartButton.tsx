@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useCart, CartItem } from '@/context/CartContext';
 
 interface AddToCartButtonProps {
@@ -19,14 +19,29 @@ interface AddToCartButtonProps {
 const AddToCartButton: React.FC<AddToCartButtonProps> = ({ product, selectedColor, selectedSize, disabled, isOutOfStock }) => {
     const { addItem } = useCart();
     const [isAdded, setIsAdded] = useState(false);
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    useEffect(() => {
+        return () => {
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+            }
+        };
+    }, []);
 
     const handleAddToCart = () => {
         if (disabled) return;
 
+        const numericPrice = parseFloat(product.price);
+        if (isNaN(numericPrice) || numericPrice < 0) {
+            console.error("Invalid product price:", product.price);
+            return;
+        }
+
         const item: CartItem = {
             id: product.id,
             name: product.name,
-            price: parseFloat(product.price),
+            price: numericPrice,
             image: product.image,
             quantity: 1,
             color: selectedColor,
@@ -34,7 +49,11 @@ const AddToCartButton: React.FC<AddToCartButtonProps> = ({ product, selectedColo
         };
         addItem(item);
         setIsAdded(true);
-        setTimeout(() => setIsAdded(false), 2000); // Reset after 2 seconds
+
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+        }
+        timeoutRef.current = setTimeout(() => setIsAdded(false), 2000); // Reset after 2 seconds
     };
 
     return (

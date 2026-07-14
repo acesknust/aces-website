@@ -339,7 +339,7 @@ function TrackContent() {
                                                     {item.selected_size && ` | Size: ${item.selected_size}`}
                                                 </p>
                                             </div>
-                                            <p className="font-semibold text-gray-900">GHS {parseFloat(item.price as string).toFixed(2)}</p>
+                                            <p className="font-semibold text-gray-900">GHS {(parseFloat(item.price as string) * item.quantity).toFixed(2)}</p>
                                         </li>
                                     ))}
                                 </ul>

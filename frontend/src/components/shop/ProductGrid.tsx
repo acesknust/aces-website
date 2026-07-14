@@ -2,10 +2,10 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import ProductCard from './ProductCard';
+import ProductCard, { Product } from './ProductCard';
 
 interface ProductGridProps {
-    products: any[];
+    products: Product[];
 }
 
 const container = {
