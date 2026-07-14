@@ -95,21 +95,26 @@ class CreateOrderView(APIView):
             total_amount = Decimal('0')
             order_items_data = []
 
-            item_map = {item.get('id'): item for item in cart_items}
-            product_ids = list(item_map.keys())
+            # Collect unique product IDs for a single DB query, but iterate
+            # over every cart entry (including duplicate product IDs with
+            # different color/size variants) so no items are silently dropped.
+            product_ids = list(set(item.get('id') for item in cart_items))
 
             products = Product.objects.filter(id__in=product_ids, is_active=True)
+            product_map = {p.id: p for p in products}
 
-            if len(products) != len(product_ids):
-                found_ids = set(p.id for p in products)
+            if len(product_map) != len(product_ids):
+                found_ids = set(product_map.keys())
                 missing_ids = set(product_ids) - found_ids
                 return Response(
                     {"error": f"Products with IDs {missing_ids} not found or inactive"},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            for product in products:
-                cart_item = item_map[product.id]
+            for cart_item in cart_items:
+                product = product_map.get(cart_item.get('id'))
+                if not product:
+                    continue
                 quantity = cart_item.get('quantity', 1)
                 color = cart_item.get('color')
                 size = cart_item.get('size')

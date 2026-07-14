@@ -238,7 +238,7 @@ export default function CartPage() {
 
                         <ul role="list" className="divide-y divide-gray-100">
                             {items.map((item) => (
-                                <li key={item.id} className="flex py-6">
+                                <li key={`${item.id}-${item.color || 'def'}-${item.size || 'def'}`} className="flex py-6">
                                     <div className="flex-shrink-0">
                                         <div className="relative h-28 w-28 rounded-lg border border-gray-100 bg-gray-50 overflow-hidden shrink-0">
                                             <Image
