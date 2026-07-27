@@ -61,7 +61,17 @@ export default function NominatePage() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  const getApiUrl = () => {
+    if (process.env.NEXT_PUBLIC_API_URL) {
+      return process.env.NEXT_PUBLIC_API_URL;
+    }
+    if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      return 'https://aces-backend-pgtot.ondigitalocean.app';
+    }
+    return 'http://localhost:8000';
+  };
+
+  const apiUrl = getApiUrl();
 
   // Fetch nomination status & categories
   useEffect(() => {
