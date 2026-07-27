@@ -82,9 +82,13 @@ class NominationAdmin(admin.ModelAdmin):
 
     def photo_preview(self, obj):
         if obj.nominee_photo:
+            url = obj.nominee_photo.url
             return format_html(
-                '<img src="{}" style="max-width: 250px; max-height: 250px; object-fit: cover; border-radius: 12px; border: 1px solid #d1d5db;" />',
-                obj.nominee_photo.url
+                '<div style="margin-top: 5px;">'
+                '<a href="{0}" target="_blank" rel="noopener font-semibold"><img src="{0}" style="max-width: 250px; max-height: 250px; object-fit: cover; border-radius: 12px; border: 1px solid #d1d5db;" /></a>'
+                '<br/><a href="{0}" target="_blank" download style="margin-top: 8px; display: inline-flex; items-center; gap: 4px; padding: 6px 12px; background: #2563eb; color: white; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 12px;">Download / View Full Photo ↗</a>'
+                '</div>',
+                url
             )
         return "No photo uploaded"
     photo_preview.short_description = "Photo Preview"
