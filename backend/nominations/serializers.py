@@ -23,7 +23,8 @@ class NominationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Nomination
         fields = [
-            'id', 'nominee_name', 'nominee_photo', 'photo_url',
+            'id', 'nominee_name', 'nominee_phone', 'nominee_email',
+            'nominee_photo', 'photo_url',
             'category', 'category_name', 'category_group',
             'nominator_name', 'nominator_phone', 'nominator_email',
             'hp_website', 'created_at'

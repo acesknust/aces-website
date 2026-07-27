@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, ChangeEvent, FormEvent, DragEvent 
 import Header from '@/components/header';
 import Footer from '@/components/footer';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
   Award,
@@ -31,7 +32,65 @@ interface Category {
   is_active: boolean;
 }
 
+// Client-side image compressor for blazing-fast uploads
+const compressImage = (file: File): Promise<File> => {
+  return new Promise((resolve) => {
+    // If file is already small (<= 400KB), resolve directly
+    if (file.size <= 400 * 1024) {
+      resolve(file);
+      return;
+    }
+
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      const canvas = document.createElement('canvas');
+      const maxDim = 1200; // max dimension 1200px
+      let { width, height } = img;
+
+      if (width > maxDim || height > maxDim) {
+        if (width > height) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        } else {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), {
+                type: 'image/jpeg',
+                lastModified: Date.now(),
+              });
+              resolve(compressedFile);
+            } else {
+              resolve(file);
+            }
+          },
+          'image/jpeg',
+          0.82 // 82% JPEG quality compression
+        );
+      } else {
+        resolve(file);
+      }
+    };
+    img.onerror = () => resolve(file);
+    img.src = objectUrl;
+  });
+};
+
 export default function NominatePage() {
+  const router = useRouter();
+
   // Page load & status state
   const [loadingStatus, setLoadingStatus] = useState(true);
   const [isOpen, setIsOpen] = useState<boolean | null>(null);
@@ -42,10 +101,14 @@ export default function NominatePage() {
   const [selectedGroup, setSelectedGroup] = useState<string>('');
   const [categoryId, setCategoryId] = useState<string>('');
 
-  // Form Fields
+  // Nominee Form Fields
   const [nomineeName, setNomineeName] = useState('');
+  const [nomineePhone, setNomineePhone] = useState('');
+  const [nomineeEmail, setNomineeEmail] = useState('');
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+
+  // Nominator Form Fields
   const [nominatorName, setNominatorName] = useState('');
   const [nominatorPhone, setNominatorPhone] = useState('');
   const [nominatorEmail, setNominatorEmail] = useState('');
@@ -90,7 +153,7 @@ export default function NominatePage() {
         if (!catRes.ok) throw new Error('Could not load categories.');
         const catData: Category[] = await catRes.json();
 
-        // Remove any potential duplicate entries from API data
+        // Remove duplicate entries
         const uniqueCategories = Array.from(
           new Map(catData.map((cat) => [cat.id, cat])).values()
         );
@@ -187,6 +250,8 @@ export default function NominatePage() {
   // Reset Form
   const resetForm = () => {
     setNomineeName('');
+    setNomineePhone('');
+    setNomineeEmail('');
     setPhoto(null);
     setPhotoPreview(null);
     setNominatorName('');
@@ -210,6 +275,18 @@ export default function NominatePage() {
 
     if (!nomineeName.trim()) {
       errors.nominee_name = 'Nominee full name is required.';
+    }
+
+    if (!nomineePhone.trim()) {
+      errors.nominee_phone = 'Nominee phone number is required.';
+    } else if (!/^\+?[0-9\s\-\(\)]{7,20}$/.test(nomineePhone.trim())) {
+      errors.nominee_phone = 'Please enter a valid nominee phone number.';
+    }
+
+    if (!nomineeEmail.trim()) {
+      errors.nominee_email = 'Nominee email address is required.';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nomineeEmail.trim())) {
+      errors.nominee_email = 'Please enter a valid nominee email address.';
     }
 
     if (!categoryId) {
@@ -244,10 +321,15 @@ export default function NominatePage() {
     setIsSubmitting(true);
 
     try {
+      // Fast client-side photo compression before uploading
+      const photoToUpload = photo ? await compressImage(photo) : null;
+
       const formData = new FormData();
       formData.append('nominee_name', nomineeName.trim());
+      formData.append('nominee_phone', nomineePhone.trim());
+      formData.append('nominee_email', nomineeEmail.trim().toLowerCase());
       formData.append('category', categoryId);
-      if (photo) formData.append('nominee_photo', photo);
+      if (photoToUpload) formData.append('nominee_photo', photoToUpload);
       formData.append('nominator_name', nominatorName.trim());
       formData.append('nominator_phone', nominatorPhone.trim());
       formData.append('nominator_email', nominatorEmail.trim().toLowerCase());
@@ -371,12 +453,13 @@ export default function NominatePage() {
               >
                 Submit Another Nomination
               </button>
-              <Link
-                href="/"
-                className="w-full sm:w-auto px-6 py-3.5 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all"
+              <button
+                type="button"
+                onClick={() => router.push('/')}
+                className="w-full sm:w-auto px-6 py-3.5 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all cursor-pointer"
               >
                 Back to Home
-              </Link>
+              </button>
             </div>
           </motion.div>
         ) : (
@@ -446,6 +529,69 @@ export default function NominatePage() {
                         {fieldErrors.nominee_name}
                       </p>
                     )}
+                  </div>
+
+                  {/* Nominee Phone & Email */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {/* Nominee Phone */}
+                    <div>
+                      <label htmlFor="nominee_phone" className="block text-sm font-semibold text-blue-950 mb-2">
+                        Nominee Phone Number <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                        <input
+                          id="nominee_phone"
+                          type="tel"
+                          required
+                          value={nomineePhone}
+                          onChange={(e) => {
+                            setNomineePhone(e.target.value);
+                            setFieldErrors((prev) => ({ ...prev, nominee_phone: '' }));
+                          }}
+                          placeholder="024XXXXXXX"
+                          className={`w-full pl-12 pr-4 py-3.5 rounded-xl border bg-gray-50/50 text-gray-900 text-sm focus:bg-white focus:ring-2 focus:ring-blue-950 focus:border-blue-950 outline-none transition-all ${
+                            fieldErrors.nominee_phone ? 'border-red-400 bg-red-50/20' : 'border-gray-200'
+                          }`}
+                        />
+                      </div>
+                      {fieldErrors.nominee_phone && (
+                        <p className="mt-1.5 text-xs font-semibold text-red-500 flex items-center gap-1">
+                          <AlertCircle className="w-3.5 h-3.5" />
+                          {fieldErrors.nominee_phone}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Nominee Email */}
+                    <div>
+                      <label htmlFor="nominee_email" className="block text-sm font-semibold text-blue-950 mb-2">
+                        Nominee Email Address <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                        <input
+                          id="nominee_email"
+                          type="email"
+                          required
+                          value={nomineeEmail}
+                          onChange={(e) => {
+                            setNomineeEmail(e.target.value);
+                            setFieldErrors((prev) => ({ ...prev, nominee_email: '' }));
+                          }}
+                          placeholder="nominee@knust.edu.gh"
+                          className={`w-full pl-12 pr-4 py-3.5 rounded-xl border bg-gray-50/50 text-gray-900 text-sm focus:bg-white focus:ring-2 focus:ring-blue-950 focus:border-blue-950 outline-none transition-all ${
+                            fieldErrors.nominee_email ? 'border-red-400 bg-red-50/20' : 'border-gray-200'
+                          }`}
+                        />
+                      </div>
+                      {fieldErrors.nominee_email && (
+                        <p className="mt-1.5 text-xs font-semibold text-red-500 flex items-center gap-1">
+                          <AlertCircle className="w-3.5 h-3.5" />
+                          {fieldErrors.nominee_email}
+                        </p>
+                      )}
+                    </div>
                   </div>
 
                   {/* Award Category Selection */}

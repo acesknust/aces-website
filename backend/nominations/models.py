@@ -55,6 +55,8 @@ class Nomination(models.Model):
         db_index=True,
         editable=False
     )
+    nominee_phone = models.CharField(max_length=50, blank=True, null=True, help_text="Nominee phone number")
+    nominee_email = models.EmailField(blank=True, null=True, help_text="Nominee email address")
     nominee_photo = models.ImageField(upload_to='nominations/nominees/')
     category = models.ForeignKey(
         Category,
