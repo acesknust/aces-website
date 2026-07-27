@@ -4,13 +4,12 @@ import React, { useState, useEffect, useMemo, ChangeEvent, FormEvent, DragEvent 
 import Header from '@/components/header';
 import Footer from '@/components/footer';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   Award,
   User,
   Mail,
   Phone,
-  Upload,
   CheckCircle2,
   AlertCircle,
   X,
@@ -296,8 +295,8 @@ export default function NominatePage() {
             <Sparkles className="w-4 h-4 text-amber-400" />
             ACES Annual Dinner & Awards 2026
           </div>
-          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white mb-4">
-            Awards <span className="text-blue-500">Nominations</span>
+          <h1 className="text-3xl sm:text-5xl font-bold tracking-normal text-white mb-4">
+            Awards <span className="text-blue-400">Nominations</span>
           </h1>
           <p className="text-gray-300 text-base sm:text-lg max-w-2xl mx-auto font-normal leading-relaxed">
             Recognizing excellence, leadership, and outstanding achievements within the Association of Computer Engineering Students.
@@ -309,7 +308,7 @@ export default function NominatePage() {
       <main className="flex-1 max-w-3xl w-full mx-auto px-4 sm:px-6 -mt-10 mb-20 relative z-20">
         {loadingStatus ? (
           <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-12 text-center">
-            <Loader2 className="w-10 h-10 text-blue-600 animate-spin mx-auto mb-4" />
+            <Loader2 className="w-10 h-10 text-blue-950 animate-spin mx-auto mb-4" />
             <p className="text-gray-600 font-medium">Checking nomination status...</p>
           </div>
         ) : loadError ? (
@@ -319,7 +318,7 @@ export default function NominatePage() {
             <p className="text-gray-600 mb-6">{loadError}</p>
             <button
               onClick={() => window.location.reload()}
-              className="px-6 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all"
+              className="px-6 py-2.5 bg-blue-950 text-white rounded-xl font-bold hover:bg-blue-900 transition-all"
             >
               Try Again
             </button>
@@ -334,7 +333,7 @@ export default function NominatePage() {
             <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-6">
               <Clock className="w-10 h-10 text-amber-600" />
             </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-3">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
               Nominations Are Currently Closed
             </h2>
             <p className="text-gray-600 max-w-md mx-auto mb-8 text-base leading-relaxed">
@@ -342,7 +341,7 @@ export default function NominatePage() {
             </p>
             <Link
               href="/"
-              className="inline-flex items-center gap-2 px-8 py-3.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-md hover:shadow-lg"
+              className="inline-flex items-center gap-2 px-8 py-3.5 bg-blue-950 text-white rounded-xl font-bold hover:bg-blue-900 transition-all shadow-md hover:shadow-lg"
             >
               Return to Homepage
               <ArrowRight className="w-4 h-4" />
@@ -358,7 +357,7 @@ export default function NominatePage() {
             <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-6">
               <CheckCircle2 className="w-10 h-10 text-emerald-600" />
             </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-3">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
               Nomination Submitted!
             </h2>
             <p className="text-gray-600 max-w-md mx-auto mb-8 text-base leading-relaxed">
@@ -368,7 +367,7 @@ export default function NominatePage() {
               <button
                 type="button"
                 onClick={resetForm}
-                className="w-full sm:w-auto px-6 py-3.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-md"
+                className="w-full sm:w-auto px-6 py-3.5 bg-blue-950 text-white rounded-xl font-bold hover:bg-blue-900 transition-all shadow-md"
               >
                 Submit Another Nomination
               </button>
@@ -409,11 +408,11 @@ export default function NominatePage() {
               {/* SECTION 1: NOMINEE DETAILS */}
               <div>
                 <div className="flex items-center gap-3 pb-4 mb-6 border-b border-gray-100">
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                  <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-950 flex items-center justify-center font-bold text-sm">
                     1
                   </div>
                   <div>
-                    <h2 className="text-xl font-extrabold text-gray-900">Nominee Details</h2>
+                    <h2 className="text-lg font-bold text-blue-950 tracking-normal">Nominee Details</h2>
                     <p className="text-xs text-gray-500">Provide details of the person you are nominating</p>
                   </div>
                 </div>
@@ -421,7 +420,7 @@ export default function NominatePage() {
                 <div className="space-y-6">
                   {/* Nominee Full Name */}
                   <div>
-                    <label htmlFor="nominee_name" className="block text-sm font-bold text-gray-800 mb-2">
+                    <label htmlFor="nominee_name" className="block text-sm font-semibold text-blue-950 mb-2">
                       Nominee Full Name <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
@@ -436,7 +435,7 @@ export default function NominatePage() {
                           setFieldErrors((prev) => ({ ...prev, nominee_name: '' }));
                         }}
                         placeholder="e.g. Kwame Mensah"
-                        className={`w-full pl-12 pr-4 py-3.5 rounded-xl border bg-gray-50/50 text-gray-900 text-sm focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all ${
+                        className={`w-full pl-12 pr-4 py-3.5 rounded-xl border bg-gray-50/50 text-gray-900 text-sm focus:bg-white focus:ring-2 focus:ring-blue-950 focus:border-blue-950 outline-none transition-all ${
                           fieldErrors.nominee_name ? 'border-red-400 bg-red-50/20' : 'border-gray-200'
                         }`}
                       />
@@ -453,7 +452,7 @@ export default function NominatePage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Category Group Selector */}
                     <div>
-                      <label htmlFor="selected_group" className="block text-sm font-bold text-gray-800 mb-2">
+                      <label htmlFor="selected_group" className="block text-sm font-semibold text-blue-950 mb-2">
                         Award Category Group <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
@@ -466,7 +465,7 @@ export default function NominatePage() {
                             setCategoryId('');
                             setFieldErrors((prev) => ({ ...prev, category: '' }));
                           }}
-                          className="w-full pl-12 pr-10 py-3.5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 text-sm focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all appearance-none cursor-pointer font-medium"
+                          className="w-full pl-12 pr-10 py-3.5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 text-sm focus:bg-white focus:ring-2 focus:ring-blue-950 focus:border-blue-950 outline-none transition-all appearance-none cursor-pointer font-medium"
                         >
                           {groups.map((group) => (
                             <option key={group} value={group}>
@@ -480,7 +479,7 @@ export default function NominatePage() {
 
                     {/* Specific Award Category Dropdown */}
                     <div>
-                      <label htmlFor="category" className="block text-sm font-bold text-gray-800 mb-2">
+                      <label htmlFor="category" className="block text-sm font-semibold text-blue-950 mb-2">
                         Award Category <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
@@ -493,7 +492,7 @@ export default function NominatePage() {
                             setCategoryId(e.target.value);
                             setFieldErrors((prev) => ({ ...prev, category: '' }));
                           }}
-                          className={`w-full pl-12 pr-10 py-3.5 rounded-xl border bg-gray-50/50 text-gray-900 text-sm focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all appearance-none cursor-pointer ${
+                          className={`w-full pl-12 pr-10 py-3.5 rounded-xl border bg-gray-50/50 text-gray-900 text-sm focus:bg-white focus:ring-2 focus:ring-blue-950 focus:border-blue-950 outline-none transition-all appearance-none cursor-pointer ${
                             fieldErrors.category ? 'border-red-400 bg-red-50/20' : 'border-gray-200'
                           }`}
                         >
@@ -517,7 +516,7 @@ export default function NominatePage() {
 
                   {/* Nominee Photo Drag & Drop Zone */}
                   <div>
-                    <label className="block text-sm font-bold text-gray-800 mb-2">
+                    <label className="block text-sm font-semibold text-blue-950 mb-2">
                       Nominee Photo <span className="text-red-500">*</span>
                     </label>
 
@@ -528,10 +527,10 @@ export default function NominatePage() {
                         onDrop={handleDrop}
                         className={`relative border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer ${
                           isDragging
-                            ? 'border-blue-600 bg-blue-50/50'
+                            ? 'border-blue-950 bg-blue-50/50'
                             : fieldErrors.nominee_photo
                             ? 'border-red-300 bg-red-50/20'
-                            : 'border-gray-200 bg-gray-50/30 hover:border-blue-400 hover:bg-blue-50/20'
+                            : 'border-gray-200 bg-gray-50/30 hover:border-blue-950 hover:bg-blue-50/20'
                         }`}
                       >
                         <input
@@ -542,7 +541,7 @@ export default function NominatePage() {
                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                           aria-label="Upload Nominee Photo"
                         />
-                        <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <div className="w-12 h-12 bg-blue-50 text-blue-950 rounded-full flex items-center justify-center mx-auto mb-3">
                           <Camera className="w-6 h-6" />
                         </div>
                         <p className="text-sm font-bold text-gray-900 mb-1">
@@ -555,7 +554,7 @@ export default function NominatePage() {
                     ) : (
                       <div className="p-4 border border-gray-200 rounded-2xl bg-gray-50/50 flex items-center justify-between gap-4">
                         <div className="flex items-center gap-4">
-                          <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-blue-600 shrink-0">
+                          <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-blue-950 shrink-0">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={photoPreview}
@@ -600,11 +599,11 @@ export default function NominatePage() {
               {/* SECTION 2: YOUR DETAILS (NOMINATOR) */}
               <div>
                 <div className="flex items-center gap-3 pb-4 mb-6 border-b border-gray-100">
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                  <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-950 flex items-center justify-center font-bold text-sm">
                     2
                   </div>
                   <div>
-                    <h2 className="text-xl font-extrabold text-gray-900">Your Details</h2>
+                    <h2 className="text-lg font-bold text-blue-950 tracking-normal">Your Details</h2>
                     <p className="text-xs text-gray-500">Your contact details as the nominator</p>
                   </div>
                 </div>
@@ -612,7 +611,7 @@ export default function NominatePage() {
                 <div className="space-y-6">
                   {/* Nominator Full Name */}
                   <div>
-                    <label htmlFor="nominator_name" className="block text-sm font-bold text-gray-800 mb-2">
+                    <label htmlFor="nominator_name" className="block text-sm font-semibold text-blue-950 mb-2">
                       Your Full Name <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
@@ -627,7 +626,7 @@ export default function NominatePage() {
                           setFieldErrors((prev) => ({ ...prev, nominator_name: '' }));
                         }}
                         placeholder="e.g. Abena Osei"
-                        className={`w-full pl-12 pr-4 py-3.5 rounded-xl border bg-gray-50/50 text-gray-900 text-sm focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all ${
+                        className={`w-full pl-12 pr-4 py-3.5 rounded-xl border bg-gray-50/50 text-gray-900 text-sm focus:bg-white focus:ring-2 focus:ring-blue-950 focus:border-blue-950 outline-none transition-all ${
                           fieldErrors.nominator_name ? 'border-red-400 bg-red-50/20' : 'border-gray-200'
                         }`}
                       />
@@ -643,7 +642,7 @@ export default function NominatePage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     {/* Nominator Phone */}
                     <div>
-                      <label htmlFor="nominator_phone" className="block text-sm font-bold text-gray-800 mb-2">
+                      <label htmlFor="nominator_phone" className="block text-sm font-semibold text-blue-950 mb-2">
                         Phone Number <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
@@ -658,7 +657,7 @@ export default function NominatePage() {
                             setFieldErrors((prev) => ({ ...prev, nominator_phone: '' }));
                           }}
                           placeholder="0241234567"
-                          className={`w-full pl-12 pr-4 py-3.5 rounded-xl border bg-gray-50/50 text-gray-900 text-sm focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all ${
+                          className={`w-full pl-12 pr-4 py-3.5 rounded-xl border bg-gray-50/50 text-gray-900 text-sm focus:bg-white focus:ring-2 focus:ring-blue-950 focus:border-blue-950 outline-none transition-all ${
                             fieldErrors.nominator_phone ? 'border-red-400 bg-red-50/20' : 'border-gray-200'
                           }`}
                         />
@@ -673,7 +672,7 @@ export default function NominatePage() {
 
                     {/* Nominator Email */}
                     <div>
-                      <label htmlFor="nominator_email" className="block text-sm font-bold text-gray-800 mb-2">
+                      <label htmlFor="nominator_email" className="block text-sm font-semibold text-blue-950 mb-2">
                         Email Address <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
@@ -688,7 +687,7 @@ export default function NominatePage() {
                             setFieldErrors((prev) => ({ ...prev, nominator_email: '' }));
                           }}
                           placeholder="student@knust.edu.gh"
-                          className={`w-full pl-12 pr-4 py-3.5 rounded-xl border bg-gray-50/50 text-gray-900 text-sm focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all ${
+                          className={`w-full pl-12 pr-4 py-3.5 rounded-xl border bg-gray-50/50 text-gray-900 text-sm focus:bg-white focus:ring-2 focus:ring-blue-950 focus:border-blue-950 outline-none transition-all ${
                             fieldErrors.nominator_email ? 'border-red-400 bg-red-50/20' : 'border-gray-200'
                           }`}
                         />
@@ -709,7 +708,7 @@ export default function NominatePage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-4 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-xl font-bold text-base shadow-lg shadow-blue-600/20 hover:shadow-blue-600/30 transition-all flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:shadow-none cursor-pointer"
+                  className="w-full py-4 bg-blue-950 hover:bg-blue-900 active:bg-blue-950 text-white rounded-full font-bold text-base shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:shadow-none cursor-pointer"
                 >
                   {isSubmitting ? (
                     <>
