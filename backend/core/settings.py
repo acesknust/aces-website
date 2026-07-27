@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'staff.apps.StaffConfig',
     'payment_logs.apps.PaymentLogsConfig',  # Webhook audit trail
     'student_businesses.apps.StudentBusinessesConfig',
+    'nominations.apps.NominationsConfig',
 
     # Celery Beat — scheduled tasks (auto-expire pending orders, etc.)
     'django_celery_beat',

@@ -42,6 +42,7 @@ urlpatterns = [
     path('api/courses/', include('courses.urls')), # Courses API
     path('api/staff/', include('staff.urls')), # Staff API
     path('api/student-businesses/', include('student_businesses.urls')), # Student Businesses API
+    path('api/', include('nominations.urls')), # Nominations API
     # path('docs/', include_docs_urls(title='ACES WEBSITE API')),
     # path('schema/', get_schema_view(
     #     title="ACES WEBSITE API",
