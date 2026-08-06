@@ -15,7 +15,7 @@ def seed_categories(apps, schema_editor):
         ("Icons and leadership", "Student of the year"),
 
         # Free Voting categories
-        ("Free Voting categories", "Eleesa executive of the year"),
+        ("Free Voting categories", "ACES Executive of the Year"),
         ("Free Voting categories", "Lecturer of the year"),
         ("Free Voting categories", "TA of the year"),
 
