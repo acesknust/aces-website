@@ -55,17 +55,18 @@ class Nomination(models.Model):
         db_index=True,
         editable=False
     )
-    nominee_phone = models.CharField(max_length=50, blank=True, null=True, help_text="Nominee phone number")
-    nominee_email = models.EmailField(blank=True, null=True, help_text="Nominee email address")
-    nominee_photo = models.ImageField(upload_to='nominations/nominees/')
+    nominee_whatsapp = models.CharField(max_length=50, help_text="Nominee WhatsApp Number", blank=True, null=True)
+    nominee_phone = models.CharField(max_length=50, blank=True, null=True)
+    nominee_email = models.EmailField(blank=True, null=True)
+    nominee_photo = models.ImageField(upload_to='nominations/nominees/', blank=True, null=True)
     category = models.ForeignKey(
         Category,
         on_delete=models.CASCADE,
         related_name='nominations'
     )
-    nominator_name = models.CharField(max_length=255)
-    nominator_phone = models.CharField(max_length=50)
-    nominator_email = models.EmailField()
+    nominator_name = models.CharField(max_length=255, blank=True, null=True)
+    nominator_phone = models.CharField(max_length=50, blank=True, null=True)
+    nominator_email = models.EmailField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

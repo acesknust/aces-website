@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, ChangeEvent, FormEvent, DragEvent } from 'react';
+import React, { useState, useEffect, useMemo, FormEvent } from 'react';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
 import Link from 'next/link';
@@ -9,20 +9,16 @@ import { motion } from 'framer-motion';
 import {
   Award,
   User,
-  Mail,
   Phone,
   CheckCircle2,
   AlertCircle,
-  X,
   Loader2,
   Sparkles,
   Clock,
   ChevronDown,
-  Camera,
   Layers,
   ArrowRight,
-  ShieldCheck,
-  Check
+  ShieldCheck
 } from 'lucide-react';
 
 interface Category {
@@ -31,62 +27,6 @@ interface Category {
   name: string;
   is_active: boolean;
 }
-
-// Client-side image compressor for blazing-fast uploads
-const compressImage = (file: File): Promise<File> => {
-  return new Promise((resolve) => {
-    // If file is already small (<= 400KB), resolve directly
-    if (file.size <= 400 * 1024) {
-      resolve(file);
-      return;
-    }
-
-    const img = new Image();
-    const objectUrl = URL.createObjectURL(file);
-    img.onload = () => {
-      URL.revokeObjectURL(objectUrl);
-      const canvas = document.createElement('canvas');
-      const maxDim = 1200; // max dimension 1200px
-      let { width, height } = img;
-
-      if (width > maxDim || height > maxDim) {
-        if (width > height) {
-          height = Math.round((height * maxDim) / width);
-          width = maxDim;
-        } else {
-          width = Math.round((width * maxDim) / height);
-          height = maxDim;
-        }
-      }
-
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.drawImage(img, 0, 0, width, height);
-        canvas.toBlob(
-          (blob) => {
-            if (blob) {
-              const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), {
-                type: 'image/jpeg',
-                lastModified: Date.now(),
-              });
-              resolve(compressedFile);
-            } else {
-              resolve(file);
-            }
-          },
-          'image/jpeg',
-          0.82 // 82% JPEG quality compression
-        );
-      } else {
-        resolve(file);
-      }
-    };
-    img.onerror = () => resolve(file);
-    img.src = objectUrl;
-  });
-};
 
 export default function NominatePage() {
   const router = useRouter();
@@ -101,21 +41,10 @@ export default function NominatePage() {
   const [selectedGroup, setSelectedGroup] = useState<string>('');
   const [categoryId, setCategoryId] = useState<string>('');
 
-  // Nominee Form Fields
+  // Form Fields (Only Nominee Name & Nominee WhatsApp)
   const [nomineeName, setNomineeName] = useState('');
-  const [nomineePhone, setNomineePhone] = useState('');
-  const [nomineeEmail, setNomineeEmail] = useState('');
-  const [photo, setPhoto] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-
-  // Nominator Form Fields
-  const [nominatorName, setNominatorName] = useState('');
-  const [nominatorPhone, setNominatorPhone] = useState('');
-  const [nominatorEmail, setNominatorEmail] = useState('');
+  const [nomineeWhatsapp, setNomineeWhatsapp] = useState('');
   const [hpWebsite, setHpWebsite] = useState(''); // Honeypot field
-
-  // Drag & drop state
-  const [isDragging, setIsDragging] = useState(false);
 
   // Form Submission State
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -187,76 +116,10 @@ export default function NominatePage() {
     return categories.filter((cat) => cat.group_name === selectedGroup);
   }, [categories, selectedGroup]);
 
-  // Handle Photo selection
-  const handlePhotoSelect = (file: File) => {
-    setFieldErrors((prev) => ({ ...prev, nominee_photo: '' }));
-
-    // File type validation
-    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    if (!validTypes.includes(file.type)) {
-      setFieldErrors((prev) => ({
-        ...prev,
-        nominee_photo: 'Please upload a valid image file (JPG, PNG, or WEBP).'
-      }));
-      return;
-    }
-
-    // File size validation (5MB max)
-    if (file.size > 5 * 1024 * 1024) {
-      setFieldErrors((prev) => ({
-        ...prev,
-        nominee_photo: 'Photo size must be less than 5MB.'
-      }));
-      return;
-    }
-
-    setPhoto(file);
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPhotoPreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleFileInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      handlePhotoSelect(e.target.files[0]);
-    }
-  };
-
-  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handlePhotoSelect(e.dataTransfer.files[0]);
-    }
-  };
-
-  const removePhoto = () => {
-    setPhoto(null);
-    setPhotoPreview(null);
-  };
-
   // Reset Form
   const resetForm = () => {
     setNomineeName('');
-    setNomineePhone('');
-    setNomineeEmail('');
-    setPhoto(null);
-    setPhotoPreview(null);
-    setNominatorName('');
-    setNominatorPhone('');
-    setNominatorEmail('');
+    setNomineeWhatsapp('');
     setHpWebsite('');
     setCategoryId('');
     setFieldErrors({});
@@ -274,43 +137,17 @@ export default function NominatePage() {
     const errors: Record<string, string> = {};
 
     if (!nomineeName.trim()) {
-      errors.nominee_name = 'Nominee full name is required.';
+      errors.nominee_name = 'Nominee name is required.';
     }
 
-    if (!nomineePhone.trim()) {
-      errors.nominee_phone = 'Nominee phone number is required.';
-    } else if (!/^\+?[0-9\s\-\(\)]{7,20}$/.test(nomineePhone.trim())) {
-      errors.nominee_phone = 'Please enter a valid nominee phone number.';
-    }
-
-    if (!nomineeEmail.trim()) {
-      errors.nominee_email = 'Nominee email address is required.';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nomineeEmail.trim())) {
-      errors.nominee_email = 'Please enter a valid nominee email address.';
+    if (!nomineeWhatsapp.trim()) {
+      errors.nominee_whatsapp = 'Nominee WhatsApp number is required.';
+    } else if (!/^\+?[0-9\s\-\(\)]{7,20}$/.test(nomineeWhatsapp.trim())) {
+      errors.nominee_whatsapp = 'Please enter a valid WhatsApp number.';
     }
 
     if (!categoryId) {
       errors.category = 'Please select an award category.';
-    }
-
-    if (!photo) {
-      errors.nominee_photo = 'Nominee photo is required.';
-    }
-
-    if (!nominatorName.trim()) {
-      errors.nominator_name = 'Your name is required.';
-    }
-
-    if (!nominatorPhone.trim()) {
-      errors.nominator_phone = 'Your phone number is required.';
-    } else if (!/^\+?[0-9\s\-\(\)]{7,20}$/.test(nominatorPhone.trim())) {
-      errors.nominator_phone = 'Please enter a valid phone number.';
-    }
-
-    if (!nominatorEmail.trim()) {
-      errors.nominator_email = 'Your email address is required.';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nominatorEmail.trim())) {
-      errors.nominator_email = 'Please enter a valid email address.';
     }
 
     if (Object.keys(errors).length > 0) {
@@ -321,18 +158,10 @@ export default function NominatePage() {
     setIsSubmitting(true);
 
     try {
-      // Fast client-side photo compression before uploading
-      const photoToUpload = photo ? await compressImage(photo) : null;
-
       const formData = new FormData();
       formData.append('nominee_name', nomineeName.trim());
-      formData.append('nominee_phone', nomineePhone.trim());
-      formData.append('nominee_email', nomineeEmail.trim().toLowerCase());
+      formData.append('nominee_whatsapp', nomineeWhatsapp.trim());
       formData.append('category', categoryId);
-      if (photoToUpload) formData.append('nominee_photo', photoToUpload);
-      formData.append('nominator_name', nominatorName.trim());
-      formData.append('nominator_phone', nominatorPhone.trim());
-      formData.append('nominator_email', nominatorEmail.trim().toLowerCase());
       if (hpWebsite) formData.append('hp_website', hpWebsite);
 
       const res = await fetch(`${apiUrl}/api/nominations/`, {
@@ -369,7 +198,7 @@ export default function NominatePage() {
     <div className="bg-gray-50 min-h-screen flex flex-col font-sans">
       <Header />
 
-      {/* Untouched Navy Gradient Header Banner */}
+      {/* Navy Gradient Header Banner */}
       <section className="bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 text-white pt-28 pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
         <div className="max-w-4xl mx-auto text-center relative z-10">
@@ -449,7 +278,7 @@ export default function NominatePage() {
               <button
                 type="button"
                 onClick={resetForm}
-                className="w-full sm:w-auto px-6 py-3.5 bg-blue-950 text-white rounded-xl font-bold hover:bg-blue-900 transition-all shadow-md"
+                className="w-full sm:w-auto px-6 py-3.5 bg-blue-950 text-white rounded-xl font-bold hover:bg-blue-900 transition-all shadow-md cursor-pointer"
               >
                 Submit Another Nomination
               </button>
@@ -463,7 +292,7 @@ export default function NominatePage() {
             </div>
           </motion.div>
         ) : (
-          /* Active Nomination Form Card */
+          /* Streamlined Nomination Form Card */
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -476,8 +305,8 @@ export default function NominatePage() {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-10" noValidate>
-              {/* Hidden Honeypot Input for Bot Deterrent */}
+            <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+              {/* Hidden Honeypot Input */}
               <input
                 type="text"
                 name="hp_website"
@@ -488,364 +317,134 @@ export default function NominatePage() {
                 autoComplete="off"
               />
 
-              {/* SECTION 1: NOMINEE DETAILS */}
-              <div>
-                <div className="flex items-center gap-3 pb-4 mb-6 border-b border-gray-100">
-                  <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-950 flex items-center justify-center font-bold text-sm">
-                    1
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-bold text-blue-950 tracking-normal">Nominee Details</h2>
-                    <p className="text-xs text-gray-500">Provide details of the person you are nominating</p>
-                  </div>
-                </div>
-
-                <div className="space-y-6">
-                  {/* Nominee Full Name */}
-                  <div>
-                    <label htmlFor="nominee_name" className="block text-sm font-semibold text-blue-950 mb-2">
-                      Nominee Full Name <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-                      <input
-                        id="nominee_name"
-                        type="text"
-                        required
-                        value={nomineeName}
-                        onChange={(e) => {
-                          setNomineeName(e.target.value);
-                          setFieldErrors((prev) => ({ ...prev, nominee_name: '' }));
-                        }}
-                        placeholder="e.g. Kwame Mensah"
-                        className={`w-full pl-12 pr-4 py-3.5 rounded-xl border bg-gray-50/50 text-gray-900 text-sm focus:bg-white focus:ring-2 focus:ring-blue-950 focus:border-blue-950 outline-none transition-all ${
-                          fieldErrors.nominee_name ? 'border-red-400 bg-red-50/20' : 'border-gray-200'
-                        }`}
-                      />
-                    </div>
-                    {fieldErrors.nominee_name && (
-                      <p className="mt-1.5 text-xs font-semibold text-red-500 flex items-center gap-1">
-                        <AlertCircle className="w-3.5 h-3.5" />
-                        {fieldErrors.nominee_name}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Nominee Phone & Email */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    {/* Nominee Phone */}
-                    <div>
-                      <label htmlFor="nominee_phone" className="block text-sm font-semibold text-blue-950 mb-2">
-                        Nominee Phone Number <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-                        <input
-                          id="nominee_phone"
-                          type="tel"
-                          required
-                          value={nomineePhone}
-                          onChange={(e) => {
-                            setNomineePhone(e.target.value);
-                            setFieldErrors((prev) => ({ ...prev, nominee_phone: '' }));
-                          }}
-                          placeholder="024XXXXXXX"
-                          className={`w-full pl-12 pr-4 py-3.5 rounded-xl border bg-gray-50/50 text-gray-900 text-sm focus:bg-white focus:ring-2 focus:ring-blue-950 focus:border-blue-950 outline-none transition-all ${
-                            fieldErrors.nominee_phone ? 'border-red-400 bg-red-50/20' : 'border-gray-200'
-                          }`}
-                        />
-                      </div>
-                      {fieldErrors.nominee_phone && (
-                        <p className="mt-1.5 text-xs font-semibold text-red-500 flex items-center gap-1">
-                          <AlertCircle className="w-3.5 h-3.5" />
-                          {fieldErrors.nominee_phone}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Nominee Email */}
-                    <div>
-                      <label htmlFor="nominee_email" className="block text-sm font-semibold text-blue-950 mb-2">
-                        Nominee Email Address <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-                        <input
-                          id="nominee_email"
-                          type="email"
-                          required
-                          value={nomineeEmail}
-                          onChange={(e) => {
-                            setNomineeEmail(e.target.value);
-                            setFieldErrors((prev) => ({ ...prev, nominee_email: '' }));
-                          }}
-                          placeholder="nominee@knust.edu.gh"
-                          className={`w-full pl-12 pr-4 py-3.5 rounded-xl border bg-gray-50/50 text-gray-900 text-sm focus:bg-white focus:ring-2 focus:ring-blue-950 focus:border-blue-950 outline-none transition-all ${
-                            fieldErrors.nominee_email ? 'border-red-400 bg-red-50/20' : 'border-gray-200'
-                          }`}
-                        />
-                      </div>
-                      {fieldErrors.nominee_email && (
-                        <p className="mt-1.5 text-xs font-semibold text-red-500 flex items-center gap-1">
-                          <AlertCircle className="w-3.5 h-3.5" />
-                          {fieldErrors.nominee_email}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Award Category Selection */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Category Group Selector */}
-                    <div>
-                      <label htmlFor="selected_group" className="block text-sm font-semibold text-blue-950 mb-2">
-                        Award Category Group <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <Layers className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-                        <select
-                          id="selected_group"
-                          value={selectedGroup}
-                          onChange={(e) => {
-                            setSelectedGroup(e.target.value);
-                            setCategoryId('');
-                            setFieldErrors((prev) => ({ ...prev, category: '' }));
-                          }}
-                          className="w-full pl-12 pr-10 py-3.5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 text-sm focus:bg-white focus:ring-2 focus:ring-blue-950 focus:border-blue-950 outline-none transition-all appearance-none cursor-pointer font-medium"
-                        >
-                          {groups.map((group) => (
-                            <option key={group} value={group}>
-                              {group}
-                            </option>
-                          ))}
-                        </select>
-                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
-                      </div>
-                    </div>
-
-                    {/* Specific Award Category Dropdown */}
-                    <div>
-                      <label htmlFor="category" className="block text-sm font-semibold text-blue-950 mb-2">
-                        Award Category <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <Award className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-                        <select
-                          id="category"
-                          required
-                          value={categoryId}
-                          onChange={(e) => {
-                            setCategoryId(e.target.value);
-                            setFieldErrors((prev) => ({ ...prev, category: '' }));
-                          }}
-                          className={`w-full pl-12 pr-10 py-3.5 rounded-xl border bg-gray-50/50 text-gray-900 text-sm focus:bg-white focus:ring-2 focus:ring-blue-950 focus:border-blue-950 outline-none transition-all appearance-none cursor-pointer ${
-                            fieldErrors.category ? 'border-red-400 bg-red-50/20' : 'border-gray-200'
-                          }`}
-                        >
-                          <option value="">-- Select Specific Award --</option>
-                          {availableSubCategories.map((cat) => (
-                            <option key={cat.id} value={cat.id}>
-                              {cat.name}
-                            </option>
-                          ))}
-                        </select>
-                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
-                      </div>
-                      {fieldErrors.category && (
-                        <p className="mt-1.5 text-xs font-semibold text-red-500 flex items-center gap-1">
-                          <AlertCircle className="w-3.5 h-3.5" />
-                          {fieldErrors.category}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Nominee Photo Drag & Drop Zone */}
-                  <div>
-                    <label className="block text-sm font-semibold text-blue-950 mb-2">
-                      Nominee Photo <span className="text-red-500">*</span>
-                    </label>
-
-                    {!photoPreview ? (
-                      <div
-                        onDragOver={handleDragOver}
-                        onDragLeave={handleDragLeave}
-                        onDrop={handleDrop}
-                        className={`relative border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer ${
-                          isDragging
-                            ? 'border-blue-950 bg-blue-50/50'
-                            : fieldErrors.nominee_photo
-                            ? 'border-red-300 bg-red-50/20'
-                            : 'border-gray-200 bg-gray-50/30 hover:border-blue-950 hover:bg-blue-50/20'
-                        }`}
-                      >
-                        <input
-                          id="nominee_photo_input"
-                          type="file"
-                          accept="image/jpeg,image/png,image/webp"
-                          onChange={handleFileInputChange}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                          aria-label="Upload Nominee Photo"
-                        />
-                        <div className="w-12 h-12 bg-blue-50 text-blue-950 rounded-full flex items-center justify-center mx-auto mb-3">
-                          <Camera className="w-6 h-6" />
-                        </div>
-                        <p className="text-sm font-bold text-gray-900 mb-1">
-                          Click or drag a photo here
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          Supports JPG, PNG, or WEBP (Max size: 5MB)
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="p-4 border border-gray-200 rounded-2xl bg-gray-50/50 flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-4">
-                          <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-blue-950 shrink-0">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={photoPreview}
-                              alt="Nominee Preview"
-                              className="w-full h-full object-cover"
-                            />
-                            <div className="absolute bottom-0 right-0 bg-emerald-500 text-white p-0.5 rounded-full">
-                              <Check className="w-3 h-3" />
-                            </div>
-                          </div>
-                          <div>
-                            <p className="text-sm font-bold text-gray-900 truncate max-w-[200px] sm:max-w-xs">
-                              {photo?.name}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {photo ? (photo.size / (1024 * 1024)).toFixed(2) : 0} MB
-                            </p>
-                          </div>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={removePhoto}
-                          className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
-                          title="Remove Photo"
-                        >
-                          <X className="w-5 h-5" />
-                        </button>
-                      </div>
-                    )}
-
-                    {fieldErrors.nominee_photo && (
-                      <p className="mt-1.5 text-xs font-semibold text-red-500 flex items-center gap-1">
-                        <AlertCircle className="w-3.5 h-3.5" />
-                        {fieldErrors.nominee_photo}
-                      </p>
-                    )}
-                  </div>
-                </div>
+              <div className="pb-2 mb-4 border-b border-gray-100">
+                <h2 className="text-lg font-bold text-blue-950 tracking-normal">Nominee Information</h2>
+                <p className="text-xs text-gray-500">Provide details of the person you are nominating</p>
               </div>
 
-              {/* SECTION 2: YOUR DETAILS (NOMINATOR) */}
+              {/* Nominee Name */}
               <div>
-                <div className="flex items-center gap-3 pb-4 mb-6 border-b border-gray-100">
-                  <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-950 flex items-center justify-center font-bold text-sm">
-                    2
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-bold text-blue-950 tracking-normal">Your Details</h2>
-                    <p className="text-xs text-gray-500">Your contact details as the nominator</p>
+                <label htmlFor="nominee_name" className="block text-sm font-semibold text-blue-950 mb-2">
+                  Nominee Name <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    id="nominee_name"
+                    type="text"
+                    required
+                    value={nomineeName}
+                    onChange={(e) => {
+                      setNomineeName(e.target.value);
+                      setFieldErrors((prev) => ({ ...prev, nominee_name: '' }));
+                    }}
+                    placeholder="e.g. Kwame Mensah"
+                    className={`w-full pl-12 pr-4 py-3.5 rounded-xl border bg-gray-50/50 text-gray-900 text-sm focus:bg-white focus:ring-2 focus:ring-blue-950 focus:border-blue-950 outline-none transition-all ${
+                      fieldErrors.nominee_name ? 'border-red-400 bg-red-50/20' : 'border-gray-200'
+                    }`}
+                  />
+                </div>
+                {fieldErrors.nominee_name && (
+                  <p className="mt-1.5 text-xs font-semibold text-red-500 flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    {fieldErrors.nominee_name}
+                  </p>
+                )}
+              </div>
+
+              {/* Nominee WhatsApp Number */}
+              <div>
+                <label htmlFor="nominee_whatsapp" className="block text-sm font-semibold text-blue-950 mb-2">
+                  Nominee WhatsApp Number <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    id="nominee_whatsapp"
+                    type="tel"
+                    required
+                    value={nomineeWhatsapp}
+                    onChange={(e) => {
+                      setNomineeWhatsapp(e.target.value);
+                      setFieldErrors((prev) => ({ ...prev, nominee_whatsapp: '' }));
+                    }}
+                    placeholder="e.g. 024XXXXXXX"
+                    className={`w-full pl-12 pr-4 py-3.5 rounded-xl border bg-gray-50/50 text-gray-900 text-sm focus:bg-white focus:ring-2 focus:ring-blue-950 focus:border-blue-950 outline-none transition-all ${
+                      fieldErrors.nominee_whatsapp ? 'border-red-400 bg-red-50/20' : 'border-gray-200'
+                    }`}
+                  />
+                </div>
+                {fieldErrors.nominee_whatsapp && (
+                  <p className="mt-1.5 text-xs font-semibold text-red-500 flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    {fieldErrors.nominee_whatsapp}
+                  </p>
+                )}
+              </div>
+
+              {/* Award Category Selection */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Category Group Selector */}
+                <div>
+                  <label htmlFor="selected_group" className="block text-sm font-semibold text-blue-950 mb-2">
+                    Award Category Group <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Layers className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <select
+                      id="selected_group"
+                      value={selectedGroup}
+                      onChange={(e) => {
+                        setSelectedGroup(e.target.value);
+                        setCategoryId('');
+                        setFieldErrors((prev) => ({ ...prev, category: '' }));
+                      }}
+                      className="w-full pl-12 pr-10 py-3.5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 text-sm focus:bg-white focus:ring-2 focus:ring-blue-950 focus:border-blue-950 outline-none transition-all appearance-none cursor-pointer font-medium"
+                    >
+                      {groups.map((group) => (
+                        <option key={group} value={group}>
+                          {group}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
                   </div>
                 </div>
 
-                <div className="space-y-6">
-                  {/* Nominator Full Name */}
-                  <div>
-                    <label htmlFor="nominator_name" className="block text-sm font-semibold text-blue-950 mb-2">
-                      Your Full Name <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-                      <input
-                        id="nominator_name"
-                        type="text"
-                        required
-                        value={nominatorName}
-                        onChange={(e) => {
-                          setNominatorName(e.target.value);
-                          setFieldErrors((prev) => ({ ...prev, nominator_name: '' }));
-                        }}
-                        placeholder="e.g. Abena Osei"
-                        className={`w-full pl-12 pr-4 py-3.5 rounded-xl border bg-gray-50/50 text-gray-900 text-sm focus:bg-white focus:ring-2 focus:ring-blue-950 focus:border-blue-950 outline-none transition-all ${
-                          fieldErrors.nominator_name ? 'border-red-400 bg-red-50/20' : 'border-gray-200'
-                        }`}
-                      />
-                    </div>
-                    {fieldErrors.nominator_name && (
-                      <p className="mt-1.5 text-xs font-semibold text-red-500 flex items-center gap-1">
-                        <AlertCircle className="w-3.5 h-3.5" />
-                        {fieldErrors.nominator_name}
-                      </p>
-                    )}
+                {/* Specific Award Category Dropdown */}
+                <div>
+                  <label htmlFor="category" className="block text-sm font-semibold text-blue-950 mb-2">
+                    Award Category <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Award className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <select
+                      id="category"
+                      required
+                      value={categoryId}
+                      onChange={(e) => {
+                        setCategoryId(e.target.value);
+                        setFieldErrors((prev) => ({ ...prev, category: '' }));
+                      }}
+                      className={`w-full pl-12 pr-10 py-3.5 rounded-xl border bg-gray-50/50 text-gray-900 text-sm focus:bg-white focus:ring-2 focus:ring-blue-950 focus:border-blue-950 outline-none transition-all appearance-none cursor-pointer ${
+                        fieldErrors.category ? 'border-red-400 bg-red-50/20' : 'border-gray-200'
+                      }`}
+                    >
+                      <option value="">-- Select Specific Award --</option>
+                      {availableSubCategories.map((cat) => (
+                        <option key={cat.id} value={cat.id}>
+                          {cat.name}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
                   </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    {/* Nominator Phone */}
-                    <div>
-                      <label htmlFor="nominator_phone" className="block text-sm font-semibold text-blue-950 mb-2">
-                        Phone Number <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-                        <input
-                          id="nominator_phone"
-                          type="tel"
-                          required
-                          value={nominatorPhone}
-                          onChange={(e) => {
-                            setNominatorPhone(e.target.value);
-                            setFieldErrors((prev) => ({ ...prev, nominator_phone: '' }));
-                          }}
-                          placeholder="0241234567"
-                          className={`w-full pl-12 pr-4 py-3.5 rounded-xl border bg-gray-50/50 text-gray-900 text-sm focus:bg-white focus:ring-2 focus:ring-blue-950 focus:border-blue-950 outline-none transition-all ${
-                            fieldErrors.nominator_phone ? 'border-red-400 bg-red-50/20' : 'border-gray-200'
-                          }`}
-                        />
-                      </div>
-                      {fieldErrors.nominator_phone && (
-                        <p className="mt-1.5 text-xs font-semibold text-red-500 flex items-center gap-1">
-                          <AlertCircle className="w-3.5 h-3.5" />
-                          {fieldErrors.nominator_phone}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Nominator Email */}
-                    <div>
-                      <label htmlFor="nominator_email" className="block text-sm font-semibold text-blue-950 mb-2">
-                        Email Address <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-                        <input
-                          id="nominator_email"
-                          type="email"
-                          required
-                          value={nominatorEmail}
-                          onChange={(e) => {
-                            setNominatorEmail(e.target.value);
-                            setFieldErrors((prev) => ({ ...prev, nominator_email: '' }));
-                          }}
-                          placeholder="student@knust.edu.gh"
-                          className={`w-full pl-12 pr-4 py-3.5 rounded-xl border bg-gray-50/50 text-gray-900 text-sm focus:bg-white focus:ring-2 focus:ring-blue-950 focus:border-blue-950 outline-none transition-all ${
-                            fieldErrors.nominator_email ? 'border-red-400 bg-red-50/20' : 'border-gray-200'
-                          }`}
-                        />
-                      </div>
-                      {fieldErrors.nominator_email && (
-                        <p className="mt-1.5 text-xs font-semibold text-red-500 flex items-center gap-1">
-                          <AlertCircle className="w-3.5 h-3.5" />
-                          {fieldErrors.nominator_email}
-                        </p>
-                      )}
-                    </div>
-                  </div>
+                  {fieldErrors.category && (
+                    <p className="mt-1.5 text-xs font-semibold text-red-500 flex items-center gap-1">
+                      <AlertCircle className="w-3.5 h-3.5" />
+                      {fieldErrors.category}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -870,7 +469,7 @@ export default function NominatePage() {
                 </button>
                 <div className="flex items-center justify-center gap-1.5 mt-3 text-xs text-gray-400 font-medium">
                   <ShieldCheck className="w-4 h-4 text-gray-400" />
-                  Your information is secure & strictly used for nomination verification.
+                  Your nomination is encrypted & strictly used for ACES awards verification.
                 </div>
               </div>
             </form>

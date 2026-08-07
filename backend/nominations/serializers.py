@@ -23,7 +23,7 @@ class NominationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Nomination
         fields = [
-            'id', 'nominee_name', 'nominee_phone', 'nominee_email',
+            'id', 'nominee_name', 'nominee_whatsapp', 'nominee_phone', 'nominee_email',
             'nominee_photo', 'photo_url',
             'category', 'category_name', 'category_group',
             'nominator_name', 'nominator_phone', 'nominator_email',
@@ -31,7 +31,11 @@ class NominationSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'created_at', 'photo_url', 'category_name', 'category_group']
         extra_kwargs = {
-            'nominee_photo': {'required': True, 'write_only': True}
+            'nominee_whatsapp': {'required': True},
+            'nominee_photo': {'required': False, 'allow_null': True, 'write_only': True},
+            'nominator_name': {'required': False, 'allow_blank': True, 'allow_null': True},
+            'nominator_phone': {'required': False, 'allow_blank': True, 'allow_null': True},
+            'nominator_email': {'required': False, 'allow_blank': True, 'allow_null': True},
         }
 
     def get_photo_url(self, obj):
@@ -42,34 +46,14 @@ class NominationSerializer(serializers.ModelSerializer):
             return obj.nominee_photo.url
         return None
 
-    def validate_nominee_photo(self, value):
-        # 1. Size limit: Max 5 MB
-        max_size = 5 * 1024 * 1024
-        if value.size > max_size:
-            raise serializers.ValidationError("Photo file size must be less than 5MB.")
-
-        # 2. File Extension
-        ext = os.path.splitext(value.name)[1].lower()
-        valid_extensions = ['.jpg', '.jpeg', '.png', '.webp']
-        if ext not in valid_extensions:
-            raise serializers.ValidationError("Unsupported image format. Please upload a JPG, JPEG, PNG, or WEBP photo.")
-
-        return value
-
-    def validate_nominator_email(self, value):
-        value = value.strip().lower()
-        email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-        if not re.match(email_regex, value):
-            raise serializers.ValidationError("Please enter a valid email address.")
-        return value
-
-    def validate_nominator_phone(self, value):
-        value = value.strip()
-        # General phone structure check (allows digits, +, spaces, dashes, parens, 7 to 20 chars)
+    def validate_nominee_whatsapp(self, value):
+        if not value or not value.strip():
+            raise serializers.ValidationError("Nominee WhatsApp number is required.")
+        val = value.strip()
         phone_regex = r'^\+?[0-9\s\-\(\)]{7,20}$'
-        if not re.match(phone_regex, value):
-            raise serializers.ValidationError("Please enter a valid phone number.")
-        return value
+        if not re.match(phone_regex, val):
+            raise serializers.ValidationError("Please enter a valid WhatsApp number.")
+        return val
 
     def validate(self, attrs):
         # 1. Honeypot check: If filled, fail immediately

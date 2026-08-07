@@ -39,21 +39,21 @@ class NominationSettingsAdmin(admin.ModelAdmin):
 @admin.register(Nomination)
 class NominationAdmin(admin.ModelAdmin):
     list_display = [
-        'photo_thumbnail', 'nominee_name', 'nominee_phone', 'nominee_email',
-        'get_category_name', 'get_group_name', 'nominator_name',
-        'created_at'
+        'nominee_name', 'nominee_whatsapp', 'get_category_name',
+        'get_group_name', 'created_at'
     ]
     list_filter = ['category__group_name', 'category', 'created_at']
-    search_fields = ['nominee_name', 'nominee_phone', 'nominee_email', 'nominator_name', 'nominator_email', 'nominator_phone']
+    search_fields = ['nominee_name', 'nominee_whatsapp', 'nominee_phone', 'nominee_email', 'nominator_name', 'nominator_email', 'nominator_phone']
     readonly_fields = ['photo_preview', 'nominee_name_normalized', 'created_at']
     actions = ['export_nominations_csv']
 
     fieldsets = (
         ("Nominee Information", {
-            "fields": ("nominee_name", "nominee_phone", "nominee_email", "category", "nominee_photo", "photo_preview")
+            "fields": ("nominee_name", "nominee_whatsapp", "category")
         }),
-        ("Nominator Information", {
-            "fields": ("nominator_name", "nominator_phone", "nominator_email")
+        ("Legacy / Optional Details", {
+            "fields": ("nominee_phone", "nominee_email", "nominee_photo", "photo_preview", "nominator_name", "nominator_phone", "nominator_email"),
+            "classes": ("collapse",)
         }),
         ("Metadata", {
             "fields": ("nominee_name_normalized", "created_at"),
@@ -99,21 +99,14 @@ class NominationAdmin(admin.ModelAdmin):
         response['Content-Disposition'] = 'attachment; filename="nominations_export.csv"'
         writer = csv.writer(response)
         writer.writerow([
-            'Nominee Name', 'Nominee Phone', 'Nominee Email', 'Category Group', 'Award Category', 'Photo URL',
-            'Nominator Name', 'Nominator Phone', 'Nominator Email', 'Submission Date'
+            'Nominee Name', 'Nominee WhatsApp', 'Category Group', 'Award Category', 'Submission Date'
         ])
         for nom in queryset.select_related('category'):
-            photo_url = request.build_absolute_uri(nom.nominee_photo.url) if nom.nominee_photo else ''
             writer.writerow([
                 nom.nominee_name,
-                nom.nominee_phone or '',
-                nom.nominee_email or '',
+                nom.nominee_whatsapp or nom.nominee_phone or '',
                 nom.category.group_name,
                 nom.category.name,
-                photo_url,
-                nom.nominator_name,
-                nom.nominator_phone,
-                nom.nominator_email,
                 nom.created_at.strftime('%Y-%m-%d %H:%M:%S')
             ])
         return response
