@@ -1,0 +1,282 @@
+{
+  "program": "ACES",
+  "description": "Academic Course - Computer Engineering Curriculum",
+  "years": [
+    {
+      "year": 1,
+      "semesters": [
+        {
+          "semester": 1,
+          "courses": [
+            {
+              "name": "Algebra",
+              "code": null,
+              "resource_url": "https://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%201%2FSemester%201%2FAlgebra.zip?alt=media&token=254b8e2c-2865-4e76-ad9d-be924adee1a1"
+            },
+            {
+              "name": "Applied Electricity",
+              "code": null,
+              "resource_url": "https://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%201%2FSemester%201%2FApplied%20Electricity.zip?alt=media&token=452977eb-7fbd-4f28-b474-ea8d98d6c691"
+            },
+            {
+              "name": "Basic Mechanics",
+              "code": null,
+              "resource_url": "https://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%201%2FSemester%201%2FBasic%20Mechanics.zip?alt=media&token=2151f6e8-0bec-44e3-9dbe-cbe95682c371"
+            },
+            {
+              "name": "Communication Skills",
+              "code": null,
+              "resource_url": "https://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%201%2FSemester%201%2FCommunication%20Skills.zip?alt=media&token=ae2ad7a3-d1e9-4212-a18c-3cd4fd29bbb5"
+            },
+            {
+              "name": "Environmental Studies",
+              "code": null,
+              "resource_url": "https://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%201%2FSemester%201%2FEnvironmental%20Studies.zip?alt=media&token=8e88ffb0-e922-46d3-baa3-5db1128eaec5"
+            }
+          ]
+        },
+        {
+          "semester": 2,
+          "courses": [
+            {
+              "name": "Basic Electronics",
+              "code": null,
+              "resource_url": "https://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%201%2FSemester%202%2FBasic%20Electronics.zip?alt=media&token=3dea675a-c085-413b-912a-69ea3e439f92"
+            },
+            {
+              "name": "Calculus With Analysis",
+              "code": null,
+              "resource_url": "https://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%201%2FSemester%202%2FCalculus%20With%20Analysis.zip?alt=media&token=540c2aae-1ab7-4a1a-8740-98497a2bcb41"
+            },
+            {
+              "name": "Communication Skills II",
+              "code": null,
+              "resource_url": "https://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%201%2FSemester%202%2FCommunication%20Skills%20II.zip?alt=media&token=3e0fda15-d7be-4aab-b201-f97e924284cd"
+            },
+            {
+              "name": "Electrical Engineering Drawing",
+              "code": null,
+              "resource_url": "https://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%201%2FSemester%202%2FElectrical%20Engineering%20Drawing.zip?alt=media&token=4fa53db6-8925-422f-a970-4c3d8822c78c"
+            },
+            {
+              "name": "Electrical Machines",
+              "code": null,
+              "resource_url": "https://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%201%2FSemester%202%2FElectrical%20Machines.zip?alt=media&token=55c2cbdc-7f10-4548-91d6-f00fee0280b3"
+            },
+            {
+              "name": "Introduction to IT",
+              "code": null,
+              "resource_url": "http://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%201%2FSemester%202%2FIntroduction%20to%20IT.zip?alt=media&token=ce823b2b-f481-40ec-b5fb-123033195590"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "year": 2,
+      "semesters": [
+        {
+          "semester": 1,
+          "courses": [
+            {
+              "name": "CENG",
+              "code": null,
+              "resource_url": "https://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%202%2FSemester%201%2FCENG.zip?alt=media&token=340fd116-05b4-458b-b0dc-16c50924d8e9"
+            },
+            {
+              "name": "Communication Systems",
+              "code": null,
+              "resource_url": "https://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%202%2FSemester%201%2FCommunication%20Systems.zip?alt=media&token=f95b5b9c-81a4-4883-91fa-25d953f16117"
+            },
+            {
+              "name": "Differential Equations",
+              "code": "MATH 251",
+              "resource_url": "https://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%202%2FSemester%201%2FDifferential%20Equations.zip?alt=media&token=5d7ec616-7d27-4d46-a37e-271f2c5ec2eb"
+            },
+            {
+              "name": "Programming and Problem Solving",
+              "code": "COE 251",
+              "resource_url": "https://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%202%2FSemester%201%2FProgramming%20%26%20Problem%20solving.zip?alt=media&token=752b35a8-83db-4e6b-9a61-fac7005f867f"
+            },
+            {
+              "name": "Semiconductor Devices",
+              "code": "COE 271",
+              "resource_url": "https://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%202%2FSemester%201%2FSemiconductors.zip?alt=media&token=cf63df27-9f9e-4902-a47a-494793b2afe4"
+            },
+            {
+              "name": "Discrete Structures",
+              "code": null,
+              "resource_url": "https://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%202%2FSemester%201%2FDiscrete%20Structures.zip?alt=media&token=dd29733e-fe97-4319-93a6-27df2e7f7a07"
+            }
+          ]
+        },
+        {
+          "semester": 2,
+          "courses": [
+            {
+              "name": "Calculus of Several Variables",
+              "code": "MATH 252",
+              "resource_url": "https://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%202%2FSemester%202%2FMultivariable%20Calculus.zip?alt=media&token=fe2c4f4a-2bdb-4a9c-a612-f5d2593a9499"
+            },
+            {
+              "name": "Object Oriented Programming",
+              "code": null,
+              "resource_url": "https://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%202%2FSemester%202%2FOOP.zip?alt=media&token=8a2c3749-318b-4a1c-b8e4-a4446150ab38"
+            },
+            {
+              "name": "Digital Systems",
+              "code": "COE 272",
+              "resource_url": "https://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%202%2FSemester%202%2FDigital%20Systems.zip?alt=media&token=f0549bc1-0bca-4e02-b3ab-2b7858ac9f0d"
+            },
+            {
+              "name": "Electromagnetic Fields",
+              "code": "TE 262",
+              "resource_url": "https://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%202%2FSemester%202%2FElectromagnetic%20Fields.zip?alt=media&token=dae15531-49a1-42b7-afed-ffb8b03d6283"
+            },
+            {
+              "name": "Electrical Measurement & Instrumentation",
+              "code": "EE 288",
+              "resource_url": "https://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%202%2FSemester%202%2FElectrical%20Measurement%20%26%20Instrumentation.zip?alt=media&token=4d0ea2a4-a446-4746-8990-b9bfa3eb7f3d"
+            },
+            {
+              "name": "Circuit Theory",
+              "code": null,
+              "resource_url": "https://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%202%2FSemester%202%2FCircuit%20Theory.zip?alt=media&token=1dfe0947-79bc-414d-a1f6-660ac5f5be69"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "year": 3,
+      "semesters": [
+        {
+          "semester": 1,
+          "courses": [
+            {
+              "name": "Numerical Methods",
+              "code": "MATH 351",
+              "resource_url": "https://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%203%2FSemester%201%2FMATH%20351%20Numerical%20Analysis.zip?alt=media&token=fa28f605-fcbf-418f-98ba-4c841c4d7c15"
+            },
+            {
+              "name": "Probability and Statistics 1",
+              "code": "MATH 353",
+              "resource_url": "https://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%203%2FSemester%201%2FMATH%20353%20Statistics.zip?alt=media&token=f1aec111-c892-4b34-af94-ddd704a9a8c7"
+            },
+            {
+              "name": "Linear Electronic Circuits",
+              "code": "EE 371",
+              "resource_url": "https://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%203%2FSemester%201%2FEE%20371%20Linear%20Electronic%20Circuits.zip?alt=media&token=13075c29-7e57-4315-94fb-f6161082795c"
+            },
+            {
+              "name": "Microprocessors",
+              "code": "COE 381",
+              "resource_url": "https://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%203%2FSemester%201%2FMicro%20p%202021.pdf?alt=media&token=6e87fa69-1d97-4c6d-84dc-d156f0903cf2"
+            },
+            {
+              "name": "Classical Control Systems",
+              "code": "EE 387",
+              "resource_url": "https://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%203%2FSemester%201%2FCOE%20387%20Classical%20Control%20Systems.zip?alt=media&token=9cd29a0f-2091-4f68-bfb3-41d9a16b4306"
+            }
+          ]
+        },
+        {
+          "semester": 2,
+          "courses": [
+            {
+              "name": "Embedded Systems",
+              "code": "COE 358",
+              "resource_url": "https://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%203%2FSemester%202%2FCOE%20358%20Embedded%20Systems%20%203%202%203.zip?alt=media&token=a21e2209-9643-4900-aaa5-6410fa0e3b1c"
+            },
+            {
+              "name": "Digital System Design II",
+              "code": "COE 382",
+              "resource_url": "https://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%203%2FSemester%202%2FDESIGN.zip?alt=media&token=9dc395b2-38ae-41d1-b68c-ff1a08d4633d"
+            },
+            {
+              "name": "Operating Systems",
+              "code": "COE 354",
+              "resource_url": "https://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%203%2FSemester%202%2FOperating%20Systems.rar?alt=media&token=66bc43cc-1d66-489b-af99-260c7ba8f996"
+            },
+            {
+              "name": "Introduction to Software Engineering",
+              "code": "COE 356",
+              "resource_url": "https://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%203%2FSemester%202%2FSoftware%20Eng.rar?alt=media&token=381568b3-ec6a-4594-9fc1-6ba875176298"
+            },
+            {
+              "name": "Database & Information Retrieval",
+              "code": "COE 368",
+              "resource_url": "https://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%203%2FSemester%202%2FDatabase.zip?alt=media&token=4caf4b64-7158-42a9-bf17-8dd8993e11e1"
+            },
+            {
+              "name": "Autronics",
+              "code": "COE 392",
+              "resource_url": "https://firebasestorage.googleapis.com/v0/b/aces-1ef3d.appspot.com/o/ACES%2FYEAR%203%2FSemester%202%2Fautotronics.zip?alt=media&token=2e35c566-5a6d-4e71-bfc8-66379615dada"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "year": 4,
+      "semesters": [
+        {
+          "semester": 1,
+          "courses": [
+            {
+              "name": "Engineering Economics and Management",
+              "code": null,
+              "resource_url": "https://drive.google.com/file/d/1dgrDu1mSJZ-vRZsNaULufx_p2YZMQPsw/view?usp=drive_link"
+            },
+            {
+              "name": "Computer Networking",
+              "code": "COE 475",
+              "resource_url": "https://drive.google.com/file/d/1vnC-hczgq04FQM6ruzAGT3USinidUEjv/view?usp=drive_link"
+            },
+            {
+              "name": "Computer Architecture",
+              "code": "COE 485",
+              "resource_url": "https://drive.google.com/file/d/1yGeWjGGrxz8tkG1obcsEhDeWS2R6xVsk/view"
+            },
+            {
+              "name": "Distributed Computing",
+              "code": "COE 453",
+              "resource_url": "https://drive.google.com/file/d/16vaiCeaSu9vXy6wHsqhn5b1ZXLtM_qVX/view?usp=drive_link"
+            }
+          ]
+        },
+        {
+          "semester": 2,
+          "courses": [
+            {
+              "name": "Entrepreneurship Development",
+              "code": "ME 492",
+              "resource_url": "https://drive.google.com/file/d/1je4GaJv10QJ5IW6OsmanmAttIpbOki8x/view?usp=drive_link"
+            },
+            {
+              "name": "Digital Signal Processing",
+              "code": null,
+              "resource_url": "https://drive.google.com/file/d/1lAaW2ZZk17D6nCgycF6ZKtOv1TrZMium/view?usp=drive_link"
+            },
+            {
+              "name": "Software Engineering",
+              "code": "COE 454",
+              "resource_url": "https://drive.google.com/file/d/1FBxplTJZnG8FjhRMCNhLVabkBPb1wGlX/view?usp=drive_link"
+            },
+            {
+              "name": "Fault Diagnosis and Failure Tolerance",
+              "code": "COE 480",
+              "resource_url": "https://drive.google.com/file/d/1qIG9Ord3HXYXpsBikdy3AlMMBRuQ431e/view?usp=drive_link"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "total_years": 4,
+    "total_courses": 46,
+    "resource_platforms": ["Firebase Storage", "Google Drive"],
+    "last_updated": "2025-08-30"
+  }
+}
