@@ -88,37 +88,12 @@ const Header = () => {
         background-size: 300% 300%;
         animation: gradient-spin 3s ease infinite;
       }
-      @keyframes banner-shimmer {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-      }
-      .codefest-banner {
-        background: linear-gradient(90deg, #2563eb, #7c3aed, #ec4899, #06b6d4, #2563eb);
-        background-size: 200% 200%;
-        animation: banner-shimmer 4s ease infinite;
-      }
+
     `}</style>
 
-    {/* CODEFEST Announcement Banner */}
-    <div className="codefest-banner fixed top-0 left-0 w-full z-[60] text-white">
-      <div className="container mx-auto px-4 py-2.5 flex items-center justify-center gap-3 text-sm">
-        <span className="hidden sm:inline">🔥</span>
-        <span className="font-medium text-center">
-          <span className="font-bold">CODEFEST</span> is here! Register now for the challenges
-        </span>
-        <a
-          href="https://forms.gle/p5789Kabjyah6wq59"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-bold text-xs px-4 py-1.5 rounded-full transition-colors whitespace-nowrap shadow-sm"
-        >
-          Register Now →
-        </a>
-      </div>
-    </div>
 
-    <header className="bg-white text-blue-950 py-2 fixed left-0 w-full z-50 top-[44px]">
+
+    <header className="bg-white text-blue-950 py-2 fixed left-0 w-full z-50 top-0">
       <div className="container mx-auto flex justify-between items-center">
         <div className="p-2 lg:ml-4 sm:-ml-10 ">
           <Link href="/">
