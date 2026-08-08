@@ -31,7 +31,10 @@ class NominationSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'created_at', 'photo_url', 'category_name', 'category_group']
         extra_kwargs = {
+            'nominee_name': {'required': True},
             'nominee_whatsapp': {'required': True},
+            'nominee_phone': {'required': False, 'allow_blank': True, 'allow_null': True},
+            'nominee_email': {'required': False, 'allow_blank': True, 'allow_null': True},
             'nominee_photo': {'required': False, 'allow_null': True, 'write_only': True},
             'nominator_name': {'required': False, 'allow_blank': True, 'allow_null': True},
             'nominator_phone': {'required': False, 'allow_blank': True, 'allow_null': True},

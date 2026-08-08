@@ -41,8 +41,8 @@ def seed_categories(apps, schema_editor):
 
         # Talent and representation
         ("Talent and representation", "Sports personality of the year"),
-        ("Talent and representation", "Male Face of Eleesa"),
-        ("Talent and representation", "Female Face of ELEESA"),
+        ("Talent and representation", "Male Face of ACES"),
+        ("Talent and representation", "Female Face of ACES"),
         ("Talent and representation", "Most inspiring student"),
     ]
 

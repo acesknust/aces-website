@@ -182,8 +182,12 @@ export default function NominatePage() {
 
         if (parsedErrors.detail) {
           setGeneralError(parsedErrors.detail);
+        } else if (Object.keys(parsedErrors).length > 0) {
+          const firstErrorMsg = Object.values(parsedErrors).join(' | ');
+          setGeneralError(firstErrorMsg);
+        } else {
+          setGeneralError('Failed to submit nomination. Please check your information and try again.');
         }
-        setFieldErrors(parsedErrors);
       } else {
         setGeneralError('Failed to submit nomination. Please check your information and try again.');
       }
