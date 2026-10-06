@@ -34,30 +34,13 @@ const nextConfig = {
         port: "8000",
         pathname: "/**",
       },
-      {
-        protocol: "https",
-        hostname: "aces-shop-backend-w8ro7.ondigitalocean.app",
-        port: "",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "aces-backend-pgtot.ondigitalocean.app",
-        port: "",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "*.ondigitalocean.app",
-        port: "",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "*.digitaloceanspaces.com",
-        port: "",
-        pathname: "/**",
-      },
+    {
+      protocol: 'https',
+      hostname: 'api.acesknust.com',
+      pathname: '/media/**',
+    },
+
+
       {
         protocol: "https",
         hostname: "*.r2.dev",
