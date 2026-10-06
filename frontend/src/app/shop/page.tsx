@@ -22,7 +22,8 @@ async function getProducts() {
         throw new Error('Failed to fetch products');
     }
 
-    return res.json();
+    const data = await res.json();
+return data.results || data;  
 }
 
 export default async function ShopPage() {
