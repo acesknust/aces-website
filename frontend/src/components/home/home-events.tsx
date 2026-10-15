@@ -9,31 +9,10 @@ export default function HomeEvents() {
   const events = [
     {
       id: 1,
-      title: 'CodeFest 2025',
+      title: 'CodeFest 2026',
       image: 'https://res.cloudinary.com/dmgk37i6y/image/upload/v1756508481/codefest_erdhpl.jpg',
       description: 'Join us for a thrilling day of coding challenges, workshops, and networking with tech enthusiasts.',
-      time: '00:00'
-    },
-    {
-      id: 2,
-      title: 'ACES Robotics Meeting',
-      image: 'https://res.cloudinary.com/dmgk37i6y/image/upload/v1756390037/robotics_meeting_avcz53.jpg',
-      description: 'Explore the latest in robotics. Collaborate, build bots, and automate solutions with fellow members.',
-      time: '00:00'
-    },
-    {
-      id: 3,
-      title: 'ACES Dinner 2025',
-      image: 'https://res.cloudinary.com/dmgk37i6y/image/upload/v1756562742/dinner_night_uicikj.jpg',
-      description: 'A night of fun, food, and fellowship. Connect with ACES members over an elegant dinner.',
-      time: '00:00'
-    },
-    {
-      id: 4,
-      title: 'ACES Hangout',
-      image: 'https://res.cloudinary.com/dmgk37i6y/image/upload/v1756508481/aces_hangout_eywxew.jpg',
-      description: 'Unwind with games, conversations, and chill vibes in this relaxed member-exclusive event.',
-      time: '00:00'
+      time: ''
     }
   ];
 
