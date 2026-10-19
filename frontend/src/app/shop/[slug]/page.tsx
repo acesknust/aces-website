@@ -3,10 +3,16 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import ProductDetails from '@/components/shop/ProductDetails';
 
+function getApiUrl() {
+    if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+    return process.env.NODE_ENV === 'development'
+        ? 'http://127.0.0.1:8000'
+        : 'https://aces-backend-pgtot.ondigitalocean.app';
+}
+
 async function getProduct(slug: string) {
     try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://aces-backend-pgtot.ondigitalocean.app';
-        const res = await fetch(`${apiUrl}/api/shop/products/${slug}/`, { cache: 'no-store' });
+        const res = await fetch(`${getApiUrl()}/api/shop/products/${encodeURIComponent(slug)}/`, { cache: 'no-store' });
         if (!res.ok) {
             return null;
         }

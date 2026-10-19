@@ -88,8 +88,8 @@ function MoMoPaymentContent() {
         }
     }, [clearCart]);
 
-    const momoNumber = '0205671946';
-    const momoName = 'Hanz Ofosuhene Sintim';
+    const momoNumber = '0509284963';
+    const momoName = 'Victor Addai Alamu';
 
     const copyNumber = () => {
         try {

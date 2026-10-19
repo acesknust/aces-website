@@ -24,6 +24,7 @@ interface ProductSize {
 interface ProductDetailsProps {
     product: {
         id: number;
+        slug: string;
         name: string;
         price: string;
         description: string;
@@ -305,7 +306,10 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
     function getImageUrl(img?: string): string {
         if (!img) return 'https://via.placeholder.com/600x600?text=No+Image';
         if (img.startsWith('http')) return img;
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://aces-backend-pgtot.ondigitalocean.app';
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL ||
+            (process.env.NODE_ENV === 'development'
+                ? 'http://127.0.0.1:8000'
+                : 'https://aces-backend-pgtot.ondigitalocean.app');
         return `${baseUrl}${img}`;
     }
 
@@ -570,6 +574,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
                             <AddToCartButton
                                 product={{
                                     id: product.id,
+                                    slug: product.slug,
                                     name: product.name,
                                     price: product.price,
                                     image: selectedImage

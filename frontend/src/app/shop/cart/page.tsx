@@ -255,7 +255,7 @@ export default function CartPage() {
                                             <div>
                                                 <div className="flex justify-between">
                                                     <h3 className="text-lg font-semibold text-gray-900">
-                                                        <Link href={`/shop/${item.id}`} className="hover:text-blue-600 transition-colors">
+                                                        <Link href={item.slug ? `/shop/${item.slug}` : '/shop'} className="hover:text-blue-600 transition-colors">
                                                             {item.name}
                                                         </Link>
                                                     </h3>

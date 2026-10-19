@@ -262,17 +262,23 @@ SIMPLE_JWT = {
 
 PAYSTACK_PUBLIC_KEY = os.environ.get('PAYSTACK_PUBLIC_KEY')
 PAYSTACK_SECRET_KEY = os.environ.get('PAYSTACK_SECRET_KEY')
+# Local-only: simulate a successful Paystack checkout without keys or network.
+# Never enabled in production (the view also requires DEBUG).
+PAYSTACK_MOCK_MODE = os.environ.get('PAYSTACK_MOCK_MODE', 'False').lower() in ('1', 'true', 'yes')
 
 # Email Configuration (SMTP)
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' # Debug Mode: Print to console
+# Override with EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend locally
+# to test payment flows without real SMTP credentials.
+EMAIL_BACKEND = os.environ.get(
+    'EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend'
+)
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', EMAIL_HOST_USER) # Default to host user if undefined
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL') or EMAIL_HOST_USER or 'no-reply@localhost'
+ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL') or EMAIL_HOST_USER or 'no-reply@localhost'
 
 # =============================================================================
 # Logging Configuration — persistent error logs

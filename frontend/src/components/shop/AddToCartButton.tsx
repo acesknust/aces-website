@@ -6,6 +6,7 @@ import { useCart, CartItem } from '@/context/CartContext';
 interface AddToCartButtonProps {
     product: {
         id: number;
+        slug?: string;
         name: string;
         price: string;
         image: string;
@@ -40,6 +41,7 @@ const AddToCartButton: React.FC<AddToCartButtonProps> = ({ product, selectedColo
 
         const item: CartItem = {
             id: product.id,
+            slug: product.slug,
             name: product.name,
             price: numericPrice,
             image: product.image,

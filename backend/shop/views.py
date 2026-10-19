@@ -280,8 +280,8 @@ class CreateOrderView(APIView):
                     'status': 'PENDING',
                     'payment_method': 'MOMO',
                     'momo_details': {
-                        'number': '0205671946',
-                        'name': 'Hanz Ofosuhene Sintim',
+                        'number': '0509284963',
+                        'name': 'Victor Addai Alamu',
                     },
                     'message': 'Order placed! Please send payment via MoMo.'
                 }, status=status.HTTP_201_CREATED)
@@ -318,10 +318,14 @@ class CreateOrderView(APIView):
             # MOCK MODE: Only allowed in DEBUG (development) mode
             # FIX: In production, Paystack errors return 503, NOT a fake payment
             # ---------------------------------------------------------------
-            is_mock_mode = (
-                settings.DEBUG and
-                settings.PAYSTACK_SECRET_KEY and
-                settings.PAYSTACK_SECRET_KEY.startswith('sk_test_xx')
+            is_mock_mode = bool(
+                settings.DEBUG and (
+                    settings.PAYSTACK_MOCK_MODE or
+                    (
+                        settings.PAYSTACK_SECRET_KEY and
+                        settings.PAYSTACK_SECRET_KEY.startswith('sk_test_xx')
+                    )
+                )
             )
 
             if is_mock_mode:

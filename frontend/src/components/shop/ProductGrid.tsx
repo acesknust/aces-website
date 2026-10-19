@@ -29,13 +29,13 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products }) => {
             variants={container}
             initial="hidden"
             animate="show"
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8"
+            className="grid grid-cols-1 items-stretch gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4 lg:gap-8"
         >
             {products.map((product) => (
                 <motion.div
                     key={product.id}
                     variants={item}
-                    className="w-full"
+                    className="h-full w-full"
                 >
                     <ProductCard product={product} />
                 </motion.div>
