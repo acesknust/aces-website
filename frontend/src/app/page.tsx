@@ -1,25 +1,23 @@
-
-import About from "./ui/home/about";
-import Footer from "./ui/footer";
-import Header from "./ui/header";
-import Hero from "./ui/home/hero";
-import Gallery_home from "./ui/home/gallery_home";
-import Student_Testimonial from "./ui/home/student_testimonial";
-import Clubs from "./ui/home/club";
-import HomeEvents from "./ui/home/home_events";
+import Footer from "@/components/footer";
+import Header from "@/components/header";
+import Hero from "@/components/home/hero";
+import Gallery from "@/components/home/gallery";
+import StudentTestimonial from "@/components/home/student-testimonial";
+import Clubs from "@/components/home/club";
+import HomeEvents from "@/components/home/home-events";
 
 export default function page() {
   return (
     <main>
       <Header />
-      <div className="py-16">
+      <div>
         <Hero />
-        <Gallery_home/>
-        <Student_Testimonial/>
-        <Clubs/>
-        <HomeEvents/>
+        <Gallery />
+        <StudentTestimonial />
+        <Clubs />
+        <HomeEvents />
       </div>
-      <Footer/>
+      <Footer />
     </main>
   );
 }
