@@ -5,6 +5,7 @@ import Header from '@/components/header';
 import Footer from '@/components/footer';
 import Image from 'next/image';
 import Link from 'next/link';
+ // Fallback group photo
 // Types for API response
 interface SocialLink {
   platform: string;
@@ -61,7 +62,7 @@ const About = () => {
   const [isHovering, setIsHovering] = useState(false);
 
   // Fallback group photo
-  const fallbackGroupPhoto = 'https://res.cloudinary.com/dmgk37i6y/image/upload/v1756508620/aces-group-photo_zoxsvy.png';
+  const fallbackGroupPhoto = '/images/aces_2026/aces_12.jpeg';
 
   // Auto-rotate carousel (pauses on hover)
   useEffect(() => {

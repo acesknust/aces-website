@@ -10,11 +10,11 @@ export default function Gallery() {
   const carouselRef = useRef<HTMLDivElement>(null);
 
   const galleryImages = [
-    { id: 1, src: '/images/Gallery/Trip.jpg', alt: "trip image" },
-    { id: 2, src: '/images/Gallery/Acesshirt.jpg', alt: "aces shirt image" },
-    { id: 3, src: '/images/Gallery/codefest.jpg', alt: "codefest image" },
-    { id: 4, src: '/images/Gallery/Jersey.jpg', alt: "Jersey image" },
-    { id: 5, src: '/images/Gallery/Trip.jpg', alt: "trip image" },
+    { id: 1, src: '/images/aces_2026/aces_14.jpeg', alt: "trip image" },
+    { id: 2, src: '/images/aces_2026/aces_22.jpeg', alt: "aces shirt image" },
+    { id: 3, src: '/images/aces_2026/aces_8.jpeg', alt: "codefest image" },
+    { id: 4, src: '/images/aces_2026/aces_35.jpeg', alt: "Jersey image" },
+    { id: 5, src: '/images/aces_2026/aces_18.jpeg', alt: "trip image" },
 
   ];
 

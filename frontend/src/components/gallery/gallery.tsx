@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-
+import cover from "../../../public/images/aces_2026/aces_27.jpeg"; // Fallback group photo
 const Gallery = () => {
   return (
     <div className="container mx-auto p-8">
@@ -50,6 +50,23 @@ const Gallery = () => {
               </div>
             </Link>
           </div>
+           <div className="group">
+            <Link href="https://Acesworks.pixieset.com/acesweek/" target="blank">
+              <div className="border-2 border-gray-200 rounded-lg p-4 mb-4 group-hover:scale-[1.03] transition duration-300">
+                <Image
+                  src="/images/Aces_Images/Aces Images/Aces week/165.jpg"
+                  alt="Official Monday | ACES Week Celebration"
+                  width={800}
+                  height={1200}
+                  className="w-full shadow-1-strong rounded mb-4"
+                />
+                <p className="text-gray-600">
+                  ACES Week 
+                </p>
+              </div>
+            </Link>
+          </div>
+          
         </div>
 
         {/* Column  2 */}
@@ -69,19 +86,18 @@ const Gallery = () => {
             </Link>
           </div>
 
-          <div className="group">
-            <Link href="https://Acesworks.pixieset.com/acesweek/" target="blank">
+         
+                            <div className="group">
+            <Link href="https://Acesworks.pixieset.com/aces2026summary/" target="_blank">
               <div className="border-2 border-gray-200 rounded-lg p-4 mb-4 group-hover:scale-[1.03] transition duration-300">
                 <Image
-                  src="/images/Aces_Images/Aces Images/Aces week/165.jpg"
-                  alt="Official Monday | ACES Week Celebration"
+                  src={cover.src}
+                  alt="Rep your team"
                   width={800}
                   height={1200}
                   className="w-full shadow-1-strong rounded mb-4"
                 />
-                <p className="text-gray-600">
-                  ACES Week 
-                </p>
+                <p className="text-gray-600">2026 Summary</p>
               </div>
             </Link>
           </div>
@@ -148,6 +164,11 @@ const Gallery = () => {
               </div>
             </Link>
           </div>
+
+
+
+
+
         </div>
       </div>
         <span className="bg-blue-600 text-white cursor-pointer border border-blue-600 hover:border-blue-700 rounded-[5px] px-4 py-2">
