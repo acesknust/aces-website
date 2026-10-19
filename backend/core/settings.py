@@ -243,6 +243,12 @@ REST_FRAMEWORK = {
 CORS_ALLOWED_ORIGINS = [origin.strip() for origin in os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000').split(',')]
 CORS_ALLOW_ALL_ORIGINS = os.environ.get('CORS_ALLOW_ALL_ORIGINS', 'False') == 'True' or not DEBUG  # Allow all in production for public API
 CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://localhost:3000').split(',')]
+
+# Public URL of the storefront, used for payment-provider redirects (e.g. Paystack callback)
+FRONTEND_URL = os.environ.get(
+    'FRONTEND_URL',
+    CORS_ALLOWED_ORIGINS[0] if CORS_ALLOWED_ORIGINS else 'http://localhost:3000'
+).rstrip('/')
 # Always trust DigitalOcean app domains for CSRF
 if not DEBUG:
     CSRF_TRUSTED_ORIGINS += ['https://*.ondigitalocean.app']

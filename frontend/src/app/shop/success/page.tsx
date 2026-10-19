@@ -7,6 +7,17 @@ import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import { motion } from 'framer-motion';
 
+const getApiUrl = () => {
+    if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+    if (typeof window !== 'undefined') {
+        const hostname = window.location.hostname;
+        if (hostname === 'localhost' || hostname === '127.0.0.1') return 'http://127.0.0.1:8000';
+    }
+    return 'https://aces-backend-pgtot.ondigitalocean.app';
+};
+
+const API_BASE_URL = getApiUrl();
+
 interface Order {
     id: number;
     full_name: string;
@@ -47,8 +58,7 @@ function SuccessContent() {
 
         const verifyPayment = async () => {
             try {
-                const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://aces-backend-pgtot.ondigitalocean.app';
-                const res = await fetch(`${apiUrl}/api/shop/verify-payment/?reference=${reference}`);
+                const res = await fetch(`${API_BASE_URL}/api/shop/verify-payment/?reference=${encodeURIComponent(reference)}`);
 
                 const text = await res.text();
                 let data;

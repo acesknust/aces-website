@@ -295,12 +295,7 @@ class CreateOrderView(APIView):
 
             amount_kobo = int(total_amount * 100)
 
-            try:
-                base_url = settings.CORS_ALLOWED_ORIGINS[0]
-            except (IndexError, AttributeError):
-                base_url = "http://localhost:3000"
-
-            callback_url = f"{base_url}/shop/success"
+            callback_url = f"{settings.FRONTEND_URL}/shop/success"
 
             payload = {
                 "email": order.email,
