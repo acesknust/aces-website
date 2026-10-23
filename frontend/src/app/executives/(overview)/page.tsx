@@ -65,7 +65,7 @@ const ExecutivePage = () => {
     const [selectedExecutive, setSelectedExecutive] = useState<Executive | null>(null);
 
     // Fallback hero banner
-    const fallbackBanner = 'https://res.cloudinary.com/dmgk37i6y/image/upload/v1756565095/executives_ahwozc.jpg';
+    const fallbackBanner = '/images/aces_2026/aces-team.jpeg';
 
     // Default description
     const defaultDescription = `We are a student-led association that aims to provide an environment where students can grow and develop their skills. It is with great honor and enthusiasm that we, the executives leading the Noble Association, extend our warmest welcome to each and every one of you.`;
