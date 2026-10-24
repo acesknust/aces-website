@@ -15,6 +15,7 @@ const getApiUrl = () => {
 };
 
 const API_BASE_URL = getApiUrl();
+const RECENT_ORDER_STORAGE_KEY = 'aces_recent_order';
 
 interface OrderItem {
     product_name: string;
@@ -56,6 +57,21 @@ function TrackContent() {
             setOrderId(urlOrderId);
             setEmail(urlEmail);
             trackOrder(urlOrderId, urlEmail);
+            return;
+        }
+
+        try {
+            const savedOrder = localStorage.getItem(RECENT_ORDER_STORAGE_KEY);
+            if (!savedOrder) return;
+
+            const { orderId: savedOrderId, email: savedEmail } = JSON.parse(savedOrder);
+            if (typeof savedOrderId === 'string' && typeof savedEmail === 'string') {
+                setOrderId(savedOrderId);
+                setEmail(savedEmail);
+                trackOrder(savedOrderId, savedEmail);
+            }
+        } catch {
+            localStorage.removeItem(RECENT_ORDER_STORAGE_KEY);
         }
     }, [searchParams]);
 
@@ -74,6 +90,10 @@ function TrackContent() {
 
             if (response.ok) {
                 setOrder(data);
+                localStorage.setItem(
+                    RECENT_ORDER_STORAGE_KEY,
+                    JSON.stringify({ orderId: id, email: mail })
+                );
             } else {
                 setError(data.error || 'No matching order found. Please check your details.');
             }
@@ -141,6 +161,11 @@ function TrackContent() {
 
                 {/* Search Form */}
                 <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 sm:p-8 mb-8">
+                    {!searched && !loading && (
+                        <p className="mb-5 rounded-lg bg-blue-50 px-4 py-3 text-sm text-blue-800">
+                            Your most recent order will be restored automatically on this device.
+                        </p>
+                    )}
                     <form onSubmit={handleSearch} className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
                         <div>
                             <label htmlFor="orderId" className="block text-sm font-semibold text-gray-700 mb-1">

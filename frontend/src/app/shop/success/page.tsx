@@ -17,6 +17,7 @@ const getApiUrl = () => {
 };
 
 const API_BASE_URL = getApiUrl();
+const RECENT_ORDER_STORAGE_KEY = 'aces_recent_order';
 
 interface Order {
     id: number;
@@ -70,6 +71,10 @@ function SuccessContent() {
 
                 if (res.ok) {
                     setOrder(data.order);
+                    localStorage.setItem(
+                        RECENT_ORDER_STORAGE_KEY,
+                        JSON.stringify({ orderId: String(data.order.id), email: data.order.email })
+                    );
                     if (!hasCleared.current) {
                         clearCart();
                         hasCleared.current = true;

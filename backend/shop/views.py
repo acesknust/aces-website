@@ -269,11 +269,6 @@ class CreateOrderView(APIView):
             order.save(update_fields=['payment_method'])
 
             if payment_method == 'MOMO':
-                # Send admin notification in background
-                threading.Thread(
-                    target=send_admin_email, args=(order,), daemon=True
-                ).start()
-
                 return Response({
                     'order_id': order.id,
                     'total_amount': str(order.total_amount),

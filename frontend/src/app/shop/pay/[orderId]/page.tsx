@@ -16,6 +16,7 @@ const getApiUrl = () => {
 };
 
 const API_BASE_URL = getApiUrl();
+const RECENT_ORDER_STORAGE_KEY = 'aces_recent_order';
 
 const compressImage = (file: File, maxWidth = 1200, quality = 0.85): Promise<Blob> => {
     return new Promise((resolve) => {
@@ -148,6 +149,10 @@ function MoMoPaymentContent() {
             const data = await response.json();
 
             if (response.ok) {
+                localStorage.setItem(
+                    RECENT_ORDER_STORAGE_KEY,
+                    JSON.stringify({ orderId: String(orderId), email })
+                );
                 setStep('done');
             } else {
                 setError(data.error || 'Failed to confirm payment. Please try again.');
@@ -172,7 +177,7 @@ function MoMoPaymentContent() {
                         <span className="text-3xl">📱</span>
                     </div>
                     <h1 className="text-2xl font-extrabold text-gray-900 sm:text-3xl">
-                        {step === 'done' ? 'Payment Submitted!' : 'Complete Your Payment'}
+                        {step === 'done' ? 'Payment Submitted for Review' : 'Complete Your Payment'}
                     </h1>
                     <p className="mt-2 text-gray-500">
                         Order #{orderId}

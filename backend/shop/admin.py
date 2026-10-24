@@ -198,7 +198,7 @@ class OrderAdmin(admin.ModelAdmin):
         from django.db import transaction
         import uuid
         import threading
-        from .utils import send_customer_email
+        from .utils import send_customer_email, send_admin_email
         from .models import Product
 
         order = get_object_or_404(Order, pk=order_id)
@@ -236,8 +236,9 @@ class OrderAdmin(admin.ModelAdmin):
                         logging.getLogger(__name__).error(f"Failed to send email for order #{ord_obj.id}: {email_err}")
 
                 threading.Thread(target=run_safe_email, args=(send_customer_email, locked_order), daemon=True).start()
+                threading.Thread(target=run_safe_email, args=(send_admin_email, locked_order), daemon=True).start()
 
-                messages.success(request, f"💰 Order #{locked_order.id} marked as PAID. Stock updated and confirmation email sent!")
+                messages.success(request, f"💰 Order #{locked_order.id} marked as PAID. Stock updated and confirmation emails sent!")
         except Exception as e:
             messages.error(request, f"Error verifying payment: {str(e)}")
 
@@ -249,7 +250,7 @@ class OrderAdmin(admin.ModelAdmin):
         from django.db import transaction
         import uuid
         import threading
-        from .utils import send_customer_email
+        from .utils import send_customer_email, send_admin_email
         from .models import Product
         
         pending_orders = queryset.filter(status='PENDING')
@@ -284,6 +285,7 @@ class OrderAdmin(admin.ModelAdmin):
                             logging.getLogger(__name__).error(f"Failed to send email for order #{ord_obj.id}: {email_err}")
 
                     threading.Thread(target=run_safe_email, args=(send_customer_email, locked_order), daemon=True).start()
+                    threading.Thread(target=run_safe_email, args=(send_admin_email, locked_order), daemon=True).start()
                     updated_count += 1
             except Exception as e:
                 messages.error(request, f"Error verifying order #{order.id}: {str(e)}")
