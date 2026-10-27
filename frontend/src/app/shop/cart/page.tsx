@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { useCart } from '@/context/CartContext';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 
 // Helper to determine API URL based on environment
@@ -56,10 +55,8 @@ export default function CartPage() {
         phone: '',
         address: '',
     });
-    const [paymentMethod, setPaymentMethod] = useState<'MOMO' | 'PAYSTACK'>('MOMO');
     const [loading, setLoading] = useState(false);
     const [checkoutError, setCheckoutError] = useState('');
-    const router = useRouter();
 
     // Calculate final total with discount
     const discountAmount = appliedCoupon ? appliedCoupon.discount_amount : 0;
@@ -97,7 +94,7 @@ export default function CartPage() {
                 items: items.map(item => ({ id: item.id, quantity: item.quantity, color: item.color, size: item.size })),
                 // Include coupon code if applied
                 coupon_code: appliedCoupon?.code || '',
-                payment_method: paymentMethod,
+                payment_method: 'PAYSTACK',
             };
 
             const response = await fetch(`${API_BASE_URL}/api/shop/orders/create/`, {
@@ -127,10 +124,7 @@ export default function CartPage() {
 
             const data = await response.json();
 
-            if (data.payment_method === 'MOMO' && data.order_id) {
-                // MoMo flow: redirect to payment instructions page
-                router.push(`/shop/pay/${data.order_id}?email=${encodeURIComponent(formData.email)}&total=${data.total_amount}`);
-            } else if (data.authorization_url) {
+            if (data.authorization_url) {
                 // Paystack hosted checkout: redirect the customer to Paystack
                 window.location.href = data.authorization_url;
             } else {
@@ -444,47 +438,14 @@ export default function CartPage() {
                                 {/* Payment Method */}
                                 <div>
                                     <span className="block text-sm font-semibold text-gray-700 mb-2">Payment Method</span>
-                                    <div className="grid gap-3 sm:grid-cols-2">
-                                        <label className={`relative flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-all focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-1 ${paymentMethod === 'MOMO'
-                                            ? 'border-blue-600 bg-blue-50/60'
-                                            : 'border-gray-200 bg-white hover:border-gray-300'
-                                            }`}>
-                                            <input
-                                                type="radio"
-                                                name="payment_method"
-                                                value="MOMO"
-                                                checked={paymentMethod === 'MOMO'}
-                                                onChange={() => setPaymentMethod('MOMO')}
-                                                className="sr-only"
-                                            />
-                                            <span className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 ${paymentMethod === 'MOMO' ? 'border-blue-600' : 'border-gray-300'}`}>
-                                                {paymentMethod === 'MOMO' && <span className="h-2 w-2 rounded-full bg-blue-600" />}
-                                            </span>
-                                            <span>
-                                                <span className="block text-sm font-bold text-gray-900">Mobile Money</span>
-                                                <span className="mt-1 block text-xs text-gray-500">Send payment manually and upload your receipt</span>
-                                            </span>
-                                        </label>
-                                        <label className={`relative flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-all focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-1 ${paymentMethod === 'PAYSTACK'
-                                            ? 'border-blue-600 bg-blue-50/60'
-                                            : 'border-gray-200 bg-white hover:border-gray-300'
-                                            }`}>
-                                            <input
-                                                type="radio"
-                                                name="payment_method"
-                                                value="PAYSTACK"
-                                                checked={paymentMethod === 'PAYSTACK'}
-                                                onChange={() => setPaymentMethod('PAYSTACK')}
-                                                className="sr-only"
-                                            />
-                                            <span className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 ${paymentMethod === 'PAYSTACK' ? 'border-blue-600' : 'border-gray-300'}`}>
-                                                {paymentMethod === 'PAYSTACK' && <span className="h-2 w-2 rounded-full bg-blue-600" />}
-                                            </span>
-                                            <span>
-                                                <span className="block text-sm font-bold text-gray-900">Paystack</span>
-                                                <span className="mt-1 block text-xs text-gray-500">Pay securely with card or mobile money</span>
-                                            </span>
-                                        </label>
+                                    <div className="flex items-start gap-3 rounded-xl border border-blue-600 bg-blue-50/60 p-4">
+                                        <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 border-blue-600">
+                                            <span className="h-2 w-2 rounded-full bg-blue-600" />
+                                        </span>
+                                        <span>
+                                            <span className="block text-sm font-bold text-gray-900">Paystack</span>
+                                            <span className="mt-1 block text-xs text-gray-500">Pay securely with card or mobile money</span>
+                                        </span>
                                     </div>
                                 </div>
 
@@ -511,21 +472,15 @@ export default function CartPage() {
                                                 <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                                                 Processing...
                                             </>
-                                        ) : paymentMethod === 'PAYSTACK' ? (
+                                        ) : (
                                             <>
                                                 Pay with Paystack <span aria-hidden="true">&rarr;</span>
                                             </>
-                                        ) : (
-                                            <>
-                                                Place Order <span aria-hidden="true">&rarr;</span>
-                                            </>
                                         )}
                                     </button>
-                                    {paymentMethod === 'PAYSTACK' && (
-                                        <p className="mt-3 text-center text-xs text-gray-500">
-                                            You&apos;ll be redirected to Paystack to complete your payment securely.
-                                        </p>
-                                    )}
+                                    <p className="mt-3 text-center text-xs text-gray-500">
+                                        You&apos;ll be redirected to Paystack to complete your payment securely.
+                                    </p>
                                     <button
                                         type="button"
                                         onClick={() => setIsCheckingOut(false)}
