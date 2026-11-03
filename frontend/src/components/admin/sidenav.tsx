@@ -2,11 +2,13 @@ import Link from 'next/link';
 import NavLinks from './nav-links';
 import { FaPowerOff } from "react-icons/fa6";
 import { loginNavigate } from '@/app/actions';
+import { clearAdminProfile } from './use-admin-profile';
 
 export default function SideNav() {
   const logout = async () => {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
+    clearAdminProfile();
   }
 
   return (

@@ -37,7 +37,8 @@ export default function LoginPage() {
       localStorage.setItem('refresh_token', response.data.refresh);
 
       // Route based on role
-      if (response.data.is_staff) {
+      const perks: string[] = response.data.perks || [];
+      if (response.data.is_staff || response.data.is_superuser || perks.length > 0) {
         router.push('/admin');
       } else {
         router.push('/vendor-dashboard');

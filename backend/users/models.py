@@ -32,14 +32,29 @@ class CustomAccountManager(BaseUserManager):
         user.save()
         
         return user
-    
+
+class Role(models.Model):
+    """A named bundle of perks that a super admin can hand to users."""
+
+    name = models.CharField(max_length=100, unique=True)
+    description = models.CharField(max_length=255, blank=True)
+    perks = models.JSONField(default=list, blank=True, help_text="Perk codes from users/perks.py")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
 class CustomUser(AbstractBaseUser, PermissionsMixin):
-    
+
     email = models.EmailField('email address', unique=True)
     username = models.CharField(max_length=150, unique=True)
     date_joined = models.DateTimeField(default=timezone.now)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
+    roles = models.ManyToManyField(Role, blank=True, related_name='users')
     
     objects = CustomAccountManager()
     

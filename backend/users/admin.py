@@ -2,8 +2,13 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
 
-from .models import CustomUser
+from .models import CustomUser, Role
 
+
+@admin.register(Role)
+class RoleAdmin(admin.ModelAdmin):
+    list_display = ('name', 'description', 'perks')
+    search_fields = ('name',)
 
 
 class UserAdminConfig(UserAdmin):
@@ -15,13 +20,13 @@ class UserAdminConfig(UserAdmin):
                     'is_active', 'is_staff')
     fieldsets = (
         (None, {'fields': ('email', 'username',)}),
-        ('Permissions', {'fields': ('is_staff', 'is_active', 'is_superuser', 'groups', 'user_permissions')}),
+        ('Permissions', {'fields': ('is_staff', 'is_active', 'is_superuser', 'roles', 'groups', 'user_permissions')}),
     )
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
             'fields': ('email', 'username',
-                       'password1', 'password2', 'is_active', 'is_staff')}
+                       'password1', 'password2', 'is_active', 'is_staff', 'is_superuser')}
          ),
     )
 

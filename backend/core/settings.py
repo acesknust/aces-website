@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'payment_logs.apps.PaymentLogsConfig',  # Webhook audit trail
     'student_businesses.apps.StudentBusinessesConfig',
     'nominations.apps.NominationsConfig',
+    'attendance.apps.AttendanceConfig',
 
     # Celery Beat — scheduled tasks (auto-expire pending orders, etc.)
     'django_celery_beat',
@@ -242,6 +243,7 @@ REST_FRAMEWORK = {
 
 CORS_ALLOWED_ORIGINS = [origin.strip() for origin in os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000').split(',')]
 CORS_ALLOW_ALL_ORIGINS = os.environ.get('CORS_ALLOW_ALL_ORIGINS', 'False') == 'True' or not DEBUG  # Allow all in production for public API
+CORS_EXPOSE_HEADERS = ['Content-Disposition']  # Lets the dashboard read the filename of Excel exports
 CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://localhost:3000').split(',')]
 
 # Public URL of the storefront, used for payment-provider redirects (e.g. Paystack callback)

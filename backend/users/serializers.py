@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
-from .models import CustomUser, NewsletterSubscriber
+from .models import CustomUser, NewsletterSubscriber, Role
+from .perks import PERKS
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
@@ -51,3 +52,27 @@ class NewsletterSubscriberSerializer(serializers.ModelSerializer):
     class Meta:
         model = NewsletterSubscriber
         fields = ('email',)
+
+class RoleSerializer(serializers.ModelSerializer):
+    member_count = serializers.IntegerField(source='users.count', read_only=True)
+
+    class Meta:
+        model = Role
+        fields = ('id', 'name', 'description', 'perks', 'member_count', 'created_at')
+        read_only_fields = ('created_at',)
+
+    def validate_perks(self, value):
+        unknown = [code for code in value if code not in PERKS]
+        if unknown:
+            raise serializers.ValidationError(f"Unknown perks: {', '.join(unknown)}")
+        return sorted(set(value))
+
+
+class MemberSerializer(serializers.ModelSerializer):
+    """A user as seen by a super admin when handing out roles."""
+    roles = serializers.PrimaryKeyRelatedField(many=True, queryset=Role.objects.all())
+
+    class Meta:
+        model = CustomUser
+        fields = ('id', 'email', 'username', 'is_staff', 'is_superuser', 'roles')
+        read_only_fields = ('email', 'username', 'is_staff', 'is_superuser')

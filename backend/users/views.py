@@ -1,11 +1,13 @@
-from rest_framework import generics
+from rest_framework import generics, mixins, viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import CustomUser
-from .serializers import CustomUserSerializer, NewsletterSubscriberSerializer
+from django.db.models import Q
+from .models import CustomUser, Role
+from .perks import PERKS, IsSuperAdmin, user_perks
+from .serializers import CustomUserSerializer, MemberSerializer, NewsletterSubscriberSerializer, RoleSerializer
 
 
 # ---------------------------------------------------------------------------
@@ -33,7 +35,9 @@ def _jwt_response(user):
         'refresh': str(refresh),
         'access': str(refresh.access_token),
         'is_staff': user.is_staff,
+        'is_superuser': user.is_superuser,
         'username': user.username,
+        'perks': sorted(user_perks(user)),
     }
 
 
@@ -42,7 +46,7 @@ def _jwt_response(user):
 # ---------------------------------------------------------------------------
 
 class AdminLoginView(APIView):
-    """Login endpoint restricted to staff/admin users."""
+    """Login endpoint restricted to staff/admin users and role holders."""
     permission_classes = [AllowAny]
 
     def post(self, request, format=None):
@@ -57,7 +61,7 @@ class AdminLoginView(APIView):
 
         user = _authenticate(email, password)
 
-        if user is not None and user.is_staff:
+        if user is not None and user.is_active and (user.is_staff or user_perks(user)):
             return Response(_jwt_response(user), status=status.HTTP_200_OK)
 
         return Response(
@@ -135,3 +139,57 @@ class LogoutView(APIView):
 class SubscribeNewsletterView(generics.CreateAPIView):
     permission_classes = [AllowAny]
     serializer_class = NewsletterSubscriberSerializer
+
+
+# ---------------------------------------------------------------------------
+# Roles & perks (managed by super admins / project managers)
+# ---------------------------------------------------------------------------
+
+class MeView(APIView):
+    """The signed-in user's identity and perks, used by the admin dashboard."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        return Response({
+            'id': user.id,
+            'email': user.email,
+            'username': user.username,
+            'is_staff': user.is_staff,
+            'is_superuser': user.is_superuser,
+            'perks': sorted(user_perks(user)),
+        })
+
+
+class PerkListView(APIView):
+    """All perks a role can include."""
+    permission_classes = [IsSuperAdmin]
+
+    def get(self, request):
+        return Response([{'code': code, 'label': label} for code, label in PERKS.items()])
+
+
+class RoleViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsSuperAdmin]
+    queryset = Role.objects.prefetch_related('users')
+    serializer_class = RoleSerializer
+
+
+class MemberViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
+    """List users and set which roles each one holds."""
+    permission_classes = [IsSuperAdmin]
+    serializer_class = MemberSerializer
+    http_method_names = ['get', 'patch']
+
+    def get_queryset(self):
+        qs = CustomUser.objects.prefetch_related('roles').order_by('username')
+        search = self.request.query_params.get('search', '').strip()
+        if search:
+            qs = qs.filter(Q(email__icontains=search) | Q(username__icontains=search))
+        if self.request.query_params.get('with_roles') == '1':
+            qs = qs.filter(roles__isnull=False).distinct()
+        return qs
+
+    def list(self, request, *args, **kwargs):
+        serializer = self.get_serializer(self.get_queryset()[:100], many=True)
+        return Response(serializer.data)

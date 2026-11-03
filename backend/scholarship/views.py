@@ -7,6 +7,7 @@ from uuid import uuid4
 
 from .models import Scholarship
 from .serializers import ScholarshipSerializer
+from users.perks import HasPerk
 
 class ScholarshipList(generics.ListAPIView):
     """List all scholarships"""
@@ -22,7 +23,7 @@ class ScholarshipDetail(generics.RetrieveAPIView):
 
 class CreateScholarship(generics.CreateAPIView):
     """Create a new scholarship only for admin users"""
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [HasPerk('manage_scholarships', staff_allowed=True)]
     queryset = Scholarship.objects.all()
     serializer_class = ScholarshipSerializer
 
@@ -43,7 +44,7 @@ class CreateScholarship(generics.CreateAPIView):
 
 class EditScholarship(generics.RetrieveUpdateAPIView):
     """Edit a scholarship"""
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [HasPerk('manage_scholarships', staff_allowed=True)]
     queryset = Scholarship.objects.all()
     serializer_class = ScholarshipSerializer
 
@@ -58,6 +59,6 @@ class EditScholarship(generics.RetrieveUpdateAPIView):
 
 class DeleteScholarship(generics.RetrieveDestroyAPIView):
     """Delete a scholarship"""
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [HasPerk('manage_scholarships', staff_allowed=True)]
     queryset = Scholarship.objects.all()
     serializer_class = ScholarshipSerializer
