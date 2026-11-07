@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Disallow indexing of admin and auth pages
+Disallow: /admin/
+Disallow: /login/
+Disallow: /api/
+
+Sitemap: https://www.acesknust.com/sitemap.xml

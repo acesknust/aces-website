@@ -1,0 +1,235 @@
+{
+"Scholarship" : [
+  {
+    "id": "hulede-knust-2025",
+    "name": "HULEDE Foundation Scholarship",
+    "provider": "HULEDE Foundation",
+    "description": "Financial support for brilliant but needy students at KNUST",
+    "eligibility": {
+      "targetStudents": ["fresh applicants", "brilliant but needy"],
+      "yearLevels": ["1st year", "2nd year", "3rd year"],
+      "nationality": ["Ghanaian"],
+      "institution": ["KNUST"],
+      "programType": ["full-time regular programme"],
+      "minimumGrade": "Second Class Upper (for continuing students)",
+      "wassce": "Aggregate of 15 or better (for first-year applicants)",
+      "excludedApplicants": ["continuing students who are beneficiaries of other scholarships"]
+    },
+    "benefits": {
+      "duration": "Not specified",
+      "additionalBenefits": ["Financial assistance"]
+    },
+    "requirements": {
+      "documents": [
+        "Admission Letter",
+        "Acceptance Letter",
+        "WASSCE Results or Certificate",
+        "Detailed proof of financial need",
+        "Recommendation letters and other awards or certificates (if any)",
+        "Complete University Academic Transcripts (for continuing students)"
+      ],
+      "essays": [
+        {
+          "title": "Why Do You Think You Should Be Considered For This Scholarship?",
+          "instructions": "One page write-up explaining why you should be considered",
+          "submissionMethod": "Email to hfknust2025@gmail.com"
+        }
+      ],
+      "formatting": {
+        "font": "Times New Roman",
+        "fontSize": 12,
+        "spacing": "double-spaced"
+      }
+    },
+    "applicationProcess": {
+      "submissionLocation": "Student Support and Financial Services Office (Room 19), Directorate of Student Affairs, J. Harper Building",
+      "submissionMethod": "Physical submission in sealed envelope",
+      "envelopeRequirements": [
+        "Applicant's full name",
+        "Programme",
+        "Student reference number",
+        "Phone number"
+      ],
+      "interviewProcess": true
+    },
+    "deadlines": {
+      "submissionDeadline": "Friday, 7th February 2025"
+    },
+    "contact": {
+      "office": "Student Support and Financial Services Office",
+      "email": "hfknust2025@gmail.com"
+    },
+    "status": "active",
+    "lastUpdated": "2025-02-03"
+  },
+  {
+    "id": "unnamed-scholarship-knust-2025",
+    "name": "KNUST General Scholarship",
+    "provider": "KNUST",
+    "description": "Scholarship for 1st and 2nd year students pursuing regular full-time programmes",
+    "eligibility": {
+      "targetStudents": ["regular students"],
+      "yearLevels": ["1st year", "2nd year"],
+      "nationality": ["Ghanaian"],
+      "institution": ["KNUST"],
+      "programType": ["regular full-time programme"],
+      "excludedApplicants": ["beneficiaries of another scholarship scheme"]
+    },
+    "benefits": {
+      "duration": "Not specified",
+      "additionalBenefits": ["Financial assistance"]
+    },
+    "requirements": {
+      "documents": [
+        "Admission Letter",
+        "Acceptance Letter",
+        "Certificate/WASSCE Results Slip",
+        "All Senior High School Terminal Reports",
+        "Two (2) Recommendation Letters and Certificates (if any)",
+        "Parents Proof of Income (if possible)"
+      ],
+      "essays": [
+        {
+          "title": "Essay on Proof of Need",
+          "instructions": "Essay explaining financial need"
+        }
+      ],
+      "formatting": {
+        "font": "Times New Roman",
+        "fontSize": 12,
+        "spacing": "double-spaced"
+      }
+    },
+    "applicationProcess": {
+      "submissionLocation": "Students Support and Financial Services Office (Room 19), Directorate of Student Affairs, J Harper Building, Commercial Area",
+      "submissionMethod": "Physical submission in sealed envelope",
+      "envelopeRequirements": [
+        "Applicant's Name",
+        "Reference Number",
+        "Programme",
+        "Phone Number"
+      ],
+      "interviewProcess": true
+    },
+    "deadlines": {
+      "submissionDeadline": "Not specified"
+    },
+    "contact": {
+      "office": "Students Support and Financial Services Office"
+    },
+    "status": "active",
+    "lastUpdated": "2025-02-03"
+  },
+  {
+    "id": "achieve-by-petra-2025",
+    "name": "Achieve by Petra Scholars",
+    "provider": "Achieve by Petra",
+    "description": "Scholarship with internship and mentorship opportunities for public tertiary institution students",
+    "eligibility": {
+      "targetStudents": ["continuing students"],
+      "yearLevels": ["level 200", "level 300", "level 400"],
+      "nationality": ["Ghanaian"],
+      "institution": ["public tertiary institutions"],
+      "programType": ["any"],
+      "minimumGrade": "Second class honors or better",
+      "excludedApplicants": []
+    },
+    "benefits": {
+      "amount": "GHS 4,000",
+      "duration": "Not specified",
+      "additionalBenefits": [
+        "Internship opportunity with GHS 700 monthly stipend",
+        "Mentorship and career support"
+      ]
+    },
+    "requirements": {
+      "documents": [],
+      "essays": [
+        {
+          "title": "Financial Assistance Essay",
+          "instructions": "Proof of need or why you should be considered for the scholarship"
+        }
+      ],
+      "formatting": {
+        "font": "Not specified",
+        "fontSize": 0,
+        "spacing": "Not specified"
+      }
+    },
+    "applicationProcess": {
+      "submissionLocation": "Online application",
+      "submissionMethod": "Online form",
+      "envelopeRequirements": [],
+      "interviewProcess": false
+    },
+    "deadlines": {
+      "submissionDeadline": "16th May 2025"
+    },
+    "contact": {
+      "office": "Achieve by Petra",
+      "applicationForm": "https://docs.google.com/forms/d/e/1FAIpQLSenvrpQG0WA0hV9A9F09encvGWYwgsrURxzrr64x6ACHcH0WQ/viewform"
+    },
+    "status": "active",
+    "lastUpdated": "2025-02-03"
+  },
+  {
+    "id": "st-nankani-hagan-2025",
+    "name": "S.T. Nankani and Hagan Bursary",
+    "provider": "S.T. Nankani and Hagan Foundation",
+    "description": "One-year financial support for brilliant but needy students at KNUST",
+    "eligibility": {
+      "targetStudents": ["brilliant but needy", "regular students"],
+      "yearLevels": ["2nd year"],
+      "nationality": ["Ghanaian"],
+      "institution": ["KNUST"],
+      "programType": ["regular"],
+      "colleges": ["College of Science", "College of Engineering", "College of Agriculture and Natural Resources"],
+      "minimumGrade": "Second Class Upper (CWA of 60 and above)"
+    },
+    "benefits": {
+      "duration": "One year",
+      "additionalBenefits": ["Financial support for university education"]
+    },
+    "requirements": {
+      "documents": [
+        "Admission Letter",
+        "Acceptance Letter",
+        "At least one recommendation Letter",
+        "Endorsed Result Slip or Transcript showing current CWA",
+        "Other awards or certificates (if any)"
+      ],
+      "essays": [
+        {
+          "title": "Personal Statement (Proof of Need)",
+          "instructions": "Personal statement explaining proof of need"
+        }
+      ],
+      "formatting": {
+        "font": "Times New Roman",
+        "fontSize": 12,
+        "spacing": "double-spaced"
+      }
+    },
+    "applicationProcess": {
+      "submissionLocation": "Student Support and Financial Services Office (Room 19), Directorate of Student Affairs (DoSA), J. Harper Building",
+      "submissionMethod": "Physical submission in sealed envelope",
+      "envelopeRequirements": [
+        "Applicant's full name",
+        "Programme",
+        "Student reference number",
+        "Phone number"
+      ],
+      "interviewProcess": true
+    },
+    "deadlines": {
+      "submissionDeadline": "Friday, 7th February 2025"
+    },
+    "contact": {
+      "office": "Student Support and Financial Services Office",
+      "applicationForm": "Downloadable form (link not provided)"
+    },
+    "status": "active",
+    "lastUpdated": "2025-02-03"
+  }
+]
+}
